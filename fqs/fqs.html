@@ -117,1717 +117,1717 @@
       <button id="confirmBtn" type="submit">Confirm</button>
     </form>
   </dialog>
-  <-- The CSS styles for the score editor and display -->
-    <style id="fqs-style">
-      html,
-      body {
-        width: 100%;
-      }
+  <!-- The CSS styles for the score editor and display -->
+  <style id="fqs-style">
+    html,
+    body {
+      width: 100%;
+    }
 
-      summary {
-        margin-left: 5%;
-      }
+    summary {
+      margin-left: 5%;
+    }
 
-      img {
-        margin-left: 5%;
-      }
+    img {
+      margin-left: 5%;
+    }
 
-      button {
-        margin: 2px;
-      }
+    button {
+      margin: 2px;
+    }
 
-      button.new-score-btn {
-        margin-left: 5%;
-      }
+    button.new-score-btn {
+      margin-left: 5%;
+    }
 
-      button.delete-btn {
-        margin-left: 5%;
-      }
+    button.delete-btn {
+      margin-left: 5%;
+    }
 
-      details.controls {
-        width: 100%;
-        margin-left: 0;
-        margin-right: 0;
-        margin-top: 2em;
-        margin-bottom: 2em;
-        padding-left: 5%;
-      }
+    details.controls {
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      margin-top: 2em;
+      margin-bottom: 2em;
+      padding-left: 5%;
+    }
 
-      details.controls summary {
-        width: 100%;
-        margin-left: 0;
-        margin-right: 0;
-        margin-top: 2em;
-        margin-bottom: 0;
-        padding-left: 0%;
-      }
+    details.controls summary {
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      margin-top: 2em;
+      margin-bottom: 0;
+      padding-left: 0%;
+    }
 
-      div.score,
-      div.score-toc {
-        width: 100%;
-        margin-left: 0;
-        margin-right: 0;
-        margin-top: 2em;
-        margin-bottom: 2em;
-        padding: 0;
-      }
+    div.score,
+    div.score-toc {
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+      margin-top: 2em;
+      margin-bottom: 2em;
+      padding: 0;
+    }
 
-      pre.source {
-        position: sticky;
-        top: 0;
-        padding-left: 5%;
-        max-height: 100vh;
-        overflow-y: auto;
-      }
+    pre.source {
+      position: sticky;
+      top: 0;
+      padding-left: 5%;
+      max-height: 100vh;
+      overflow-y: auto;
+    }
 
-      svg {
-        /* Center the SVG element with 5% padding left, right and bottom*/
-        width: 90%;
-        height: 95%;
-        padding-left: 5%;
+    svg {
+      /* Center the SVG element with 5% padding left, right and bottom*/
+      width: 90%;
+      height: 95%;
+      padding-left: 5%;
 
-      }
+    }
 
-      /* Font sizes (adjusted dynamically at render time) */
-      .lineproblem {
-        font: 8px monospace;
-        fill: red;
-      }
+    /* Font sizes (adjusted dynamically at render time) */
+    .lineproblem {
+      font: 8px monospace;
+      fill: red;
+    }
 
-      .title {
-        font: 18px sans-serif;
-      }
+    .title {
+      font: 18px sans-serif;
+    }
 
-      .preface {
-        font: 10px sans-serif;
-      }
+    .preface {
+      font: 10px sans-serif;
+    }
 
-      .postscript {
-        font: 10px sans-serif;
-      }
+    .postscript {
+      font: 10px sans-serif;
+    }
 
-      .text {
-        font: 10px sans-serif;
-      }
+    .text {
+      font: 10px sans-serif;
+    }
 
-      /* chord name, e.g. 'C' */
-      .chord {
-        font-family: monospace;
-        font-size: 13px;
-        font-style: bold;
-      }
+    /* chord name, e.g. 'C' */
+    .chord {
+      font-family: monospace;
+      font-size: 13px;
+      font-style: bold;
+    }
 
-      /* chord text, e.g. 'maj7' */
-      .chord-text {
-        font-family: Arial, sans-serif;
-        font-size: 8px;
-        font-style: bold;
-      }
+    /* chord text, e.g. 'maj7' */
+    .chord-text {
+      font-family: Arial, sans-serif;
+      font-size: 8px;
+      font-style: bold;
+    }
 
-      .grey {
-        fill: rgb(160, 160, 160);
-      }
+    .grey {
+      fill: rgb(160, 160, 160);
+    }
 
-      .lyric {
-        font: 12px monospace;
-      }
+    .lyric {
+      font: 12px monospace;
+    }
 
-      .rest,
-      .pitch {
-        font: 12px monospace;
-      }
+    .rest,
+    .pitch {
+      font: 12px monospace;
+    }
 
-      .pernote {
-        font: 8px monospace;
-        font-style: italic;
-      }
+    .pernote {
+      font: 8px monospace;
+      font-style: italic;
+    }
 
-      .fingering {
-        font: 4px monospace;
-      }
+    .fingering {
+      font: 4px monospace;
+    }
 
-      .perbar {
-        font: 8px monospace;
-        font-style: italic;
-      }
+    .perbar {
+      font: 8px monospace;
+      font-style: italic;
+    }
 
-      .counter {
-        font: 6px monospace;
-        font-style: italic;
-      }
+    .counter {
+      font: 6px monospace;
+      font-style: italic;
+    }
 
-      .perbeat {
-        font: 6px monospace;
-        font-style: italic;
-      }
+    .perbeat {
+      font: 6px monospace;
+      font-style: italic;
+    }
 
-      .cue {
-        /* cue text */
-        fill: rgb(84, 84, 84);
-        font: 8px monospace;
-      }
+    .cue {
+      /* cue text */
+      fill: rgb(84, 84, 84);
+      font: 8px monospace;
+    }
 
-      /* Note that the color of the text is set with the    *
+    /* Note that the color of the text is set with the    *
        * fill property, the color property is for HTML only */
-      .♭ {
-        /* flat */
-        fill: rgb(152, 140, 254);
-        font-style: italic;
+    .♭ {
+      /* flat */
+      fill: rgb(152, 140, 254);
+      font-style: italic;
 
+    }
+
+    .𝄫 {
+      /* double flat */
+      fill: rgb(4, 182, 4);
+      font-style: italic;
+    }
+
+    .♯ {
+      /* sharp */
+      fill: red;
+      font-style: italic;
+    }
+
+    .𝄪 {
+      /* double sharp */
+      fill: orange;
+      font-style: italic;
+    }
+
+    .link-to-toc {
+      /* toc links should be at the right edge of the document */
+      position: absolute;
+      right: 5%;
+
+    }
+
+    h2,
+    h3,
+    p,
+    ul,
+    ol {
+      margin-left: 5%;
+      margin-right: 5%;
+    }
+
+    /* styles for toggling between side-by-side and top-down layouts */
+    .score-wrapper {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .score-wrapper.side-by-side {
+      flex-direction: row;
+    }
+
+    .score-wrapper.side-by-side svg,
+    .score-wrapper.side-by-side details {
+      width: 50%;
+    }
+
+    .score-wrapper.side-by-side details {
+      margin-left: 10px;
+    }
+
+    .score-wrapper.side-by-side svg {
+      padding-left: 0;
+    }
+  </style>
+  <script type="text/javascript">
+    let isDirty = false; // global flag that is set when we edit a score and cleared when export the scores
+    const bookParameters = {
+      // bookParameters control the behavior of the score editor and display.
+      leftX: 0, // Pixel position of the left edge of the score.
+      sideBySide: true, // if true, render scores side-by-side with edit area
+      barlineRgx: /:?\|:?/, // regular expression to match barlines
+      lyricRgx: /[\p{L}']/u, // regular expression to match lyric alpha characters and apostrophes
+      "lyricFontWidth": 7, // includes space between letters
+      // Various font size parameters are are added to this object at runtime by 
+      // by the updateFontSizes() function in this file. These are needed by the functions
+      // that render the scores. If you need to change the font size, you should do so 
+      // in the style tag in this file with id "fqs-style".
+    }
+
+    // appendSVGTextChild(svg, x, y, textContent, classList) adds a text element
+    // to the svg element with the given x, y coordinates and textContent. The
+    // classList argument is an array of class names to be added to the text
+    // element. The text element is returned.
+    function appendSVGTextChild(svg, x, y, textContent, classList) {
+      const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      text.setAttribute("x", x);
+      text.setAttribute("y", y);
+      text.textContent = textContent;
+      if (classList) {
+        text.classList.add(...classList);
       }
+      svg.appendChild(text);
+      return text;
+    }
 
-      .𝄫 {
-        /* double flat */
-        fill: rgb(4, 182, 4);
-        font-style: italic;
+    // The LineProblem class holds error and warning messages generated during
+    // rendering of a score. It has a render method that will render the messages
+    // into the SVG element immediately below the line where the problems were
+    // encountered.
+    class LineProblem {
+      constructor() {
+        this.messages = []
       }
+      add = (function (message) {
+        this.messages.push(message);
+      });
+      clear = (function () {
+        this.messages = [];
+      });
+      render = (function (svg, x0, y0) {
+        // Draw each message in this.messages starting at x0, y0 and incrementing y
+        // by bookParameters.problemFontHeight for each message.
+        let y = y0;
+        this.messages.forEach((function (message) {
+          y += 1.1 * bookParameters.lineproblemFontHeight;
+          appendSVGTextChild(svg, x0, y, "⚠️" + message, ["lineproblem"]);
+        }));
+        return y
+      });
+    } // end of LineProblem class 
+    // instantiate a singleton LineProblem to be used by all rendering operations
+    const lineProblems = new LineProblem();
 
-      .♯ {
-        /* sharp */
-        fill: red;
-        font-style: italic;
-      }
-
-      .𝄪 {
-        /* double sharp */
-        fill: orange;
-        font-style: italic;
-      }
-
-      .link-to-toc {
-        /* toc links should be at the right edge of the document */
-        position: absolute;
-        right: 5%;
-
-      }
-
-      h2,
-      h3,
-      p,
-      ul,
-      ol {
-        margin-left: 5%;
-        margin-right: 5%;
-      }
-
-      /* styles for toggling between side-by-side and top-down layouts */
-      .score-wrapper {
-        display: flex;
-        flex-direction: column;
-      }
-
-      .score-wrapper.side-by-side {
-        flex-direction: row;
-      }
-
-      .score-wrapper.side-by-side svg,
-      .score-wrapper.side-by-side details {
-        width: 50%;
-      }
-
-      .score-wrapper.side-by-side details {
-        margin-left: 10px;
-      }
-
-      .score-wrapper.side-by-side svg {
-        padding-left: 0;
-      }
-    </style>
-    <script type="text/javascript">
-      let isDirty = false; // global flag that is set when we edit a score and cleared when export the scores
-      const bookParameters = {
-        // bookParameters control the behavior of the score editor and display.
-        leftX: 0, // Pixel position of the left edge of the score.
-        sideBySide: true, // if true, render scores side-by-side with edit area
-        barlineRgx: /:?\|:?/, // regular expression to match barlines
-        lyricRgx: /[\p{L}']/u, // regular expression to match lyric alpha characters and apostrophes
-        "lyricFontWidth": 7, // includes space between letters
-        // Various font size parameters are are added to this object at runtime by 
-        // by the updateFontSizes() function in this file. These are needed by the functions
-        // that render the scores. If you need to change the font size, you should do so 
-        // in the style tag in this file with id "fqs-style".
-      }
-
-      // appendSVGTextChild(svg, x, y, textContent, classList) adds a text element
-      // to the svg element with the given x, y coordinates and textContent. The
-      // classList argument is an array of class names to be added to the text
-      // element. The text element is returned.
-      function appendSVGTextChild(svg, x, y, textContent, classList) {
-        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        text.setAttribute("x", x);
-        text.setAttribute("y", y);
-        text.textContent = textContent;
-        if (classList) {
-          text.classList.add(...classList);
-        }
-        svg.appendChild(text);
-        return text;
-      }
-
-      // The LineProblem class holds error and warning messages generated during
-      // rendering of a score. It has a render method that will render the messages
-      // into the SVG element immediately below the line where the problems were
-      // encountered.
-      class LineProblem {
-        constructor() {
-          this.messages = []
-        }
-        add = (function (message) {
-          this.messages.push(message);
-        });
-        clear = (function () {
-          this.messages = [];
-        });
-        render = (function (svg, x0, y0) {
-          // Draw each message in this.messages starting at x0, y0 and incrementing y
-          // by bookParameters.problemFontHeight for each message.
-          let y = y0;
-          this.messages.forEach((function (message) {
-            y += 1.1 * bookParameters.lineproblemFontHeight;
-            appendSVGTextChild(svg, x0, y, "⚠️" + message, ["lineproblem"]);
-          }));
-          return y
-        });
-      } // end of LineProblem class 
-      // instantiate a singleton LineProblem to be used by all rendering operations
-      const lineProblems = new LineProblem();
-
-      // The LyricLine class interprets the text of a lyric line and
-      // and determines the location of beats, attacks and barlines.
-      // It provides a render() method that will render the lyric line
-      // into an svg element.
-      class LyricLine {
-        constructor(text) {
-          this.text = text;
-          // trim leading or trailing whitespace
-          this.text = this.text.trim();
-          // split the text on whitespace
-          this.words = text.split(/\s+/);
-          // join the text back together with single spaces
-          this.text = this.words.join(" ");
-          // Create an array of attack indices. An attack is an alpha character [a-zA-Z]
-          // that is preceded by a any of the following:
-          //   a space,
-          //   the beginning of the text,
-          //   a dash '-',
-          //   a period '.', or
-          //   an asterisk '*'.
-          // An asterisk is also an attack
-          // We need to store the indices of the attacks in the text as well as
-          // the indices of the beats and barlines. We use these indices to
-          // position pitch symbols and annotations.
-          this.beats = [0,]; // beat positions
-          this.bars = [0,]; // barline positions
-          this.attacks = [];
-          this.rests = []
-          for (let i = 0; i < this.text.length; i++) {
-            if (this.text[i].match(bookParameters.barlineRgx)) {
-              this.bars.push(i);
-              continue;
-            }
-            if (this.text[i].match(/\*/)) {
+    // The LyricLine class interprets the text of a lyric line and
+    // and determines the location of beats, attacks and barlines.
+    // It provides a render() method that will render the lyric line
+    // into an svg element.
+    class LyricLine {
+      constructor(text) {
+        this.text = text;
+        // trim leading or trailing whitespace
+        this.text = this.text.trim();
+        // split the text on whitespace
+        this.words = text.split(/\s+/);
+        // join the text back together with single spaces
+        this.text = this.words.join(" ");
+        // Create an array of attack indices. An attack is an alpha character [a-zA-Z]
+        // that is preceded by a any of the following:
+        //   a space,
+        //   the beginning of the text,
+        //   a dash '-',
+        //   a period '.', or
+        //   an asterisk '*'.
+        // An asterisk is also an attack
+        // We need to store the indices of the attacks in the text as well as
+        // the indices of the beats and barlines. We use these indices to
+        // position pitch symbols and annotations.
+        this.beats = [0,]; // beat positions
+        this.bars = [0,]; // barline positions
+        this.attacks = [];
+        this.rests = []
+        for (let i = 0; i < this.text.length; i++) {
+          if (this.text[i].match(bookParameters.barlineRgx)) {
+            this.bars.push(i);
+            continue;
+          }
+          if (this.text[i].match(/\*/)) {
+            this.attacks.push(i);
+            continue;
+          }
+          if (this.text[i].match(/;/)) {
+            this.rests.push(i);
+            continue;
+          }
+          if (this.text[i].match(bookParameters.lyricRgx)) {
+            if (i === 0) {
               this.attacks.push(i);
-              continue;
-            }
-            if (this.text[i].match(/;/)) {
-              this.rests.push(i);
-              continue;
-            }
-            if (this.text[i].match(bookParameters.lyricRgx)) {
-              if (i === 0) {
-                this.attacks.push(i);
-              } else if (this.text[i - 1].match(/[\s\-.;\*]/)) {
-                this.attacks.push(i);
-              }
-            }
-            // A beat begins with any character that is preceded by a space
-            // except barline characters
-            if (this.text[i].match(/\s/) && !(this.text[i + 1].match(/\|/))) {
-              this.beats.push(i + 1);
+            } else if (this.text[i - 1].match(/[\s\-.;\*]/)) {
+              this.attacks.push(i);
             }
           }
-          //console.log(this.beats)
+          // A beat begins with any character that is preceded by a space
+          // except barline characters
+          if (this.text[i].match(/\s/) && !(this.text[i + 1].match(/\|/))) {
+            this.beats.push(i + 1);
+          }
         }
+        //console.log(this.beats)
+      }
 
-        extractRhythm = (function () {
-          // Extract the rhythm from the text of the lyric line.
-          // The rhythm is the sequence of subdivided beat texts
-          // The rhythm is returned as an array of strings of beats, e.g. 
-          // "foo.bar - ;baz * |n" would return ["**", "-", ";*", "*"]
-          let rhythm = [];
-          // parse each each element of this.words, substituting '*' for attacks
-          // to produce the desired result
-          this.words.forEach((function (word) {
-            let beat = '';
-            // Handle words containing barlines. The simplest case is a single barline
-            // surrounded by whitespace.  We simply ignore it and return to the
-            // top of the loop.
-            // The same also applies to barlines with repeat indicators, ':|', '|:' and ':|:'
-            // On the other hand if any of these four barline possibilities had text prepended or appended
-            // with no intervening whitespace, we need to remove barline chars and continue to the 
-            // bottom of the loop.
-            const barlineChars = /[\|:]+/;
-            // We have to handle the possibility of barlines embedded in a word, e.g. "foo|bar"
-            // We can't simply delete the barline chars with a space, because "foo|bar"
-            // is actually 2 beats.  We need to split the word into two words, "foo" and "bar"
-            // and then process each word separately.
-            const beatWords = word.split(barlineChars)
-            beatWords.forEach((function (beatWord) {
-              if (beatWord.length == 0) {
-                return;
-              }
-              // Replace each syllable with an asterisk, honoring '.' syllable separators
-              // and removing apostrophes.
-              // example: "l'en.fer" -> "**"
-              beatWord = beatWord.replace(/'/g, '')  // Remove apostrophes
-                .replace(/\p{L}+/gu, '*')            // Replace letter sequences with '*'
-                .replace(/\./g, '');                 // Remove dots
-              rhythm.push(beatWord);
-            }));
+      extractRhythm = (function () {
+        // Extract the rhythm from the text of the lyric line.
+        // The rhythm is the sequence of subdivided beat texts
+        // The rhythm is returned as an array of strings of beats, e.g. 
+        // "foo.bar - ;baz * |n" would return ["**", "-", ";*", "*"]
+        let rhythm = [];
+        // parse each each element of this.words, substituting '*' for attacks
+        // to produce the desired result
+        this.words.forEach((function (word) {
+          let beat = '';
+          // Handle words containing barlines. The simplest case is a single barline
+          // surrounded by whitespace.  We simply ignore it and return to the
+          // top of the loop.
+          // The same also applies to barlines with repeat indicators, ':|', '|:' and ':|:'
+          // On the other hand if any of these four barline possibilities had text prepended or appended
+          // with no intervening whitespace, we need to remove barline chars and continue to the 
+          // bottom of the loop.
+          const barlineChars = /[\|:]+/;
+          // We have to handle the possibility of barlines embedded in a word, e.g. "foo|bar"
+          // We can't simply delete the barline chars with a space, because "foo|bar"
+          // is actually 2 beats.  We need to split the word into two words, "foo" and "bar"
+          // and then process each word separately.
+          const beatWords = word.split(barlineChars)
+          beatWords.forEach((function (beatWord) {
+            if (beatWord.length == 0) {
+              return;
+            }
+            // Replace each syllable with an asterisk, honoring '.' syllable separators
+            // and removing apostrophes.
+            // example: "l'en.fer" -> "**"
+            beatWord = beatWord.replace(/'/g, '')  // Remove apostrophes
+              .replace(/\p{L}+/gu, '*')            // Replace letter sequences with '*'
+              .replace(/\./g, '');                 // Remove dots
+            rhythm.push(beatWord);
           }));
-          return rhythm
-        });
+        }));
+        return rhythm
+      });
 
 
-        render = (function render(svg, x0, y0, fontwidth) {
-          // Draw each char in this.text starting at x0, y0 and incrementing
-          // x by fontwidth for each char.
-          let x = x0;
-          for (let i = 0; i < this.text.length; i++) {
-            let char = this.text[i];
-            let klass = ["lyric"];
-            // Emphasize beats, by greying every char that isn't either a barline
-            // or the start of beat.
-            if ((char == '-' || char == ';' || char == '*') && !this.beats.includes(i)) {
-              klass.push("grey")
+      render = (function render(svg, x0, y0, fontwidth) {
+        // Draw each char in this.text starting at x0, y0 and incrementing
+        // x by fontwidth for each char.
+        let x = x0;
+        for (let i = 0; i < this.text.length; i++) {
+          let char = this.text[i];
+          let klass = ["lyric"];
+          // Emphasize beats, by greying every char that isn't either a barline
+          // or the start of beat.
+          if ((char == '-' || char == ';' || char == '*') && !this.beats.includes(i)) {
+            klass.push("grey")
+          }
+          appendSVGTextChild(svg, x, y0, char, klass);
+          // increment x by the width of the char
+          x += fontwidth;
+        }
+      });
+
+    } // end of LyricLine class
+
+
+
+    // VOffsets is a top-level object used by the Pitch class when rendering
+    // pitches. The offsets are fractions of the font height.
+    // where h is the font height.  Note that svg coordinates increase from
+    // the top of the viewport, hence the reverse ordering for the 12 pitch
+    // classes. The letter 'f' is empiricaly lowered .6 units to make it
+    // appear a little lower than 'g', i.e. to compensate for the visual
+    // effect of 'g's descender.
+    const vOffsets = {
+      "𝄪a": 1, "♮b": 1, "♭c": 13,   // B enharmonics (special case for C♭)
+      "♯a": 2, "♭b": 2, "𝄫c": 14,   // B-flat enharmonics (special case for C𝄫)
+      "𝄪g": 3, "♮a": 3, "𝄫b": 3,    // A enharmonics
+      "♯g": 4, "♭a": 4,              // A-flat enharmonics
+      "𝄪f": 5.6, "♮g": 5, "𝄫a": 5,    // G enharmonics
+      "𝄪e": 6, "♯f": 6.6, "♭g": 6,    // G-flat enharmonics
+      "♯e": 7, "♮f": 7.6, "𝄫g": 7,     // F enharmonics
+      "𝄪d": 8, "♮e": 8, "♭f": 8.6,     // E enharmonics
+      "♯d": 9, "♭e": 9, "𝄫f": 9.6,    // E-flat enharmonics
+      "𝄪c": 10, "♮d": 10, "𝄫e": 10, // D enharmonics
+      "𝄪b": -1, "♯c": 11, "♭d": 11, // D-flat enharmonics
+      "♯b": 0, "♮c": 12, "𝄫d": 12, // C enharmonics
+    }
+
+    // keyTable maps a key signature to a table of accidentals for each pitch class.
+    // Key signatures are specified as a string containing a number of sharps or flats,
+    // e.g. "0" for C major, "#1" for G major, "#2" for D major, etc. For flats, the key sig
+    // looks like "&1", for F major, "&2" for B-flat major, etc.
+    const keyTable = {
+      "0": { "c": "♮", "d": "♮", "e": "♮", "f": "♮", "g": "♮", "a": "♮", "b": "♮" },
+      "#1": { "c": "♮", "d": "♮", "e": "♮", "f": "♯", "g": "♮", "a": "♮", "b": "♮" },
+      "#2": { "c": "♯", "d": "♮", "e": "♮", "f": "♯", "g": "♮", "a": "♮", "b": "♮" },
+      "#3": { "c": "♯", "d": "♮", "e": "♮", "f": "♯", "g": "♯", "a": "♮", "b": "♮" },
+      "#4": { "c": "♯", "d": "♯", "e": "♮", "f": "♯", "g": "♯", "a": "♮", "b": "♮" },
+      "#5": { "c": "♯", "d": "♯", "e": "♮", "f": "♯", "g": "♯", "a": "♯", "b": "♮" },
+      "#6": { "c": "♯", "d": "♯", "e": "♯", "f": "♯", "g": "♯", "a": "♯", "b": "♮" },
+      "#7": { "c": "♯", "d": "♯", "e": "♯", "f": "♯", "g": "♯", "a": "♯", "b": "♯" },
+      "&1": { "c": "♮", "d": "♮", "e": "♮", "f": "♮", "g": "♮", "a": "♮", "b": "♭" },
+      "&2": { "c": "♮", "d": "♮", "e": "♭", "f": "♮", "g": "♮", "a": "♮", "b": "♭" },
+      "&3": { "c": "♮", "d": "♮", "e": "♭", "f": "♮", "g": "♮", "a": "♭", "b": "♭" },
+      "&4": { "c": "♮", "d": "♭", "e": "♭", "f": "♮", "g": "♮", "a": "♭", "b": "♭" },
+      "&5": { "c": "♮", "d": "♭", "e": "♭", "f": "♮", "g": "♭", "a": "♭", "b": "♭" },
+      "&6": { "c": "♭", "d": "♭", "e": "♭", "f": "♮", "g": "♭", "a": "♭", "b": "♭" },
+      "&7": { "c": "♭", "d": "♭", "e": "♭", "f": "♭", "g": "♭", "a": "♭", "b": "♭" },
+    }
+    // When transposing, we need to be able to look up the letter for a given key signature.
+    const keyLetters = {
+      "0": "c", "#1": "g", "#2": "d", "#3": "a", "#4": "e", "#5": "b", "#6": "f#", "#7": "c#",
+      "&1": "f", "&2": "b", "&3": "e", "&4": "a", "&5": "d", "&6": "g", "&7": "c",
+    }
+    // StringRing provide methods to treat the characters in a string as values
+    // in a ring buffer. It provide methods to advance by n and to compute the
+    // distance between two values. Its main use in this script is in
+    // transposing pitches.
+    class StringRing {
+      constructor(s) {
+        this.r = s.split('');
+        this.len = this.r.length;
+      }
+      distance = (c0, c1) => {
+        const i0 = this.r.indexOf(c0);
+        if (i0 == -1) {
+          throw new Error(`invalid character: ${c0} not in ${this.r}`);
+        }
+        const i1 = this.r.indexOf(c1);
+        if (i1 == -1) {
+          throw new Error(`invalid character: ${c1} not in ${this.r}`);
+        }
+        return (i1 - i0 + this.len) % this.len
+      }
+      advance = (c, n) => {
+        const i = this.r.indexOf(c);
+        if (i == -1) {
+          throw new Error(`invalid character: ${c} not in ${this.r}`);
+        }
+        const d = (i + n + this.len) % this.len;
+        return this.r[d];
+      }
+    }
+
+    class Transposer {
+      constructor(fromKeySym, toKeySym) {
+        this.pitchRing = new StringRing("cdefgab");
+        this.fromKeyLetter = keyLetters[fromKeySym];
+        this.toKeyLetter = keyLetters[toKeySym];
+        this.distance = this.pitchRing.distance(this.fromKeyLetter, this.toKeyLetter);
+        this.fromKeyLUT = keyTable[fromKeySym];
+        this.toKeyLUT = keyTable[toKeySym];
+      }
+      components = (pitchToken) => {
+        // A pitch token consists of octave marks + accidentals + pitch letter.
+        // We need to extract each of these parts.
+        const rgx = /([\^\/]*)([&#%]*)([a-g])/;
+        const matches = pitchToken.match(rgx);
+        const o = matches[1];
+        const a = matches[2];
+        const l = matches[3];
+        return { "octaveMarks": o, "accidentals": a, "letter": l };
+      }
+      getEffectiveAlteration = (acc, letter) => {
+        // The effective alteration is the number of semitones by which a pitch is
+        // altered relative to the key signature value for the given letter.
+        const alteration = this.fromKeyLUT[letter];
+        switch (acc) {
+          case '':
+            return 0;
+          case '%':
+            switch (alteration) {
+              case '♮':
+                return 0;
+              case '♯':
+                return -1;
+              case '♭':
+                return 1;
+              default:
+                throw new Error(`invalid alteration: ${alteration}`);
             }
-            appendSVGTextChild(svg, x, y0, char, klass);
-            // increment x by the width of the char
-            x += fontwidth;
-          }
-        });
-
-      } // end of LyricLine class
-
-
-
-      // VOffsets is a top-level object used by the Pitch class when rendering
-      // pitches. The offsets are fractions of the font height.
-      // where h is the font height.  Note that svg coordinates increase from
-      // the top of the viewport, hence the reverse ordering for the 12 pitch
-      // classes. The letter 'f' is empiricaly lowered .6 units to make it
-      // appear a little lower than 'g', i.e. to compensate for the visual
-      // effect of 'g's descender.
-      const vOffsets = {
-        "𝄪a": 1, "♮b": 1, "♭c": 13,   // B enharmonics (special case for C♭)
-        "♯a": 2, "♭b": 2, "𝄫c": 14,   // B-flat enharmonics (special case for C𝄫)
-        "𝄪g": 3, "♮a": 3, "𝄫b": 3,    // A enharmonics
-        "♯g": 4, "♭a": 4,              // A-flat enharmonics
-        "𝄪f": 5.6, "♮g": 5, "𝄫a": 5,    // G enharmonics
-        "𝄪e": 6, "♯f": 6.6, "♭g": 6,    // G-flat enharmonics
-        "♯e": 7, "♮f": 7.6, "𝄫g": 7,     // F enharmonics
-        "𝄪d": 8, "♮e": 8, "♭f": 8.6,     // E enharmonics
-        "♯d": 9, "♭e": 9, "𝄫f": 9.6,    // E-flat enharmonics
-        "𝄪c": 10, "♮d": 10, "𝄫e": 10, // D enharmonics
-        "𝄪b": -1, "♯c": 11, "♭d": 11, // D-flat enharmonics
-        "♯b": 0, "♮c": 12, "𝄫d": 12, // C enharmonics
-      }
-
-      // keyTable maps a key signature to a table of accidentals for each pitch class.
-      // Key signatures are specified as a string containing a number of sharps or flats,
-      // e.g. "0" for C major, "#1" for G major, "#2" for D major, etc. For flats, the key sig
-      // looks like "&1", for F major, "&2" for B-flat major, etc.
-      const keyTable = {
-        "0": { "c": "♮", "d": "♮", "e": "♮", "f": "♮", "g": "♮", "a": "♮", "b": "♮" },
-        "#1": { "c": "♮", "d": "♮", "e": "♮", "f": "♯", "g": "♮", "a": "♮", "b": "♮" },
-        "#2": { "c": "♯", "d": "♮", "e": "♮", "f": "♯", "g": "♮", "a": "♮", "b": "♮" },
-        "#3": { "c": "♯", "d": "♮", "e": "♮", "f": "♯", "g": "♯", "a": "♮", "b": "♮" },
-        "#4": { "c": "♯", "d": "♯", "e": "♮", "f": "♯", "g": "♯", "a": "♮", "b": "♮" },
-        "#5": { "c": "♯", "d": "♯", "e": "♮", "f": "♯", "g": "♯", "a": "♯", "b": "♮" },
-        "#6": { "c": "♯", "d": "♯", "e": "♯", "f": "♯", "g": "♯", "a": "♯", "b": "♮" },
-        "#7": { "c": "♯", "d": "♯", "e": "♯", "f": "♯", "g": "♯", "a": "♯", "b": "♯" },
-        "&1": { "c": "♮", "d": "♮", "e": "♮", "f": "♮", "g": "♮", "a": "♮", "b": "♭" },
-        "&2": { "c": "♮", "d": "♮", "e": "♭", "f": "♮", "g": "♮", "a": "♮", "b": "♭" },
-        "&3": { "c": "♮", "d": "♮", "e": "♭", "f": "♮", "g": "♮", "a": "♭", "b": "♭" },
-        "&4": { "c": "♮", "d": "♭", "e": "♭", "f": "♮", "g": "♮", "a": "♭", "b": "♭" },
-        "&5": { "c": "♮", "d": "♭", "e": "♭", "f": "♮", "g": "♭", "a": "♭", "b": "♭" },
-        "&6": { "c": "♭", "d": "♭", "e": "♭", "f": "♮", "g": "♭", "a": "♭", "b": "♭" },
-        "&7": { "c": "♭", "d": "♭", "e": "♭", "f": "♭", "g": "♭", "a": "♭", "b": "♭" },
-      }
-      // When transposing, we need to be able to look up the letter for a given key signature.
-      const keyLetters = {
-        "0": "c", "#1": "g", "#2": "d", "#3": "a", "#4": "e", "#5": "b", "#6": "f#", "#7": "c#",
-        "&1": "f", "&2": "b", "&3": "e", "&4": "a", "&5": "d", "&6": "g", "&7": "c",
-      }
-      // StringRing provide methods to treat the characters in a string as values
-      // in a ring buffer. It provide methods to advance by n and to compute the
-      // distance between two values. Its main use in this script is in
-      // transposing pitches.
-      class StringRing {
-        constructor(s) {
-          this.r = s.split('');
-          this.len = this.r.length;
-        }
-        distance = (c0, c1) => {
-          const i0 = this.r.indexOf(c0);
-          if (i0 == -1) {
-            throw new Error(`invalid character: ${c0} not in ${this.r}`);
-          }
-          const i1 = this.r.indexOf(c1);
-          if (i1 == -1) {
-            throw new Error(`invalid character: ${c1} not in ${this.r}`);
-          }
-          return (i1 - i0 + this.len) % this.len
-        }
-        advance = (c, n) => {
-          const i = this.r.indexOf(c);
-          if (i == -1) {
-            throw new Error(`invalid character: ${c} not in ${this.r}`);
-          }
-          const d = (i + n + this.len) % this.len;
-          return this.r[d];
-        }
-      }
-
-      class Transposer {
-        constructor(fromKeySym, toKeySym) {
-          this.pitchRing = new StringRing("cdefgab");
-          this.fromKeyLetter = keyLetters[fromKeySym];
-          this.toKeyLetter = keyLetters[toKeySym];
-          this.distance = this.pitchRing.distance(this.fromKeyLetter, this.toKeyLetter);
-          this.fromKeyLUT = keyTable[fromKeySym];
-          this.toKeyLUT = keyTable[toKeySym];
-        }
-        components = (pitchToken) => {
-          // A pitch token consists of octave marks + accidentals + pitch letter.
-          // We need to extract each of these parts.
-          const rgx = /([\^\/]*)([&#%]*)([a-g])/;
-          const matches = pitchToken.match(rgx);
-          const o = matches[1];
-          const a = matches[2];
-          const l = matches[3];
-          return { "octaveMarks": o, "accidentals": a, "letter": l };
-        }
-        getEffectiveAlteration = (acc, letter) => {
-          // The effective alteration is the number of semitones by which a pitch is
-          // altered relative to the key signature value for the given letter.
-          const alteration = this.fromKeyLUT[letter];
-          switch (acc) {
-            case '':
-              return 0;
-            case '%':
-              switch (alteration) {
-                case '♮':
-                  return 0;
-                case '♯':
-                  return -1;
-                case '♭':
-                  return 1;
-                default:
-                  throw new Error(`invalid alteration: ${alteration}`);
-              }
-            case '&':
-              switch (alteration) {
-                case '♮':
-                  return -1;
-                case '♯':
-                  return -2;
-                case '♭':
-                  return 0;
-                default:
-                  throw new Error(`invalid alteration: ${alteration}`);
-              }
-            case '#':
-              switch (alteration) {
-                case '♮':
-                  return 1;
-                case '♯':
-                  return 0
-                case '♭':
-                  return 2;
-                default:
-                  throw new Error(`invalid alteration: ${alteration}`);
-              }
-            case '&&':
-              switch (alteration) {
-                case '♮':
-                  return -2;
-                case '♯':
-                  return -3; // may be pathological
-                case '♭':
-                  return -1;
-                default:
-                  throw new Error(`invalid alteration: ${alteration}`);
-              }
-            case '##': {
-              switch (alteration) {
-                case '♮':
-                  return 2;
-                case '♯':
-                  return 1;
-                case '♭':
-                  return 3; // may be pathological
-                default:
-                  throw new Error(`invalid alteration: ${alteration}`);
-              }
+          case '&':
+            switch (alteration) {
+              case '♮':
+                return -1;
+              case '♯':
+                return -2;
+              case '♭':
+                return 0;
+              default:
+                throw new Error(`invalid alteration: ${alteration}`);
             }
-            default:
-              throw new Error(`invalid accidental: ${acc}`);
+          case '#':
+            switch (alteration) {
+              case '♮':
+                return 1;
+              case '♯':
+                return 0
+              case '♭':
+                return 2;
+              default:
+                throw new Error(`invalid alteration: ${alteration}`);
+            }
+          case '&&':
+            switch (alteration) {
+              case '♮':
+                return -2;
+              case '♯':
+                return -3; // may be pathological
+              case '♭':
+                return -1;
+              default:
+                throw new Error(`invalid alteration: ${alteration}`);
+            }
+          case '##': {
+            switch (alteration) {
+              case '♮':
+                return 2;
+              case '♯':
+                return 1;
+              case '♭':
+                return 3; // may be pathological
+              default:
+                throw new Error(`invalid alteration: ${alteration}`);
+            }
           }
+          default:
+            throw new Error(`invalid accidental: ${acc}`);
+        }
 
-        }
-        applyEffectiveAlteration(nAlt, letter) {
-          // return an accidentals string that applies the effective alteration, nAlt,
-          // to pitch letter in the destination key.
-          const keyAlt = this.toKeyLUT[letter];
-          switch (nAlt) {
-            case 0:
-              return '';
-            case 1:
-              switch (keyAlt) {
-                case '♮':
-                  return '#';
-                case '♯':
-                  return '##';
-                case '♭':
-                  return '%';
-                default:
-                  throw new Error(`invalid alteration: ${keyAlt}`);
-              }
-            case -1:
-              switch (keyAlt) {
-                case '♮':
-                  return '&';
-                case '♯':
-                  return '%';
-                case '♭':
-                  return '&&';
-                default:
-                  throw new Error(`invalid alteration: ${keyAlt}`);
-              }
-            case -2:
-              switch (keyAlt) {
-                case '♮':
-                  return '&&';
-                case '♯':
-                  return '&';
-                case '♭':
-                  throw new Error(`can't represent triple flat`)
-                default:
-                  throw new Error(`invalid alteration: ${keyAlt}`);
-              }
-            case 2:
-              switch (keyAlt) {
-                case '♮':
-                  return '##';
-                case '♯':
-                  throw new Error(`can't represent triple sharp`)
-                case '♭':
-                  return '#';
-                default:
-                  throw new Error(`invalid alteration: ${keyAlt}`);
-              }
-            case 3:
-              switch (keyAlt) {
-                case '♮':
-                  throw new Error(`can't represent triple sharp`)
-                case '♯':
-                  throw new Error(`can't represent quadruple sharp`)
-                case '♭':
-                  return '##';
-                default:
-                  throw new Error(`invalid alteration: ${keyAlt}`);
-              }
-            case -3:
-              switch (keyAlt) {
-                case '♮':
-                  throw new Error(`can't represent triple flat`)
-                case '♯':
-                  return '&&';
-                case '♭':
-                  throw new Error(`can't represent quadruple flat`)
-                default:
-                  throw new Error(`invalid alteration: ${keyAlt}`);
-              }
-            default:
-              throw new Error(`invalid effective alteration: ${nAlt}`);
-          }
-        }
-        transposed = (pitchToken) => {
-          // split the pitchToken into components
-          const c = this.components(pitchToken);
-          // transpose the pitch letter
-          const newLetter = this.pitchRing.advance(c.letter, this.distance);
-          const nalt = this.getEffectiveAlteration(c.accidentals, c.letter);
-          const newAccidental = this.applyEffectiveAlteration(nalt, newLetter);
-          return c.octaveMarks + newAccidental + newLetter;
+      }
+      applyEffectiveAlteration(nAlt, letter) {
+        // return an accidentals string that applies the effective alteration, nAlt,
+        // to pitch letter in the destination key.
+        const keyAlt = this.toKeyLUT[letter];
+        switch (nAlt) {
+          case 0:
+            return '';
+          case 1:
+            switch (keyAlt) {
+              case '♮':
+                return '#';
+              case '♯':
+                return '##';
+              case '♭':
+                return '%';
+              default:
+                throw new Error(`invalid alteration: ${keyAlt}`);
+            }
+          case -1:
+            switch (keyAlt) {
+              case '♮':
+                return '&';
+              case '♯':
+                return '%';
+              case '♭':
+                return '&&';
+              default:
+                throw new Error(`invalid alteration: ${keyAlt}`);
+            }
+          case -2:
+            switch (keyAlt) {
+              case '♮':
+                return '&&';
+              case '♯':
+                return '&';
+              case '♭':
+                throw new Error(`can't represent triple flat`)
+              default:
+                throw new Error(`invalid alteration: ${keyAlt}`);
+            }
+          case 2:
+            switch (keyAlt) {
+              case '♮':
+                return '##';
+              case '♯':
+                throw new Error(`can't represent triple sharp`)
+              case '♭':
+                return '#';
+              default:
+                throw new Error(`invalid alteration: ${keyAlt}`);
+            }
+          case 3:
+            switch (keyAlt) {
+              case '♮':
+                throw new Error(`can't represent triple sharp`)
+              case '♯':
+                throw new Error(`can't represent quadruple sharp`)
+              case '♭':
+                return '##';
+              default:
+                throw new Error(`invalid alteration: ${keyAlt}`);
+            }
+          case -3:
+            switch (keyAlt) {
+              case '♮':
+                throw new Error(`can't represent triple flat`)
+              case '♯':
+                return '&&';
+              case '♭':
+                throw new Error(`can't represent quadruple flat`)
+              default:
+                throw new Error(`invalid alteration: ${keyAlt}`);
+            }
+          default:
+            throw new Error(`invalid effective alteration: ${nAlt}`);
         }
       }
-
-      // The Alterations class is used to manage the alterations for a given key signature
-      // and to keep track of which pitches have been explicitly altered within a bar.
-      class Alterations {
-        constructor(keysym) {
-          this.keyLUT = keyTable[keysym];
-          // We allow for incomplete key signatures to avoid raising errors
-          // while the user is typing.  If the key signature is invalid, we
-          // set the key to "0" (C major) and log a warning.
-          if (this.keyLUT === undefined) {
-            this.keyLUT = keyTable["0"];
-            lineProblems.add("invalid or incomplete keysym: " + keysym);
-          }
-          this.altered = {}
-        }
-        setKey = () => {
-          this.keyLUT = keyTable[keysym];
-        }
-        initAltered = () => {
-          this.altered = {};
-        }
-        get = (pitchSym, octave, alteration) => {
-          // if alteration is not "?", update the altered table entry with the new
-          // alteration and return the alteration
-          const pitch = pitchSym + octave;
-          if (alteration !== "?") {
-            this.altered[pitch] = alteration;
-            return alteration
-          }
-          // Otherwise, the value '?' means we need to look up the pitch in the altered
-          // table to see if it has a prior alteration. If it does, return that, otherwise
-          // look it up in keyLUT and return the value from that.
-          if (this.altered[pitch] !== undefined) {
-            return this.altered[pitch];
-          }
-          return this.keyLUT[pitchSym];
-        }
-      } // end of Alterations class
-
-      // The Pitch class is used to render a single pitch. It is instantiated with a
-      // letter, octave and accidental class. The accidental class is a UTF-8 character
-      // for natural, sharp, flat, double-sharp or double-flat. The render() method
-      // draws the pitch letter at the proper x, y location within the svg with the
-      // color and font specified in the style sheet for its accidental class.
-      class Pitch {
-        constructor(letter, octave, accidentalClass, fontheight) {
-          this.letter = letter;
-          this.octave = octave; // octave is an offset relative to a center octave whose value is 0
-          this.accidentalClass = accidentalClass; // one of '', '𝄫', '♯', '𝄪' or ''
-        }
-        render = (function render(svg, x, y, fontheight) {
-          // Draw the pitch at the specified x, y coordinates.
-          // Adjust the y coordinate by the octave and vertical offset for this pitch
-          y -= this.octave * fontheight;
-          const gOffset = 7 // causes the pitch to be rendered as though each staff line is on g natural.
-          y += (gOffset + vOffsets[this.accidentalClass + this.letter]) * (fontheight / 12);
-          appendSVGTextChild(svg, x, y, this.letter, [this.accidentalClass, "pitch"]);
-        });
+      transposed = (pitchToken) => {
+        // split the pitchToken into components
+        const c = this.components(pitchToken);
+        // transpose the pitch letter
+        const newLetter = this.pitchRing.advance(c.letter, this.distance);
+        const nalt = this.getEffectiveAlteration(c.accidentals, c.letter);
+        const newAccidental = this.applyEffectiveAlteration(nalt, newLetter);
+        return c.octaveMarks + newAccidental + newLetter;
       }
-      // The PitchLine class is used to render a single line of pitches from a
-      // text string.  This is the most complicated class in the program as it
-      // must handle octavation, key signatures, accidentals and alterations and
-      // match each pitch to its corresponding attack location in the Lyric line.
-      class PitchLine {
-        constructor(text) {
-          this.centerOctave = 0;
-          this.text = text;
-          // trim leading or trailing whitespace
-          this.text = this.text.trim();
-          // split the text on whitespace
-          this.beatTokens = text.split(/\s+/);
-          // A beat token may contain one or pitch tokens, e.g "c^&d&e"
-          // We need to split these into individual pitch tokens. A pitch
-          // token is zero or more of [^/] followed by zero or more of [#&%]
-          // followed by exactly one of [a-g]. So, for example, "c^&d//&e"
-          // would be split into ["^c", "&d", "//&e"]. It's permissible, but
-          // not required, to include bar lines in the source to make it a little
-          // easier to read and edit. However, omitting bar lines may result
-          // in accidentals propagating beyond the bar lines defined in the lyric line.
-          this.tokens = [];
-          for (let i = 0; i < this.beatTokens.length; i++) {
-            let beatToken = this.beatTokens[i];
-            // Handle key designator of the form "K[#&]?[0-7]".
-            // The key designator is optional, so if it's not there, we'll just
-            // use the default key of C major.
+    }
 
-            if (beatToken.match(/K.*/)) {
-              this.tokens.push(beatToken);
-              continue
-            }
-            if (beatToken.match(/:*\|:*/)) {
-              this.tokens.push(beatToken);
-              continue
-            }
-            // If the beat token is empty, just skip it.
-            if (beatToken.length === 0) {
-              continue;
-            }
-            // Now we split the beat token into individual pitch tokens.
-            let pitchToken = "";
-            for (let j = 0; j < beatToken.length; j++) {
-              if (beatToken == '|' || beatToken == '|:' || beatToken[j] == ':|') {
-                this.tokens.push(beatToken)
-              } else if (beatToken[j].match(/[\^\/]/)) {
-                pitchToken += beatToken[j];
-              } else if (beatToken[j].match(/[#&%]/)) {
-                pitchToken += beatToken[j];
-              } else if (beatToken[j].match(/[a-g]/)) {
-                pitchToken += beatToken[j];
-                this.tokens.push(pitchToken);
-                pitchToken = "";
-              } else {
-                //throw new Error("Invalid pitch token: " + beatToken);
-                lineProblems.add("Invalid pitch token: " + beatToken);
-              }
+    // The Alterations class is used to manage the alterations for a given key signature
+    // and to keep track of which pitches have been explicitly altered within a bar.
+    class Alterations {
+      constructor(keysym) {
+        this.keyLUT = keyTable[keysym];
+        // We allow for incomplete key signatures to avoid raising errors
+        // while the user is typing.  If the key signature is invalid, we
+        // set the key to "0" (C major) and log a warning.
+        if (this.keyLUT === undefined) {
+          this.keyLUT = keyTable["0"];
+          lineProblems.add("invalid or incomplete keysym: " + keysym);
+        }
+        this.altered = {}
+      }
+      setKey = () => {
+        this.keyLUT = keyTable[keysym];
+      }
+      initAltered = () => {
+        this.altered = {};
+      }
+      get = (pitchSym, octave, alteration) => {
+        // if alteration is not "?", update the altered table entry with the new
+        // alteration and return the alteration
+        const pitch = pitchSym + octave;
+        if (alteration !== "?") {
+          this.altered[pitch] = alteration;
+          return alteration
+        }
+        // Otherwise, the value '?' means we need to look up the pitch in the altered
+        // table to see if it has a prior alteration. If it does, return that, otherwise
+        // look it up in keyLUT and return the value from that.
+        if (this.altered[pitch] !== undefined) {
+          return this.altered[pitch];
+        }
+        return this.keyLUT[pitchSym];
+      }
+    } // end of Alterations class
+
+    // The Pitch class is used to render a single pitch. It is instantiated with a
+    // letter, octave and accidental class. The accidental class is a UTF-8 character
+    // for natural, sharp, flat, double-sharp or double-flat. The render() method
+    // draws the pitch letter at the proper x, y location within the svg with the
+    // color and font specified in the style sheet for its accidental class.
+    class Pitch {
+      constructor(letter, octave, accidentalClass, fontheight) {
+        this.letter = letter;
+        this.octave = octave; // octave is an offset relative to a center octave whose value is 0
+        this.accidentalClass = accidentalClass; // one of '', '𝄫', '♯', '𝄪' or ''
+      }
+      render = (function render(svg, x, y, fontheight) {
+        // Draw the pitch at the specified x, y coordinates.
+        // Adjust the y coordinate by the octave and vertical offset for this pitch
+        y -= this.octave * fontheight;
+        const gOffset = 7 // causes the pitch to be rendered as though each staff line is on g natural.
+        y += (gOffset + vOffsets[this.accidentalClass + this.letter]) * (fontheight / 12);
+        appendSVGTextChild(svg, x, y, this.letter, [this.accidentalClass, "pitch"]);
+      });
+    }
+    // The PitchLine class is used to render a single line of pitches from a
+    // text string.  This is the most complicated class in the program as it
+    // must handle octavation, key signatures, accidentals and alterations and
+    // match each pitch to its corresponding attack location in the Lyric line.
+    class PitchLine {
+      constructor(text) {
+        this.centerOctave = 0;
+        this.text = text;
+        // trim leading or trailing whitespace
+        this.text = this.text.trim();
+        // split the text on whitespace
+        this.beatTokens = text.split(/\s+/);
+        // A beat token may contain one or pitch tokens, e.g "c^&d&e"
+        // We need to split these into individual pitch tokens. A pitch
+        // token is zero or more of [^/] followed by zero or more of [#&%]
+        // followed by exactly one of [a-g]. So, for example, "c^&d//&e"
+        // would be split into ["^c", "&d", "//&e"]. It's permissible, but
+        // not required, to include bar lines in the source to make it a little
+        // easier to read and edit. However, omitting bar lines may result
+        // in accidentals propagating beyond the bar lines defined in the lyric line.
+        this.tokens = [];
+        for (let i = 0; i < this.beatTokens.length; i++) {
+          let beatToken = this.beatTokens[i];
+          // Handle key designator of the form "K[#&]?[0-7]".
+          // The key designator is optional, so if it's not there, we'll just
+          // use the default key of C major.
+
+          if (beatToken.match(/K.*/)) {
+            this.tokens.push(beatToken);
+            continue
+          }
+          if (beatToken.match(/:*\|:*/)) {
+            this.tokens.push(beatToken);
+            continue
+          }
+          // If the beat token is empty, just skip it.
+          if (beatToken.length === 0) {
+            continue;
+          }
+          // Now we split the beat token into individual pitch tokens.
+          let pitchToken = "";
+          for (let j = 0; j < beatToken.length; j++) {
+            if (beatToken == '|' || beatToken == '|:' || beatToken[j] == ':|') {
+              this.tokens.push(beatToken)
+            } else if (beatToken[j].match(/[\^\/]/)) {
+              pitchToken += beatToken[j];
+            } else if (beatToken[j].match(/[#&%]/)) {
+              pitchToken += beatToken[j];
+            } else if (beatToken[j].match(/[a-g]/)) {
+              pitchToken += beatToken[j];
+              this.tokens.push(pitchToken);
+              pitchToken = "";
+            } else {
+              //throw new Error("Invalid pitch token: " + beatToken);
+              lineProblems.add("Invalid pitch token: " + beatToken);
             }
           }
+        }
 
 
-          // Next we parse the tokens into an array of pitch objects.
-          // The octave of each pitch depends on the prior pitch. To
-          // begin, we let the prior pitch be C natural on the center
-          // octave.
-          let prevPitch = new Pitch("c", this.centerOctave, "");
-          // A pitch token always ends with a letter in [a-g].
-          // It may optionally be preceded by at most one of the following accidentals
-          // "##", "&&", "#", "&", or '%'.
-          // where ## is double-sharp, && is double-flat, # is sharp, and & is flat.
-          // The accidentals and letter are optionally preceded by octavation marks, `^ ` and ` / `.
-          // It is an error to mix '^`' and ' / ' in a single pitch token. It is also an
-          // error if the octave marks cause the new octave be less than -3 or greater than 3.
-          // The following are all valid pitch tokens:
-          // 'g', '#f', '^b', '//&d', '&&f'
-          // The following are all invalid pitch tokens:
-          // 'h', '###f', '#&g', '^/a'
-          this.pitches = [];
-          this.alterations = new Alterations("0"); // default key is C major
-          for (let i = 0; i < this.tokens.length; i++) {
-            // Handle key designator of the form "K(0|[#&]?[1-7])".
-            if (this.tokens[i].match(/K/)) {
-              this.alterations = new Alterations(this.tokens[i].slice(1));
-              continue;
-            }
-            // first, get the pitch letter from the token
-            // it's the last char in the token. It's an error if the token is empty
-            // or if the token does not end with a letter in [a-g]
-            let token = this.tokens[i];
-            if (token.length === 0) {
-              // throw new Error("Empty pitch token");
-              lineProblems.add("Empty pitch token");
-            }
-            if (token == "|" || token == "|:" || token == ":|") {
-              this.alterations.initAltered();
-              continue
-            }
-            let letter = token[token.length - 1];
-            if (!letter.match(/[a-g]/)) {
-              // throw new Error("Invalid pitch token: " + token);
-              lineProblems.add("Invalid pitch token: " + token);
-            }
-            // Next we compare the pitch letter to the previous pitch
-            // letter and apply the Lilypond rule of fourths to
-            // determine if the pitch will be above or below the
-            // previous pitch. The rule of fourths is a way to default
-            // to the closest pitch to the previous one. It states that
-            // we must choose the pitch which is within a musical 4th of
-            // the previous pitch.  Thus, if the previous pitch is 'g'
-            // in octave 4 and the current pitch letter is 'f', we
-            // should choose the 'f' in octave 4 rather than 'f' in
-            // octave 5.  Similarly if the previous pitch is 'g' in
-            // octave 4 and the current pitch letter is 'c', we should
-            // choose the 'c' in octave 5 rather than 'c' in octave 4
-            // because that is the closest.
+        // Next we parse the tokens into an array of pitch objects.
+        // The octave of each pitch depends on the prior pitch. To
+        // begin, we let the prior pitch be C natural on the center
+        // octave.
+        let prevPitch = new Pitch("c", this.centerOctave, "");
+        // A pitch token always ends with a letter in [a-g].
+        // It may optionally be preceded by at most one of the following accidentals
+        // "##", "&&", "#", "&", or '%'.
+        // where ## is double-sharp, && is double-flat, # is sharp, and & is flat.
+        // The accidentals and letter are optionally preceded by octavation marks, `^ ` and ` / `.
+        // It is an error to mix '^`' and ' / ' in a single pitch token. It is also an
+        // error if the octave marks cause the new octave be less than -3 or greater than 3.
+        // The following are all valid pitch tokens:
+        // 'g', '#f', '^b', '//&d', '&&f'
+        // The following are all invalid pitch tokens:
+        // 'h', '###f', '#&g', '^/a'
+        this.pitches = [];
+        this.alterations = new Alterations("0"); // default key is C major
+        for (let i = 0; i < this.tokens.length; i++) {
+          // Handle key designator of the form "K(0|[#&]?[1-7])".
+          if (this.tokens[i].match(/K/)) {
+            this.alterations = new Alterations(this.tokens[i].slice(1));
+            continue;
+          }
+          // first, get the pitch letter from the token
+          // it's the last char in the token. It's an error if the token is empty
+          // or if the token does not end with a letter in [a-g]
+          let token = this.tokens[i];
+          if (token.length === 0) {
+            // throw new Error("Empty pitch token");
+            lineProblems.add("Empty pitch token");
+          }
+          if (token == "|" || token == "|:" || token == ":|") {
+            this.alterations.initAltered();
+            continue
+          }
+          let letter = token[token.length - 1];
+          if (!letter.match(/[a-g]/)) {
+            // throw new Error("Invalid pitch token: " + token);
+            lineProblems.add("Invalid pitch token: " + token);
+          }
+          // Next we compare the pitch letter to the previous pitch
+          // letter and apply the Lilypond rule of fourths to
+          // determine if the pitch will be above or below the
+          // previous pitch. The rule of fourths is a way to default
+          // to the closest pitch to the previous one. It states that
+          // we must choose the pitch which is within a musical 4th of
+          // the previous pitch.  Thus, if the previous pitch is 'g'
+          // in octave 4 and the current pitch letter is 'f', we
+          // should choose the 'f' in octave 4 rather than 'f' in
+          // octave 5.  Similarly if the previous pitch is 'g' in
+          // octave 4 and the current pitch letter is 'c', we should
+          // choose the 'c' in octave 5 rather than 'c' in octave 4
+          // because that is the closest.
 
-            // get the pitch letter of the previous pitch
-            let prevLetter = prevPitch.letter;
-            // get the octave of the previous pitch
-            let prevOctave = prevPitch.octave;
-            // Make a map of pitch letters:
-            let PitchMap = new Map([
-              ["c", 0],
-              ["d", 1],
-              ["e", 2],
-              ["f", 3],
-              ["g", 4],
-              ["a", 5],
-              ["b", 6]
-            ]);
-            // get the pitch letter index of the previous pitch
-            let prevLetterIndex = PitchMap.get(prevLetter);
-            // get the pitch letter index of the current pitch
-            let letterIndex = PitchMap.get(letter);
-            // Subtract the indices
-            let diff = letterIndex - prevLetterIndex;
-            // If the difference is positive and less than 4, the current pitch is
-            // above the previous pitch in the same octave. If the difference is positive
-            // and greater than 3, the current pitch is below the previous pitch in the next octave down.
-            let octave = prevOctave;
-            if (diff > 0 && diff > 3) {
-              // the current pitch is below the previous pitch in the next octave down
-              // so decrement the octave
-              octave--;
-            } else if (diff < 0 && diff < -3) {
-              // the current pitch is above the previous pitch in the previous octave up
-              // so increment the octave
-              octave++;
-            }
-            // Now we must account for octave marks, if any.	
-            let kind = "";
-            let j = 0;
-            let done = false;
-            while (j < token.length) {
+          // get the pitch letter of the previous pitch
+          let prevLetter = prevPitch.letter;
+          // get the octave of the previous pitch
+          let prevOctave = prevPitch.octave;
+          // Make a map of pitch letters:
+          let PitchMap = new Map([
+            ["c", 0],
+            ["d", 1],
+            ["e", 2],
+            ["f", 3],
+            ["g", 4],
+            ["a", 5],
+            ["b", 6]
+          ]);
+          // get the pitch letter index of the previous pitch
+          let prevLetterIndex = PitchMap.get(prevLetter);
+          // get the pitch letter index of the current pitch
+          let letterIndex = PitchMap.get(letter);
+          // Subtract the indices
+          let diff = letterIndex - prevLetterIndex;
+          // If the difference is positive and less than 4, the current pitch is
+          // above the previous pitch in the same octave. If the difference is positive
+          // and greater than 3, the current pitch is below the previous pitch in the next octave down.
+          let octave = prevOctave;
+          if (diff > 0 && diff > 3) {
+            // the current pitch is below the previous pitch in the next octave down
+            // so decrement the octave
+            octave--;
+          } else if (diff < 0 && diff < -3) {
+            // the current pitch is above the previous pitch in the previous octave up
+            // so increment the octave
+            octave++;
+          }
+          // Now we must account for octave marks, if any.	
+          let kind = "";
+          let j = 0;
+          let done = false;
+          while (j < token.length) {
 
-              switch (token[j]) {
-                case "^":
-                  if (kind === "/") {
-                    // throw new Error("Invalid pitch token: " + token);
-                    lineProblems.add("Invalid pitch token: " + token);
-                  }
-                  octave++;
-                  kind = "^";
-                  break;
-                case "/":
-                  if (kind === "^") {
-                    // throw new Error("Invalid pitch token: " + token);
-                    lineProblems.add("Invalid pitch token: " + token);
-                  }
-                  octave--;
-                  kind = "/";
-                  break;
-                default:
-                  done = true;
-                  break;
-              }
-              if (done) break;
-              j++;
-            }
-            // Index j now points to the first accidental, if any
-            kind = null;
-            let count = 0;
-            while (j < token.length && token[j].match(/[#&%]/)) {
-              if (token[j] === "#") {
-                if (kind === "&" || kind === "%") {
-                  //throw new Error("Invalid pitch token: " + token);
+            switch (token[j]) {
+              case "^":
+                if (kind === "/") {
+                  // throw new Error("Invalid pitch token: " + token);
                   lineProblems.add("Invalid pitch token: " + token);
                 }
-                kind = "#";
-                count++;
-              } else if (token[j] === "&") {
-                if (kind === "#" || kind === "%") {
-                  //throw new Error("Invalid pitch token: " + token);
-                  lineProblems.add("Invalid pitch token: " + token);
-                }
-                kind = "&";
-                count++;
-              } else if (token[j] === "%") {
-                if (kind === "#" || kind === "&") {
-                  //throw new Error("Invalid pitch token: " + token);
-                  lineProblems.add("Invalid pitch token: " + token);
-                }
-                kind = "%";
-                count++;
-              }
-              j++
-            }
-            if (count > 2) {
-              //throw new Error("Invalid pitch token: " + token);
-              lineProblems.add("Invalid pitch token: " + token);
-            }
-            // Use kind and count to assign an accidental class, the create a new pitch object
-            // and add it to the pitches array and designate it as the new previous pitch.
-            let accClass = null;
-            switch (kind) {
-              case "#":
-                if (count === 1) {
-                  accClass = "♯"; // sharp
-                } else {
-                  accClass = "𝄪"; // double sharp
-                }
+                octave++;
+                kind = "^";
                 break;
-              case "&":
-                if (count === 1) {
-                  accClass = "♭"; // flat
-                } else {
-                  accClass = "𝄫"; // double flat
+              case "/":
+                if (kind === "^") {
+                  // throw new Error("Invalid pitch token: " + token);
+                  lineProblems.add("Invalid pitch token: " + token);
                 }
-                break;
-              case "%":
-                accClass = "♮"; // natural
+                octave--;
+                kind = "/";
                 break;
               default:
-                accClass = "?"; // to be determined
+                done = true;
+                break;
             }
-            // TODO deal properly with key signatures and persistence of
-            // accidentals for remainder of the bar.
-            accClass = this.alterations.get(letter, octave, accClass);
-            this.pitches.push(new Pitch(letter, octave, accClass));
-            // console.log(letter, octave, accClass)
-            prevPitch.letter = letter;
-            prevPitch.octave = octave;
-          }
-        }
-        render = (function (svg, x0, y0, attacks, fontwidth, fontheight, bars) {
-          // x0 is the x coordinate of the left edge of the line
-          // y0 corresponds to the baseline of the center octave (0)
-          // Experimental: draw a thin gray horizontal lines at the base of 'c' in each octave
-          const yline0 = y0 + 2 * fontheight;
-          const yline1 = yline0 - fontheight
-          const yline2 = yline1 - fontheight
-          const yline3 = yline2 - fontheight
-          const xend = fontwidth * (1 + bars[bars.length - 1]); // extend line to last barline
-          for (let y of [yline0, yline1, yline2, yline3]) {
-            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            line.setAttribute("x1", x0);
-            line.setAttribute("y1", y);
-            line.setAttribute("x2", xend);
-            line.setAttribute("y2", y);
-            line.setAttribute("stroke", "lightgray");
-            line.setAttribute("stroke-width", 0.5);
-            svg.appendChild(line);
-          };
-          // Now draw barlines
-          for (let n of bars) {
-            if (n === 0) continue;
-            let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            let x = x0 + (n + 0.5) * fontwidth;
-            line.setAttribute("x1", x);
-            line.setAttribute("y1", yline3);
-            line.setAttribute("x2", x);
-            line.setAttribute("y2", yline0);
-            line.setAttribute("stroke", "lightgray");
-            line.setAttribute("stroke-width", 0.5);
-            svg.appendChild(line);
-          }
-
-          // Loop through the pitches and render them at the corresponding 
-          // attack locations. It is not an error if the number of pitches
-          // is not equal to the number of attack locations because we may
-          // be updating the rendered pitches while the user is editing.
-          let i = 0;
-          for (let pitch of this.pitches) {
-            let x = x0;
-            let y = y0;
-            if (i < attacks.length) {
-              x = x0 + attacks[i] * fontwidth;
-              pitch.render(svg, x, y, fontheight);
-            }
-            i++;
-          }
-        });
-      };
-
-      // The Cue class is used render cue text in the style specified in the style sheet.
-      class Cue {
-        constructor(text) {
-          this.text = text;
-        }
-        render = (function (svg, x0, y0) {
-          // x0 is the x coordinate of the left edge of the line
-          // y0 is the y coordinate of the base line of the cue
-          appendSVGTextChild(svg, x0, y0, this.text, ["cue"]);
-        });
-      } // end Cue class
-
-      // The PerNote class is used to render musical expressions, e.g. "cresc.", "mf", etc
-      // Expressions are rendered by looping through the tokens and rendering each one
-      // at the next attack from the lyric line.
-      class PerNote {
-        constructor(text) {
-          this.text = text;
-          // Trim the text and split on whitespace
-          this.tokens = this.text.trim().split(/\s+/);
-        }
-        render = (function (svg, x0, y0, attacks, fontwidth) {
-          // x0 is the x coordinate of the left edge of the line
-          // y0 is the y coordinate of the baseline of the line
-          // fontwidth is the width of the lyric font in pixels.
-          // (the expression font will typically be smaller than the lyric font)
-          // As with the Pitch class, we will render the expression
-          // by looping through the tokens and rendering each one
-          // at the next attack from the lyric line. As a special
-          // case, if the expression text begins with a number, it
-          // is taken to be a measure number and is rendered at x0
-          // regardless of whether an attack exists at that position.
-          // This introduces some annoying bookkeeping as we have to
-          // track the width of the measure number to avoid overwriting
-          // it is there is an attack at the beginning of the line.
-
-          const mm = parseInt(this.tokens[0]);
-          if (!isNaN(mm)) {
-            const w = (1 + mm.toString().length) * fontwidth;
-            const attack0x = attacks[0] * fontwidth;
-            if (attack0x >= w) {
-              // insert an attack at 0 to render the measure number
-              attacks.splice(0, 0, 0);
-            }
-          }
-          let i = 0;
-          for (let token of this.tokens) {
-            let x = x0;
-            let y = y0;
-            if (i < attacks.length) {
-              x = x0 + attacks[i] * fontwidth;
-              // replace any underscores with spaces
-              appendSVGTextChild(svg, x, y, token.replace(/_/g, " "), ["pernote"]);
-            }
-            i++;
-          }
-        })
-      } // end of PerNote class
-
-      // The  Finger class is used to render fingerings. It is almost identical to the PerNote class.
-      // except that it doesn't need to render a measure number at the beginning of the line.
-      class Finger {
-        constructor(text) {
-          this.text = text;
-          // Trim the text and split on whitespace
-          this.tokens = this.text.trim().split(/\s+/);
-        }
-        render = (function (svg, x0, y0, attacks, fontwidth) {
-          // x0 is the x coordinate of the left edge of the line
-          // y0 is the y coordinate of the baseline of the line
-          // fontwidth is the width of the lyric font in pixels.
-          // (the expression font will typically be smaller than the lyric font)
-          // As with the Pitch class, we will render the expression
-          // by looping through the tokens and rendering each one
-          // at the next attack from the lyric line. 
-          let i = 0;
-          for (let token of this.tokens) {
-            let x = x0;
-            let y = y0;
-            if (i < attacks.length) {
-              x = x0 + attacks[i] * fontwidth + 0.1 * fontwidth;
-              // replace any underscores with spaces
-              appendSVGTextChild(svg, x, y, token.replace(/_/g, " "), ["fingering"]);
-            }
-            i++;
-          }
-        })
-      } // end of Finger class
-
-      // The PerBar class is used to render time signatures or other per bar information.
-      class PerBar {
-        constructor(text) {
-          this.text = text;
-          // split the text on whitespace
-          this.tokens = this.text.split(/\s+/);
-        }
-        render = (function (svg, x0, y0, bars, fontwidth) {
-          // x0 is the x coordinate of the left edge of the line y0 is the
-          // y coordinate of the baseline of the line. Bars is an array of
-          // bar line position.  fontwidth is the width of the lyric font
-          // in pixels.  (the time signature font will typically be
-          // smaller than the lyric font) Similarly to the Expression
-          // class, we will render the expression by looping through the
-          // tokens and rendering each one at the next bar. We use the
-          // under score character to skip barlines. Thus, `4/4 _ 3/4`
-          // will render a 4/4 time signature at the beginning of the line
-          // (position 0) and a 3/4 time signature above the barline at
-          // position the beginning of the third bar in the line.
-
-          let i = 0;
-          for (let token of this.tokens) {
-            let x = x0;
-            let y = y0;
-            if (i < bars.length) {
-              x = x0 + bars[i] * fontwidth;
-              // replace any underscores with spaces
-              appendSVGTextChild(svg, x, y, token.replace(/_/g, " "), ["perbar"]);
-            }
-            i++;
-          }
-        })
-      }
-
-      // The PerBeatclass is used to render annotations that map to beats.
-      class PerBeat {
-        constructor(text) {
-          this.text = text;
-          // split the text on whitespace
-          this.tokens = this.text.split(/\s+/);
-        }
-        render = (function (svg, x0, y0, beats, fontwidth) {
-          // x0 is the x coordinate of the left edge of the line y0 is the
-          // y coordinate of the baseline of the line. Bars is an array of
-          // bar line position.  fontwidth is the width of the lyric font
-          // in pixels.  (the perbeat font will typically be
-          // smaller than the lyric font) Similarly to the PerBar
-          // class, we will render the expression by looping through the
-          // tokens and rendering each one at the next beat.
-
-          let i = 0;
-          for (let token of this.tokens) {
-            let x = x0;
-            let y = y0;
-            if (i < beats.length) {
-              x = x0 + beats[i] * fontwidth;
-              // replace any underscores with spaces
-              // text.textContent = token.replace(/_/g, " ");
-              appendSVGTextChild(svg, x, y, token.replace(/_/g, " "), ["perbeat"]);
-            }
-            i++;
-          }
-        })
-      }
-      // The Counter class is similar to the PerBeat class. It provides
-      // an automated method for rendering beat numbers above the beats.
-      // The constructor takes 4 arguments, 
-      //    n, the first beat number (should be 1 unless we're starting with a partial measure)
-      //    beats, an array of beat x positions,
-      //    bars, an array of of bar x positions.
-      // .  rhythm, an array of rhythm markup,  as created by LyricLine.extractRhythm()`
-      class Counter {
-        constructor(n, beats, bars, rhythm, useSubbeats = false) {
-          this.n = n;
-          this.beats = beats;
-          this.bars = bars;
-          this.rhythm = rhythm;
-          // We need to generate a list of beat numbers that resets to 1
-          // each time the beat position exceeds the next bar position.
-          // The counting will begin with n unless n is <= 0, in which
-          // case we will start with 1 for the first beat after the first bar.
-          let count = (n > 0) ? n : 1;
-          this.counts = [];
-          let i = 0; // index into bars
-          let j = 0; // index into beats
-          for (let beat of this.beats) {
-            if (i < this.bars.length) {
-              if (beat > this.bars[i]) { // we've crossed the next bar
-                count = 1;
-                i++;
-              }
-            }
+            if (done) break;
             j++;
-            if (!useSubbeats) {
-              this.counts.push(count);
-            }
-            count++;
           }
-          if (!useSubbeats) return;
-          // We need to add the subbeat numbers if we reach this point.
-          // We need to add the subbeat numbers.
-          // We will use the rhythm markup to determine the subbeat numbers.
-          // The rhythm markup is a string of characters that indicate the
-          // number of beats in each subbeat. For example, "16" means
-          // that there are 16 subbeats in each beat. The rhythm markup
-          // is a string of characters that indicate the number of beats
-          // in each subbeat. For example, "16" means that there are 16
-          // subbeats in each beat. The rhythm markup is a string of
-          // characters that indicate the number of beats in each subbeat.
-          // For example, "16" means that there are 16 subbeats in each
-          // beat. The rhythm markup is a string of characters that
-          // indicate the number of beats in each subbeat. For example,
-          // "16" means that there are 16 subbeats in each beat. The
-          // rhythm markup is a string of characters that indicate the
-          // number of beats in each subbeat. For example, "16" means
-          // Now we need to add the subbeat numbers.
-          // We will use the rhythm markup to determine the subbeat numbers.
-          // The rhythm markup is a string of characters that indicate the
-          // number of beats in each subbeat. For example, "16" means
-          // that there are 16 subbeats in each beat. The rhythm markup
-          // is a string of characters that indicate the number of beats
-          // in each subbeat. For example, "16" means that there are 16
-          // subbeats in each beat. The rhythm markup is a string of
-          // characters that indicate the number of beats in each subbeat.
-          // For example, "16" means that there are 16 subbeats in each
-          // beat. The rhythm markup is a string of characters that
-          // indicate the number of beats in each subbeat. For example,
-          // "16" means that there are 16 subbeats in each beat. The
-          // rhythm markup is a string of
-          // append rhythm to count ( minus the first char of the rhythm)
-          const subbeats = this.rhythm[j].slice(1, this.rhythm[j].length)
-          //console.log(beat, this.bars[i], count, subbeats);
-          // if the first char of rhythm is a minus sign, we need to
-          // use a hyphen instead of a number
-          const c = this.rhythm[j][0] === '-' ? '-' : String(count);
-          this.counts.push(c + subbeats);
-          // bump the count and beat index
-          count++
-          j++;
-        }
-
-        render = (function (svg, x0, y0, fontwidth) {
-          // x0 is the x coordinate of the left edge of the line y0 is the
-          // y coordinate of the baseline of the line. 
-          // fontwidth is the width of the lyric font
-          // in pixels.  (the counter font will typically be
-          // smaller than the lyric font) We will render the counts by
-          // looping through the beats and rendering the count number
-          // above each beat. 
-          let i = 0;
-          for (let count of this.counts) {
-            let x = x0 + this.beats[i] * fontwidth;
-            appendSVGTextChild(svg, x, y0, count + '', ["counter"]);
-            i++;
-          }
-        });
-      }
-
-      // The Chord class is used to render chords symbols above beats.
-      class Chord {
-        constructor(text) {
-          this.text = text;
-          // Trim the text and split on whitespace
-          this.tokens = this.text.trim().split(/\s+/);
-          // Replace common abreviations with symbols, e.g. "maj" with "△"
-          // so that, for example, "Cmaj7" will render as "C△7"
-          this.tokens = this.tokens.map(token => {
-            return token.replace(/m7b5/, "ø7")
-              .replace(/-7b5/, "ø7")
-              .replace(/maj7/, "△7")
-              .replace(/min/, "m")
-              .replace(/m/, "m")
-              .replace(/dim/, "°")
-              .replace(/aug/, "+")
-              .replace(/7b9/, "7♭9")
-              .replace(/b/, "♭")
-              .replace(/#/, "♯")
-              .replace(/\//, "/")
-          });
-        }
-        render = (function (svg, x0, y0, beats, fontwidth) {
-          // x0 is the x coordinate of the left edge of the line
-          // y0 is the y coordinate of the baseline of the line
-          // fontwidth is the width of the lyric font in pixels.
-          // (the chord font will typically be larger than the lyric font)
-          // As with the Pitch class, we will render the expression
-          // by looping through the tokens and rendering each one
-          // at the next beat from the lyric line. Before rendering,
-          // we split the chord tokens into the root and the chord text,
-          // e.g. "Cmaj7" will be split into ["C", "maj7"]. The chord
-          // text is rendered in a smaller font than the root.
-          // Note, at present I'm using a couple of fudge factors to
-          // get the chord text to render correctly. This is not ideal
-          // and should be replaced with a more robust solution.
-          const xfudge = 1.2 * fontwidth // px
-          const yfudge = 4 // px
-          let i = 0;
-          for (let token of this.tokens) {
-            const root = token[0]
-            const chtext = token.slice(1)
-            let x = x0;
-            let y = y0;
-            if (i < beats.length) {
-              x = x0 + beats[i] * fontwidth;
-              // replace any underscores with spaces
-              appendSVGTextChild(svg, x, y, root.replace(/_/g, " "), ["chord"]);
-              if (root != "_") {
-                x += xfudge;
-                appendSVGTextChild(svg, x, y, chtext, ["chord-text"]);
+          // Index j now points to the first accidental, if any
+          kind = null;
+          let count = 0;
+          while (j < token.length && token[j].match(/[#&%]/)) {
+            if (token[j] === "#") {
+              if (kind === "&" || kind === "%") {
+                //throw new Error("Invalid pitch token: " + token);
+                lineProblems.add("Invalid pitch token: " + token);
               }
+              kind = "#";
+              count++;
+            } else if (token[j] === "&") {
+              if (kind === "#" || kind === "%") {
+                //throw new Error("Invalid pitch token: " + token);
+                lineProblems.add("Invalid pitch token: " + token);
+              }
+              kind = "&";
+              count++;
+            } else if (token[j] === "%") {
+              if (kind === "#" || kind === "&") {
+                //throw new Error("Invalid pitch token: " + token);
+                lineProblems.add("Invalid pitch token: " + token);
+              }
+              kind = "%";
+              count++;
             }
-            i++;
+            j++
           }
-        })
-      }
-      // splitFirst splits a string on the supplied separator and returns
-      // a two-element array of strings containing the part that preceded the
-      // separator and the remainder of the string, e.g.
-      //   splitFirst('foo: bar: blah, blah', ': ') --> ['foo', 'bar: blah, blah']
-      // If the separator is not present, splitFirst returns an empty string
-      // for the first element and the entire string as the remainder, e.g.
-      //   splitFirst('no colons here', ': ') --> ['', 'no colons here']
-      function splitFirst(str, separator) {
-        const separatorIndex = str.indexOf(separator);
-        if (separatorIndex === -1) {
-          return ["", str];
+          if (count > 2) {
+            //throw new Error("Invalid pitch token: " + token);
+            lineProblems.add("Invalid pitch token: " + token);
+          }
+          // Use kind and count to assign an accidental class, the create a new pitch object
+          // and add it to the pitches array and designate it as the new previous pitch.
+          let accClass = null;
+          switch (kind) {
+            case "#":
+              if (count === 1) {
+                accClass = "♯"; // sharp
+              } else {
+                accClass = "𝄪"; // double sharp
+              }
+              break;
+            case "&":
+              if (count === 1) {
+                accClass = "♭"; // flat
+              } else {
+                accClass = "𝄫"; // double flat
+              }
+              break;
+            case "%":
+              accClass = "♮"; // natural
+              break;
+            default:
+              accClass = "?"; // to be determined
+          }
+          // TODO deal properly with key signatures and persistence of
+          // accidentals for remainder of the bar.
+          accClass = this.alterations.get(letter, octave, accClass);
+          this.pitches.push(new Pitch(letter, octave, accClass));
+          // console.log(letter, octave, accClass)
+          prevPitch.letter = letter;
+          prevPitch.octave = octave;
         }
-        return [str.slice(0, separatorIndex), str.slice(separatorIndex + separator.length)];
       }
-
-      // musicToPitchLyric takes a music line (a string) and returns a pitch line  and a
-      // lyric line as an object. For example, if the music line is `K#2 c; d -e f |` the
-      // lyric line will be `*; * -* * |` and the pitch line will be 
-      // `K#2 c d e f |`. 
-      //
-      // The lyric line is constructed by identifying all key signature
-      // and pitch tokens in the music and removing the key signatures and
-      // replacing the pitch tokens with asterisks.
-      //
-      // The pitch line is constructed by removing all the hold or rest
-      // characters, '-' and ';'the from music line. 
-      function musicToPitchLyric(musicLine) {
-        let lyricLine = musicLine;
-        let pitchLine = musicLine;
-
-        // Remove key signatures and replace pitch tokens with asterisks in the lyric line
-        lyricLine = lyricLine.replace(/K[#&]?\d/g, "").replace(/\^*\/*[#&%]*[a-g]/g, "*");
-
-        // Remove hold and rest characters from the pitch line
-        pitchLine = pitchLine.replace(/[-;]/g, "");
-
-        return {
-          lyric: lyricLine.trim(),
-          pitch: pitchLine.trim()
+      render = (function (svg, x0, y0, attacks, fontwidth, fontheight, bars) {
+        // x0 is the x coordinate of the left edge of the line
+        // y0 corresponds to the baseline of the center octave (0)
+        // Experimental: draw a thin gray horizontal lines at the base of 'c' in each octave
+        const yline0 = y0 + 2 * fontheight;
+        const yline1 = yline0 - fontheight
+        const yline2 = yline1 - fontheight
+        const yline3 = yline2 - fontheight
+        const xend = fontwidth * (1 + bars[bars.length - 1]); // extend line to last barline
+        for (let y of [yline0, yline1, yline2, yline3]) {
+          let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          line.setAttribute("x1", x0);
+          line.setAttribute("y1", y);
+          line.setAttribute("x2", xend);
+          line.setAttribute("y2", y);
+          line.setAttribute("stroke", "lightgray");
+          line.setAttribute("stroke-width", 0.5);
+          svg.appendChild(line);
         };
-      }
-
-      // stripComments removes all lines that start with a ':' character.
-      function stripComments(text) {
-        return text.replace(/^\s*:.*\n/g, "\n");
-      }
-
-      // The preprocessScore function is used to parse the score input
-      // text and convert it into a data object with members for the title,
-      // preface, lyrics, expressions, cues, pitches, chords, perbars and
-      // postscript. The data object is returned.
-      // It's important to understand the distinction between line groups
-      // and singleton lines. A line group is a group of lines that represent
-      // a line of music.  Singletons are things like title, preface, etc.
-      // that appear once within a score. Within the score text, blank lines
-      // i.e. /\n\s*\n/ are delimeters between singletons and line groups.
-      function preprocessScore(text) {
-        text = stripComments(text);
-        const blocks = text.split(/\n\s*\n/);
-        //console.log(blocks);
-        const data = { text: text, lines: [] };
-
-        // We must deal with three kinds of block.
-        // 
-        // The first kind is text block that begins with preface: or postscript:
-        // or text: and may have one or more lines. Subsequent lines are
-        // treated as text lines. 
-
-        // The second kind of block is a single line that begins with
-        //   title:, or zoom: It is an error if either of these keywords
-        // are followed by anything other than the remainder of the line.
-        //
-        // The the third kind of block is one or more lines, each of which begins
-        // with one of the following keywords: 
-        //   cue:, perbar:,  pernote:, perbeat:, 
-        //   chord:, music:, lyric:
-
-        // loop through the blocks in reverse order.
-        for (let i = blocks.length - 1; i >= 0; i--) {
-          block = blocks[i].trim();
-          if (block.startsWith("preface:")) {
-            data.preface = block.slice(8);
-            blocks.splice(i, 1);
-            continue;
-          }
-          if (block.startsWith("postscript:")) {
-            data.postscript = block.slice(11).trim();
-            blocks.splice(i, 1);
-            continue;
-          }
-          if (block.startsWith("title:")) {
-            data.title = block.slice(6).trim();
-            blocks.splice(i, 1);
-            continue;
-          }
-          if (block.startsWith("zoom:")) {
-            data.zoom = block.slice(5).trim();
-            blocks.splice(i, 1);
-            continue;
-          }
+        // Now draw barlines
+        for (let n of bars) {
+          if (n === 0) continue;
+          let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          let x = x0 + (n + 0.5) * fontwidth;
+          line.setAttribute("x1", x);
+          line.setAttribute("y1", yline3);
+          line.setAttribute("x2", x);
+          line.setAttribute("y2", yline0);
+          line.setAttribute("stroke", "lightgray");
+          line.setAttribute("stroke-width", 0.5);
+          svg.appendChild(line);
         }
 
-        // at this point only the third kind of blocks are left
-        let kvlines = blocks.map(line => {
-          const obj = {}; // what we will return
-          if (line.startsWith("text:")) {
-            obj.text = line.slice(5).trim();
-            return obj;
-          }
-          // If we get to here, it's a music linegroup
-          const parts = line.split(/\n/);
-          parts.forEach(part => {
-            part.trim()
-            const [key, value] = splitFirst(part, ': ');
-            k = key.trim();
-            if (k !== "" && value !== undefined) {
-              obj[k] = value.trim();
-            }
-          });
-          return obj;
-        });
-        kvlines = kvlines.filter(obj => Object.keys(obj).length > 0);
-        //console.log(kvlines);
-
-        // push the remaining lines. 
-        for (let kv of kvlines) {
-          data.lines.push(kv);
-          continue;
-        }
-        return data;
-      }
-      // countLeadingSpaces returns the number of leading spaces in the line.
-      // It's needed by renderMultiline() because SVG text elements ignore leading
-      // whitespace.
-      function countLeadingSpaces(line) {
+        // Loop through the pitches and render them at the corresponding 
+        // attack locations. It is not an error if the number of pitches
+        // is not equal to the number of attack locations because we may
+        // be updating the rendered pitches while the user is editing.
         let i = 0;
-        while (line[i] === ' ') {
+        for (let pitch of this.pitches) {
+          let x = x0;
+          let y = y0;
+          if (i < attacks.length) {
+            x = x0 + attacks[i] * fontwidth;
+            pitch.render(svg, x, y, fontheight);
+          }
           i++;
         }
-        return i;
+      });
+    };
+
+    // The Cue class is used render cue text in the style specified in the style sheet.
+    class Cue {
+      constructor(text) {
+        this.text = text;
       }
+      render = (function (svg, x0, y0) {
+        // x0 is the x coordinate of the left edge of the line
+        // y0 is the y coordinate of the base line of the cue
+        appendSVGTextChild(svg, x0, y0, this.text, ["cue"]);
+      });
+    } // end Cue class
 
-      function renderMultiline(svg, x, y, text, fontHeight, className) {
-        const lines = text.split('\n');
+    // The PerNote class is used to render musical expressions, e.g. "cresc.", "mf", etc
+    // Expressions are rendered by looping through the tokens and rendering each one
+    // at the next attack from the lyric line.
+    class PerNote {
+      constructor(text) {
+        this.text = text;
+        // Trim the text and split on whitespace
+        this.tokens = this.text.trim().split(/\s+/);
+      }
+      render = (function (svg, x0, y0, attacks, fontwidth) {
+        // x0 is the x coordinate of the left edge of the line
+        // y0 is the y coordinate of the baseline of the line
+        // fontwidth is the width of the lyric font in pixels.
+        // (the expression font will typically be smaller than the lyric font)
+        // As with the Pitch class, we will render the expression
+        // by looping through the tokens and rendering each one
+        // at the next attack from the lyric line. As a special
+        // case, if the expression text begins with a number, it
+        // is taken to be a measure number and is rendered at x0
+        // regardless of whether an attack exists at that position.
+        // This introduces some annoying bookkeeping as we have to
+        // track the width of the measure number to avoid overwriting
+        // it is there is an attack at the beginning of the line.
 
-        lines.forEach(line => {
-          // We support a single '.' as a blank line indicator
-          if (line.trimEnd() === '.') {
-            y += fontHeight;
-            return
+        const mm = parseInt(this.tokens[0]);
+        if (!isNaN(mm)) {
+          const w = (1 + mm.toString().length) * fontwidth;
+          const attack0x = attacks[0] * fontwidth;
+          if (attack0x >= w) {
+            // insert an attack at 0 to render the measure number
+            attacks.splice(0, 0, 0);
           }
-          dx = countLeadingSpaces(line) * fontHeight * 0.5 // assume fontwidth is half of font height
-          // get the fontSize of the textElement
-          appendSVGTextChild(svg, x + dx, y, line.trimEnd(), [className]);
-          y += fontHeight
-        });
-
-        return y;
-      }
-
-      // The renderScore function is used to render the score using the
-      // members of the data object created by preprocessScore.
-      //  - svg is an svg element
-      //  - data is an object containing the score
-      function renderScore(svg, data) {
-        // clear any existing content of the SVG element
-        svg.innerHTML = "";
-
-        let y = 0; // y coordinate of the top of the rendered score
-
-        // Render any line problems that were encountered in
-        // preliminary processing
-        y = lineProblems.render(svg, bookParameters.leftX, y);
-        lineProblems.clear();
-
-        // Render the title at the top of the SVG element
-        y += 2 * bookParameters.titleFontHeight
-        appendSVGTextChild(svg, bookParameters.leftX, bookParameters.titleFontHeight, data.title, ['title']);
-
-        // Render the preface, if any
-        if (data.preface) {
-          y += 0.5 * bookParameters.titleFontHeight
-          y = renderMultiline(svg, bookParameters.leftX, y,
-            data.preface, bookParameters.prefaceFontHeight, 'preface')
-          // y += bookParameters.pernoteFontHeight;
         }
-        // Render the score
-        data.lines.forEach((line, index) => {
-          // If it's a text block, render it.
-          if (line.text) {
-            y += 2 * bookParameters.lyricFontHeight + bookParameters.textFontHeight;
-            y = renderMultiline(svg, bookParameters.leftX, y,
-              line.text, bookParameters.textFontHeight, 'text');
-            return;
+        let i = 0;
+        for (let token of this.tokens) {
+          let x = x0;
+          let y = y0;
+          if (i < attacks.length) {
+            x = x0 + attacks[i] * fontwidth;
+            // replace any underscores with spaces
+            appendSVGTextChild(svg, x, y, token.replace(/_/g, " "), ["pernote"]);
           }
-          // Handle the music lines. If present, a music line replaces the
-          // lyric and pitch lines.
-          line.showLyric = true;
-          if (line.music) {
-            const { lyric, pitch } = musicToPitchLyric(line.music);
-            line.lyric = lyric;
-            line.pitch = pitch;
-            // line.showLyric = false;
-          }
-          let lyricline = undefined
-          if (line.lyric) {
-            lyricline = new LyricLine(line.lyric);
-          }
-          y += bookParameters.lyricFontHeight
+          i++;
+        }
+      })
+    } // end of PerNote class
 
-          // Render the cue, if any
-          if (line.cue) {
-            if (!line.lyric) {
-              y += bookParameters.lyricFontHeight;
-            } else {
-              y += bookParameters.lyricFontHeight;
-            }
-            const cue = new Cue(line.cue);
-            cue.render(svg, bookParameters.leftX, y);
+    // The  Finger class is used to render fingerings. It is almost identical to the PerNote class.
+    // except that it doesn't need to render a measure number at the beginning of the line.
+    class Finger {
+      constructor(text) {
+        this.text = text;
+        // Trim the text and split on whitespace
+        this.tokens = this.text.trim().split(/\s+/);
+      }
+      render = (function (svg, x0, y0, attacks, fontwidth) {
+        // x0 is the x coordinate of the left edge of the line
+        // y0 is the y coordinate of the baseline of the line
+        // fontwidth is the width of the lyric font in pixels.
+        // (the expression font will typically be smaller than the lyric font)
+        // As with the Pitch class, we will render the expression
+        // by looping through the tokens and rendering each one
+        // at the next attack from the lyric line. 
+        let i = 0;
+        for (let token of this.tokens) {
+          let x = x0;
+          let y = y0;
+          if (i < attacks.length) {
+            x = x0 + attacks[i] * fontwidth + 0.1 * fontwidth;
+            // replace any underscores with spaces
+            appendSVGTextChild(svg, x, y, token.replace(/_/g, " "), ["fingering"]);
           }
-          // Render the chords, if any
-          if (line.chord && line.lyric) {
-            y += bookParameters.chordFontHeight
-            const chord = new Chord(line.chord);
-            chord.render(svg, bookParameters.leftX, y, lyricline.beats, bookParameters.lyricFontWidth);
-            // y += bookParameters.chordFontHeight / 3;
-          }
-          // Render per-beat items, if any
-          if (line.perbeat && line.lyric) {
-            y += bookParameters.perbeatFontHeight * 1.5
-            const perbeat = new PerBeat(line.perbeat)
-            perbeat.render(svg, bookParameters.leftX, y, lyricline.beats, bookParameters.lyricFontWidth)
-          }
-          // Render the fingerings, if any
-          if (line.finger && line.lyric) {
-            y += bookParameters.fingerFontHeight * 1.5
-            const finger = new Finger(line.finger)
-            finger.render(svg, bookParameters.leftX, y, lyricline.attacks, bookParameters.lyricFontWidth)
-          }
-          // Render the pitches, if any
-          if (line.pitch && line.lyric) {
-            y += 1.5 * bookParameters.lyricFontHeight;
-            try {
-              const pitchLine = new PitchLine(line.pitch);
-              pitchLine.render(svg, bookParameters.leftX, y, lyricline.attacks, bookParameters.lyricFontWidth, bookParameters.lyricFontHeight, lyricline.bars);
-              y += 2 * bookParameters.lyricFontHeight;
-            } catch (e) {
-              lineProblems.add("Pitch line error: " + e.message);
-              //console.log(e);
-            }
-          }
-          if (line.perbar && line.lyric) {
-            y += bookParameters.perbarFontHeight;
-            const perbar = new PerBar(line.perbar);
-            perbar.render(svg, bookParameters.leftX, y, lyricline.bars, bookParameters.lyricFontWidth);
+          i++;
+        }
+      })
+    } // end of Finger class
 
-          }
-          // Render the lyric
-          if (line.showLyric) {
-            y += 1.1 * bookParameters.lyricFontHeight;
-            if (line.lyric) {
-              lyricline.render(svg, bookParameters.leftX, y, bookParameters.lyricFontWidth);
-            }
-          }
+    // The PerBar class is used to render time signatures or other per bar information.
+    class PerBar {
+      constructor(text) {
+        this.text = text;
+        // split the text on whitespace
+        this.tokens = this.text.split(/\s+/);
+      }
+      render = (function (svg, x0, y0, bars, fontwidth) {
+        // x0 is the x coordinate of the left edge of the line y0 is the
+        // y coordinate of the baseline of the line. Bars is an array of
+        // bar line position.  fontwidth is the width of the lyric font
+        // in pixels.  (the time signature font will typically be
+        // smaller than the lyric font) Similarly to the Expression
+        // class, we will render the expression by looping through the
+        // tokens and rendering each one at the next bar. We use the
+        // under score character to skip barlines. Thus, `4/4 _ 3/4`
+        // will render a 4/4 time signature at the beginning of the line
+        // (position 0) and a 3/4 time signature above the barline at
+        // position the beginning of the third bar in the line.
 
-          // Render the per note expression marks, if any.
-          if (line.pernote && line.lyric) {
-            y += bookParameters.pernoteFontHeight * 1.5; // 2 px extra space between exprs and lyric to clear descenders
-            const expr = new PerNote(line.pernote);
-            expr.render(svg, bookParameters.leftX, y, lyricline.attacks, bookParameters.lyricFontWidth);
+        let i = 0;
+        for (let token of this.tokens) {
+          let x = x0;
+          let y = y0;
+          if (i < bars.length) {
+            x = x0 + bars[i] * fontwidth;
+            // replace any underscores with spaces
+            appendSVGTextChild(svg, x, y, token.replace(/_/g, " "), ["perbar"]);
           }
-          // Render the counter, if any
-          if (line.counter && line.lyric) {
-            y += bookParameters.counterFontHeight * 1.5
-            // line counter may be an empty string or a string that should be convertible to an integer
-            let npartial = 0;
-            if (line.counter.length > 0) {
-              try {
-                npartial = parseInt(line.counter);
-              } catch (e) {
-                lineProblems.add(`Invalid counter value: ${line.counter}`);
-              }
-            }
-            let bars = lyricline.bars;
-            if (bars[0] == 0) {
-              bars = bars.slice(1); // ignore the pseudo barline at 0
-            }
-            const counter = new Counter(npartial, lyricline.beats, bars, lyricline.extractRhythm());
-            counter.render(svg, bookParameters.leftX, y, bookParameters.lyricFontWidth)
-            // y += bookParameters.counterFontHeight / 3;
+          i++;
+        }
+      })
+    }
+
+    // The PerBeatclass is used to render annotations that map to beats.
+    class PerBeat {
+      constructor(text) {
+        this.text = text;
+        // split the text on whitespace
+        this.tokens = this.text.split(/\s+/);
+      }
+      render = (function (svg, x0, y0, beats, fontwidth) {
+        // x0 is the x coordinate of the left edge of the line y0 is the
+        // y coordinate of the baseline of the line. Bars is an array of
+        // bar line position.  fontwidth is the width of the lyric font
+        // in pixels.  (the perbeat font will typically be
+        // smaller than the lyric font) Similarly to the PerBar
+        // class, we will render the expression by looping through the
+        // tokens and rendering each one at the next beat.
+
+        let i = 0;
+        for (let token of this.tokens) {
+          let x = x0;
+          let y = y0;
+          if (i < beats.length) {
+            x = x0 + beats[i] * fontwidth;
+            // replace any underscores with spaces
+            // text.textContent = token.replace(/_/g, " ");
+            appendSVGTextChild(svg, x, y, token.replace(/_/g, " "), ["perbeat"]);
           }
-          // Render any line problems that were encountered
-          y = lineProblems.render(svg, bookParameters.leftX, y);
-          lineProblems.clear();
+          i++;
+        }
+      })
+    }
+    // The Counter class is similar to the PerBeat class. It provides
+    // an automated method for rendering beat numbers above the beats.
+    // The constructor takes 4 arguments, 
+    //    n, the first beat number (should be 1 unless we're starting with a partial measure)
+    //    beats, an array of beat x positions,
+    //    bars, an array of of bar x positions.
+    // .  rhythm, an array of rhythm markup,  as created by LyricLine.extractRhythm()`
+    class Counter {
+      constructor(n, beats, bars, rhythm, useSubbeats = false) {
+        this.n = n;
+        this.beats = beats;
+        this.bars = bars;
+        this.rhythm = rhythm;
+        // We need to generate a list of beat numbers that resets to 1
+        // each time the beat position exceeds the next bar position.
+        // The counting will begin with n unless n is <= 0, in which
+        // case we will start with 1 for the first beat after the first bar.
+        let count = (n > 0) ? n : 1;
+        this.counts = [];
+        let i = 0; // index into bars
+        let j = 0; // index into beats
+        for (let beat of this.beats) {
+          if (i < this.bars.length) {
+            if (beat > this.bars[i]) { // we've crossed the next bar
+              count = 1;
+              i++;
+            }
+          }
+          j++;
+          if (!useSubbeats) {
+            this.counts.push(count);
+          }
+          count++;
+        }
+        if (!useSubbeats) return;
+        // We need to add the subbeat numbers if we reach this point.
+        // We need to add the subbeat numbers.
+        // We will use the rhythm markup to determine the subbeat numbers.
+        // The rhythm markup is a string of characters that indicate the
+        // number of beats in each subbeat. For example, "16" means
+        // that there are 16 subbeats in each beat. The rhythm markup
+        // is a string of characters that indicate the number of beats
+        // in each subbeat. For example, "16" means that there are 16
+        // subbeats in each beat. The rhythm markup is a string of
+        // characters that indicate the number of beats in each subbeat.
+        // For example, "16" means that there are 16 subbeats in each
+        // beat. The rhythm markup is a string of characters that
+        // indicate the number of beats in each subbeat. For example,
+        // "16" means that there are 16 subbeats in each beat. The
+        // rhythm markup is a string of characters that indicate the
+        // number of beats in each subbeat. For example, "16" means
+        // Now we need to add the subbeat numbers.
+        // We will use the rhythm markup to determine the subbeat numbers.
+        // The rhythm markup is a string of characters that indicate the
+        // number of beats in each subbeat. For example, "16" means
+        // that there are 16 subbeats in each beat. The rhythm markup
+        // is a string of characters that indicate the number of beats
+        // in each subbeat. For example, "16" means that there are 16
+        // subbeats in each beat. The rhythm markup is a string of
+        // characters that indicate the number of beats in each subbeat.
+        // For example, "16" means that there are 16 subbeats in each
+        // beat. The rhythm markup is a string of characters that
+        // indicate the number of beats in each subbeat. For example,
+        // "16" means that there are 16 subbeats in each beat. The
+        // rhythm markup is a string of
+        // append rhythm to count ( minus the first char of the rhythm)
+        const subbeats = this.rhythm[j].slice(1, this.rhythm[j].length)
+        //console.log(beat, this.bars[i], count, subbeats);
+        // if the first char of rhythm is a minus sign, we need to
+        // use a hyphen instead of a number
+        const c = this.rhythm[j][0] === '-' ? '-' : String(count);
+        this.counts.push(c + subbeats);
+        // bump the count and beat index
+        count++
+        j++;
+      }
+
+      render = (function (svg, x0, y0, fontwidth) {
+        // x0 is the x coordinate of the left edge of the line y0 is the
+        // y coordinate of the baseline of the line. 
+        // fontwidth is the width of the lyric font
+        // in pixels.  (the counter font will typically be
+        // smaller than the lyric font) We will render the counts by
+        // looping through the beats and rendering the count number
+        // above each beat. 
+        let i = 0;
+        for (let count of this.counts) {
+          let x = x0 + this.beats[i] * fontwidth;
+          appendSVGTextChild(svg, x, y0, count + '', ["counter"]);
+          i++;
+        }
+      });
+    }
+
+    // The Chord class is used to render chords symbols above beats.
+    class Chord {
+      constructor(text) {
+        this.text = text;
+        // Trim the text and split on whitespace
+        this.tokens = this.text.trim().split(/\s+/);
+        // Replace common abreviations with symbols, e.g. "maj" with "△"
+        // so that, for example, "Cmaj7" will render as "C△7"
+        this.tokens = this.tokens.map(token => {
+          return token.replace(/m7b5/, "ø7")
+            .replace(/-7b5/, "ø7")
+            .replace(/maj7/, "△7")
+            .replace(/min/, "m")
+            .replace(/m/, "m")
+            .replace(/dim/, "°")
+            .replace(/aug/, "+")
+            .replace(/7b9/, "7♭9")
+            .replace(/b/, "♭")
+            .replace(/#/, "♯")
+            .replace(/\//, "/")
         });
+      }
+      render = (function (svg, x0, y0, beats, fontwidth) {
+        // x0 is the x coordinate of the left edge of the line
+        // y0 is the y coordinate of the baseline of the line
+        // fontwidth is the width of the lyric font in pixels.
+        // (the chord font will typically be larger than the lyric font)
+        // As with the Pitch class, we will render the expression
+        // by looping through the tokens and rendering each one
+        // at the next beat from the lyric line. Before rendering,
+        // we split the chord tokens into the root and the chord text,
+        // e.g. "Cmaj7" will be split into ["C", "maj7"]. The chord
+        // text is rendered in a smaller font than the root.
+        // Note, at present I'm using a couple of fudge factors to
+        // get the chord text to render correctly. This is not ideal
+        // and should be replaced with a more robust solution.
+        const xfudge = 1.2 * fontwidth // px
+        const yfudge = 4 // px
+        let i = 0;
+        for (let token of this.tokens) {
+          const root = token[0]
+          const chtext = token.slice(1)
+          let x = x0;
+          let y = y0;
+          if (i < beats.length) {
+            x = x0 + beats[i] * fontwidth;
+            // replace any underscores with spaces
+            appendSVGTextChild(svg, x, y, root.replace(/_/g, " "), ["chord"]);
+            if (root != "_") {
+              x += xfudge;
+              appendSVGTextChild(svg, x, y, chtext, ["chord-text"]);
+            }
+          }
+          i++;
+        }
+      })
+    }
+    // splitFirst splits a string on the supplied separator and returns
+    // a two-element array of strings containing the part that preceded the
+    // separator and the remainder of the string, e.g.
+    //   splitFirst('foo: bar: blah, blah', ': ') --> ['foo', 'bar: blah, blah']
+    // If the separator is not present, splitFirst returns an empty string
+    // for the first element and the entire string as the remainder, e.g.
+    //   splitFirst('no colons here', ': ') --> ['', 'no colons here']
+    function splitFirst(str, separator) {
+      const separatorIndex = str.indexOf(separator);
+      if (separatorIndex === -1) {
+        return ["", str];
+      }
+      return [str.slice(0, separatorIndex), str.slice(separatorIndex + separator.length)];
+    }
 
-        // Render the postscript, if any.
-        if (data.postscript) {
-          y += 2 * bookParameters.lyricFontHeight;
-          y = renderMultiline(svg, bookParameters.leftX, y,
-            data.postscript, bookParameters.postscriptFontHeight, 'postscript');
+    // musicToPitchLyric takes a music line (a string) and returns a pitch line  and a
+    // lyric line as an object. For example, if the music line is `K#2 c; d -e f |` the
+    // lyric line will be `*; * -* * |` and the pitch line will be 
+    // `K#2 c d e f |`. 
+    //
+    // The lyric line is constructed by identifying all key signature
+    // and pitch tokens in the music and removing the key signatures and
+    // replacing the pitch tokens with asterisks.
+    //
+    // The pitch line is constructed by removing all the hold or rest
+    // characters, '-' and ';'the from music line. 
+    function musicToPitchLyric(musicLine) {
+      let lyricLine = musicLine;
+      let pitchLine = musicLine;
+
+      // Remove key signatures and replace pitch tokens with asterisks in the lyric line
+      lyricLine = lyricLine.replace(/K[#&]?\d/g, "").replace(/\^*\/*[#&%]*[a-g]/g, "*");
+
+      // Remove hold and rest characters from the pitch line
+      pitchLine = pitchLine.replace(/[-;]/g, "");
+
+      return {
+        lyric: lyricLine.trim(),
+        pitch: pitchLine.trim()
+      };
+    }
+
+    // stripComments removes all lines that start with a ':' character.
+    function stripComments(text) {
+      return text.replace(/^\s*:.*\n/g, "\n");
+    }
+
+    // The preprocessScore function is used to parse the score input
+    // text and convert it into a data object with members for the title,
+    // preface, lyrics, expressions, cues, pitches, chords, perbars and
+    // postscript. The data object is returned.
+    // It's important to understand the distinction between line groups
+    // and singleton lines. A line group is a group of lines that represent
+    // a line of music.  Singletons are things like title, preface, etc.
+    // that appear once within a score. Within the score text, blank lines
+    // i.e. /\n\s*\n/ are delimeters between singletons and line groups.
+    function preprocessScore(text) {
+      text = stripComments(text);
+      const blocks = text.split(/\n\s*\n/);
+      //console.log(blocks);
+      const data = { text: text, lines: [] };
+
+      // We must deal with three kinds of block.
+      // 
+      // The first kind is text block that begins with preface: or postscript:
+      // or text: and may have one or more lines. Subsequent lines are
+      // treated as text lines. 
+
+      // The second kind of block is a single line that begins with
+      //   title:, or zoom: It is an error if either of these keywords
+      // are followed by anything other than the remainder of the line.
+      //
+      // The the third kind of block is one or more lines, each of which begins
+      // with one of the following keywords: 
+      //   cue:, perbar:,  pernote:, perbeat:, 
+      //   chord:, music:, lyric:
+
+      // loop through the blocks in reverse order.
+      for (let i = blocks.length - 1; i >= 0; i--) {
+        block = blocks[i].trim();
+        if (block.startsWith("preface:")) {
+          data.preface = block.slice(8);
+          blocks.splice(i, 1);
+          continue;
+        }
+        if (block.startsWith("postscript:")) {
+          data.postscript = block.slice(11).trim();
+          blocks.splice(i, 1);
+          continue;
+        }
+        if (block.startsWith("title:")) {
+          data.title = block.slice(6).trim();
+          blocks.splice(i, 1);
+          continue;
+        }
+        if (block.startsWith("zoom:")) {
+          data.zoom = block.slice(5).trim();
+          blocks.splice(i, 1);
+          continue;
         }
       }
 
-      // deleteScore(id) deletes the score div with the given id and all its
-      // content from the DOM along with the Insert button that follows it.
-      function deleteScore(id) {
-        const score = document.getElementById(id);
-        if (score === null) {
+      // at this point only the third kind of blocks are left
+      let kvlines = blocks.map(line => {
+        const obj = {}; // what we will return
+        if (line.startsWith("text:")) {
+          obj.text = line.slice(5).trim();
+          return obj;
+        }
+        // If we get to here, it's a music linegroup
+        const parts = line.split(/\n/);
+        parts.forEach(part => {
+          part.trim()
+          const [key, value] = splitFirst(part, ': ');
+          k = key.trim();
+          if (k !== "" && value !== undefined) {
+            obj[k] = value.trim();
+          }
+        });
+        return obj;
+      });
+      kvlines = kvlines.filter(obj => Object.keys(obj).length > 0);
+      //console.log(kvlines);
+
+      // push the remaining lines. 
+      for (let kv of kvlines) {
+        data.lines.push(kv);
+        continue;
+      }
+      return data;
+    }
+    // countLeadingSpaces returns the number of leading spaces in the line.
+    // It's needed by renderMultiline() because SVG text elements ignore leading
+    // whitespace.
+    function countLeadingSpaces(line) {
+      let i = 0;
+      while (line[i] === ' ') {
+        i++;
+      }
+      return i;
+    }
+
+    function renderMultiline(svg, x, y, text, fontHeight, className) {
+      const lines = text.split('\n');
+
+      lines.forEach(line => {
+        // We support a single '.' as a blank line indicator
+        if (line.trimEnd() === '.') {
+          y += fontHeight;
           return
         }
-        score.remove();
-        btnId = "insert-new-" + id;
-        const insertButton = document.getElementById(btnId);
-        if (insertButton !== null) {
-          insertButton.remove();
-        }
-        scoreToc(); // update the table of contents
-      }
+        dx = countLeadingSpaces(line) * fontHeight * 0.5 // assume fontwidth is half of font height
+        // get the fontSize of the textElement
+        appendSVGTextChild(svg, x + dx, y, line.trimEnd(), [className]);
+        y += fontHeight
+      });
 
-      // renderEditedScoreSource takes as its argument a div element. If the div element
-      // contains a <pre> of class 'source', the contents of the <pre> are passed
-      // preprocessScore() and the result is used as the data argument to renderScore().:
-      // If the div already contains an SVG element, it is passed to renderScore() as
-      // the svg argument. Otherwise, a new SVG element is created and appended to the
-      // to the div element and passed to renderScore().
-      function renderEditedScoreSource(div) {
-        const wrapper = div.querySelector('div.score-wrapper');
-        const pre = wrapper.querySelector('details pre.source');
-        if (pre === null) {
-          return
-        }
-        const data = preprocessScore(pre.textContent);
-        let svg = wrapper.querySelector('svg');
-        if (svg === null) {
-          svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-          wrapper.insertBefore(svg, wrapper.firstChild);
-        }
-        renderScore(svg, data);
-        // calculate rendered height and adjust the svg height and viewbox
-        const height = svg.getBBox().height + 20;
-        svg.setAttribute('height', height);
-        let zoom = 100;
-        if (data.zoom) {
-          // if data.zoom can't be parsed, use 100% and add a message to the
-          // lineProblems object so that the error can be displayed in the
-          // SVG.
-          zoom = parseInt(data.zoom, 10);
-          if (isNaN(zoom)) {
-            lineProblems.add("Invalid zoom value: " + data.zoom);
-            zoom = 100;
-          }
-          // allow user to specify a zoom factor between 50 and 200%
-          zoom = Math.max(50, Math.min(200, parseInt(zoom, 10)));
-        }
-        const xpix = 720 * 100. / zoom;
-        svg.setAttribute('viewBox', `0 0 ${xpix} ${height}`);
-        scoreToc(); // update the table of contents
-        isDirty = true // signal that the score has been edited
+      return y;
+    }
+
+    // The renderScore function is used to render the score using the
+    // members of the data object created by preprocessScore.
+    //  - svg is an svg element
+    //  - data is an object containing the score
+    function renderScore(svg, data) {
+      // clear any existing content of the SVG element
+      svg.innerHTML = "";
+
+      let y = 0; // y coordinate of the top of the rendered score
+
+      // Render any line problems that were encountered in
+      // preliminary processing
+      y = lineProblems.render(svg, bookParameters.leftX, y);
+      lineProblems.clear();
+
+      // Render the title at the top of the SVG element
+      y += 2 * bookParameters.titleFontHeight
+      appendSVGTextChild(svg, bookParameters.leftX, bookParameters.titleFontHeight, data.title, ['title']);
+
+      // Render the preface, if any
+      if (data.preface) {
+        y += 0.5 * bookParameters.titleFontHeight
+        y = renderMultiline(svg, bookParameters.leftX, y,
+          data.preface, bookParameters.prefaceFontHeight, 'preface')
+        // y += bookParameters.pernoteFontHeight;
       }
-      // scoreToc is a function that generates a table of contents for the scores in the
-      // current page. It creates a ul element that contains li elements for each score.
-      // Each li element contains a link to the score's div element. The link text is the
-      // title of the score. The title is extracted from the first line of the score's
-      // source. The ul is inserted into the div with id'score-toc'.
-      function scoreToc() {
-        let toc = document.getElementById('score-toc');
-        // if score-toc div doesn't exist, create it as the first
-        // child of body
-        if (toc === null) {
-          const body = document.querySelector('body');
-          toc = document.createElement('div');
-          toc.id = 'score-toc';
-          body.insertBefore(toc, body.firstChild);
-        } else {
-          toc.innerHTML = ''; // Clear it
-        }
-        const scores = document.querySelectorAll('div.score');
-        if (scores.length === 0) {
+      // Render the score
+      data.lines.forEach((line, index) => {
+        // If it's a text block, render it.
+        if (line.text) {
+          y += 2 * bookParameters.lyricFontHeight + bookParameters.textFontHeight;
+          y = renderMultiline(svg, bookParameters.leftX, y,
+            line.text, bookParameters.textFontHeight, 'text');
           return;
         }
-        const ul = document.createElement('ul');
-        for (const score of scores) {
-          const text = score.querySelector('details pre.source').textContent.split('\n');
-          // find the title line of the score's source
-          const titleline = text.find(line => line.trim().startsWith('title:'));
-          const title = titleline.split(':')[1].trim();
-          const li = document.createElement('li');
-          const a = document.createElement('a');
-          a.setAttribute('href', `#${score.id}`);
-          a.textContent = title;
-          li.appendChild(a);
-          ul.appendChild(li);
+        // Handle the music lines. If present, a music line replaces the
+        // lyric and pitch lines.
+        line.showLyric = true;
+        if (line.music) {
+          const { lyric, pitch } = musicToPitchLyric(line.music);
+          line.lyric = lyric;
+          line.pitch = pitch;
+          // line.showLyric = false;
         }
-        // insert the ul of score links into the toc div
-        toc.appendChild(ul);
+        let lyricline = undefined
+        if (line.lyric) {
+          lyricline = new LyricLine(line.lyric);
+        }
+        y += bookParameters.lyricFontHeight
+
+        // Render the cue, if any
+        if (line.cue) {
+          if (!line.lyric) {
+            y += bookParameters.lyricFontHeight;
+          } else {
+            y += bookParameters.lyricFontHeight;
+          }
+          const cue = new Cue(line.cue);
+          cue.render(svg, bookParameters.leftX, y);
+        }
+        // Render the chords, if any
+        if (line.chord && line.lyric) {
+          y += bookParameters.chordFontHeight
+          const chord = new Chord(line.chord);
+          chord.render(svg, bookParameters.leftX, y, lyricline.beats, bookParameters.lyricFontWidth);
+          // y += bookParameters.chordFontHeight / 3;
+        }
+        // Render per-beat items, if any
+        if (line.perbeat && line.lyric) {
+          y += bookParameters.perbeatFontHeight * 1.5
+          const perbeat = new PerBeat(line.perbeat)
+          perbeat.render(svg, bookParameters.leftX, y, lyricline.beats, bookParameters.lyricFontWidth)
+        }
+        // Render the fingerings, if any
+        if (line.finger && line.lyric) {
+          y += bookParameters.fingerFontHeight * 1.5
+          const finger = new Finger(line.finger)
+          finger.render(svg, bookParameters.leftX, y, lyricline.attacks, bookParameters.lyricFontWidth)
+        }
+        // Render the pitches, if any
+        if (line.pitch && line.lyric) {
+          y += 1.5 * bookParameters.lyricFontHeight;
+          try {
+            const pitchLine = new PitchLine(line.pitch);
+            pitchLine.render(svg, bookParameters.leftX, y, lyricline.attacks, bookParameters.lyricFontWidth, bookParameters.lyricFontHeight, lyricline.bars);
+            y += 2 * bookParameters.lyricFontHeight;
+          } catch (e) {
+            lineProblems.add("Pitch line error: " + e.message);
+            //console.log(e);
+          }
+        }
+        if (line.perbar && line.lyric) {
+          y += bookParameters.perbarFontHeight;
+          const perbar = new PerBar(line.perbar);
+          perbar.render(svg, bookParameters.leftX, y, lyricline.bars, bookParameters.lyricFontWidth);
+
+        }
+        // Render the lyric
+        if (line.showLyric) {
+          y += 1.1 * bookParameters.lyricFontHeight;
+          if (line.lyric) {
+            lyricline.render(svg, bookParameters.leftX, y, bookParameters.lyricFontWidth);
+          }
+        }
+
+        // Render the per note expression marks, if any.
+        if (line.pernote && line.lyric) {
+          y += bookParameters.pernoteFontHeight * 1.5; // 2 px extra space between exprs and lyric to clear descenders
+          const expr = new PerNote(line.pernote);
+          expr.render(svg, bookParameters.leftX, y, lyricline.attacks, bookParameters.lyricFontWidth);
+        }
+        // Render the counter, if any
+        if (line.counter && line.lyric) {
+          y += bookParameters.counterFontHeight * 1.5
+          // line counter may be an empty string or a string that should be convertible to an integer
+          let npartial = 0;
+          if (line.counter.length > 0) {
+            try {
+              npartial = parseInt(line.counter);
+            } catch (e) {
+              lineProblems.add(`Invalid counter value: ${line.counter}`);
+            }
+          }
+          let bars = lyricline.bars;
+          if (bars[0] == 0) {
+            bars = bars.slice(1); // ignore the pseudo barline at 0
+          }
+          const counter = new Counter(npartial, lyricline.beats, bars, lyricline.extractRhythm());
+          counter.render(svg, bookParameters.leftX, y, bookParameters.lyricFontWidth)
+          // y += bookParameters.counterFontHeight / 3;
+        }
+        // Render any line problems that were encountered
+        y = lineProblems.render(svg, bookParameters.leftX, y);
+        lineProblems.clear();
+      });
+
+      // Render the postscript, if any.
+      if (data.postscript) {
+        y += 2 * bookParameters.lyricFontHeight;
+        y = renderMultiline(svg, bookParameters.leftX, y,
+          data.postscript, bookParameters.postscriptFontHeight, 'postscript');
+      }
+    }
+
+    // deleteScore(id) deletes the score div with the given id and all its
+    // content from the DOM along with the Insert button that follows it.
+    function deleteScore(id) {
+      const score = document.getElementById(id);
+      if (score === null) {
+        return
+      }
+      score.remove();
+      btnId = "insert-new-" + id;
+      const insertButton = document.getElementById(btnId);
+      if (insertButton !== null) {
+        insertButton.remove();
+      }
+      scoreToc(); // update the table of contents
+    }
+
+    // renderEditedScoreSource takes as its argument a div element. If the div element
+    // contains a <pre> of class 'source', the contents of the <pre> are passed
+    // preprocessScore() and the result is used as the data argument to renderScore().:
+    // If the div already contains an SVG element, it is passed to renderScore() as
+    // the svg argument. Otherwise, a new SVG element is created and appended to the
+    // to the div element and passed to renderScore().
+    function renderEditedScoreSource(div) {
+      const wrapper = div.querySelector('div.score-wrapper');
+      const pre = wrapper.querySelector('details pre.source');
+      if (pre === null) {
+        return
+      }
+      const data = preprocessScore(pre.textContent);
+      let svg = wrapper.querySelector('svg');
+      if (svg === null) {
+        svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        wrapper.insertBefore(svg, wrapper.firstChild);
+      }
+      renderScore(svg, data);
+      // calculate rendered height and adjust the svg height and viewbox
+      const height = svg.getBBox().height + 20;
+      svg.setAttribute('height', height);
+      let zoom = 100;
+      if (data.zoom) {
+        // if data.zoom can't be parsed, use 100% and add a message to the
+        // lineProblems object so that the error can be displayed in the
+        // SVG.
+        zoom = parseInt(data.zoom, 10);
+        if (isNaN(zoom)) {
+          lineProblems.add("Invalid zoom value: " + data.zoom);
+          zoom = 100;
+        }
+        // allow user to specify a zoom factor between 50 and 200%
+        zoom = Math.max(50, Math.min(200, parseInt(zoom, 10)));
+      }
+      const xpix = 720 * 100. / zoom;
+      svg.setAttribute('viewBox', `0 0 ${xpix} ${height}`);
+      scoreToc(); // update the table of contents
+      isDirty = true // signal that the score has been edited
+    }
+    // scoreToc is a function that generates a table of contents for the scores in the
+    // current page. It creates a ul element that contains li elements for each score.
+    // Each li element contains a link to the score's div element. The link text is the
+    // title of the score. The title is extracted from the first line of the score's
+    // source. The ul is inserted into the div with id'score-toc'.
+    function scoreToc() {
+      let toc = document.getElementById('score-toc');
+      // if score-toc div doesn't exist, create it as the first
+      // child of body
+      if (toc === null) {
+        const body = document.querySelector('body');
+        toc = document.createElement('div');
+        toc.id = 'score-toc';
+        body.insertBefore(toc, body.firstChild);
+      } else {
+        toc.innerHTML = ''; // Clear it
+      }
+      const scores = document.querySelectorAll('div.score');
+      if (scores.length === 0) {
         return;
       }
+      const ul = document.createElement('ul');
+      for (const score of scores) {
+        const text = score.querySelector('details pre.source').textContent.split('\n');
+        // find the title line of the score's source
+        const titleline = text.find(line => line.trim().startsWith('title:'));
+        const title = titleline.split(':')[1].trim();
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.setAttribute('href', `#${score.id}`);
+        a.textContent = title;
+        li.appendChild(a);
+        ul.appendChild(li);
+      }
+      // insert the ul of score links into the toc div
+      toc.appendChild(ul);
+      return;
+    }
 
-      function newScoreContent(intChoice) {
-        const choices = {
-          minimal: `title: Untitled 
+    function newScoreContent(intChoice) {
+      const choices = {
+        minimal: `title: Untitled 
 
 music: K0 c d e f |
 counter: 1
 
 `,
 
-          full: `title: My Score Title
+        full: `title: My Score Title
 
 preface: This score has it all
 
@@ -1844,84 +1844,182 @@ pernote: mf
 
 postscript: The postscript line is handy for copyright notices, etc.`,
 
-          cheatsheet: fqsReference
-        }
-        switch (intChoice) {
-          case 1:
-            return choices.minimal;
-          case 2:
-            return choices.full;
-          case 3:
-            return choices.cheatsheet
-          default:
-            return choices.minimal
-        }
+        cheatsheet: fqsReference
       }
-      // makeNewScoreDivAndLink creates a new score div and a link to the div
-      // and returns them as an array. The div contains a <details> element that
-      // that contains the <pre> element that contains the source code. The link
-      // points to the table of scores in the document.  The caller is responsible
-      // for inserting the div and the link in the desired locations in the document.
-      function makeNewScoreDivAndLink(content) {
-        const div = document.createElement('div');
-        div.setAttribute('class', 'score');
-        const id = `score-${Math.random().toString(36).substring(2, 15)}`;
-        div.setAttribute('id', id);
+      switch (intChoice) {
+        case 1:
+          return choices.minimal;
+        case 2:
+          return choices.full;
+        case 3:
+          return choices.cheatsheet
+        default:
+          return choices.minimal
+      }
+    }
+    // makeNewScoreDivAndLink creates a new score div and a link to the div
+    // and returns them as an array. The div contains a <details> element that
+    // that contains the <pre> element that contains the source code. The link
+    // points to the table of scores in the document.  The caller is responsible
+    // for inserting the div and the link in the desired locations in the document.
+    function makeNewScoreDivAndLink(content) {
+      const div = document.createElement('div');
+      div.setAttribute('class', 'score');
+      const id = `score-${Math.random().toString(36).substring(2, 15)}`;
+      div.setAttribute('id', id);
 
-        const details = document.createElement('details');
-        details.setAttribute('open', true);
-        summary = document.createElement('summary');
-        summary.textContent = 'Edit this score';
-        details.appendChild(summary);
+      const details = document.createElement('details');
+      details.setAttribute('open', true);
+      summary = document.createElement('summary');
+      summary.textContent = 'Edit this score';
+      details.appendChild(summary);
 
-        const pre = document.createElement('pre');
-        pre.setAttribute('class', 'source');
-        pre.setAttribute('contenteditable', 'plaintext-only');
-        pre.textContent = content;
+      const pre = document.createElement('pre');
+      pre.setAttribute('class', 'source');
+      pre.setAttribute('contenteditable', 'plaintext-only');
+      pre.textContent = content;
 
-        // Add a delete button to the new score that invokes deleteScore()
-        // after asking for confirmation
-        const deleteButton = document.createElement('button');
-        deleteButton.setAttribute('class', 'delete-btn');
-        deleteButton.textContent = 'Delete';
-        deleteButton.addEventListener('click', () => {
-          if (confirm(`Are you sure you want to delete this score?`)) {
-            deleteScore(id);
-          }
-        });
-        details.appendChild(deleteButton);
-        details.appendChild(pre);
-
-        // Wrap the <details> element in a div to make it easier to toggle layouts
-        const wrapper = document.createElement('div');
-        wrapper.setAttribute('class', 'score-wrapper');
-        if (bookParameters.sideBySide) {
-          wrapper.classList.add('side-by-side');
+      // Add a delete button to the new score that invokes deleteScore()
+      // after asking for confirmation
+      const deleteButton = document.createElement('button');
+      deleteButton.setAttribute('class', 'delete-btn');
+      deleteButton.textContent = 'Delete';
+      deleteButton.addEventListener('click', () => {
+        if (confirm(`Are you sure you want to delete this score?`)) {
+          deleteScore(id);
         }
+      });
+      details.appendChild(deleteButton);
+      details.appendChild(pre);
 
-        wrapper.appendChild(details);
-        div.appendChild(wrapper);
-        div.appendChild(document.createElement('hr'));
-
-        pre.addEventListener('input', () => {
-          renderEditedScoreSource(div);
-        });
-
-        const tocId = "score-toc";
-        const link = document.createElement('a');
-        link.setAttribute('href', `#${tocId}`);
-        link.setAttribute('class', 'link-to-toc');
-        link.textContent = 'Table of Scores';
-
-        return [div, link];
+      // Wrap the <details> element in a div to make it easier to toggle layouts
+      const wrapper = document.createElement('div');
+      wrapper.setAttribute('class', 'score-wrapper');
+      if (bookParameters.sideBySide) {
+        wrapper.classList.add('side-by-side');
       }
 
-      function insertNewScore(button, intChoice) {
-        const content = newScoreContent(parseInt(intChoice));
-        const [div, link] = makeNewScoreDivAndLink(content);
-        button.parentNode.insertBefore(div, button.nextSibling);
+      wrapper.appendChild(details);
+      div.appendChild(wrapper);
+      div.appendChild(document.createElement('hr'));
 
-        const newScoreButton = document.createElement('button');
+      pre.addEventListener('input', () => {
+        renderEditedScoreSource(div);
+      });
+
+      const tocId = "score-toc";
+      const link = document.createElement('a');
+      link.setAttribute('href', `#${tocId}`);
+      link.setAttribute('class', 'link-to-toc');
+      link.textContent = 'Table of Scores';
+
+      return [div, link];
+    }
+
+    function insertNewScore(button, intChoice) {
+      const content = newScoreContent(parseInt(intChoice));
+      const [div, link] = makeNewScoreDivAndLink(content);
+      button.parentNode.insertBefore(div, button.nextSibling);
+
+      const newScoreButton = document.createElement('button');
+      newScoreButton.setAttribute('class', 'new-score-btn');
+      newScoreButton.setAttribute('id', `insert-new-${div.id}`);
+      newScoreButton.textContent = 'Insert New Score';
+      newScoreButton.addEventListener('click', handleNewScoreButtonClick);
+      div.parentNode.insertBefore(newScoreButton, div.nextSibling);
+
+      div.appendChild(link);
+      renderEditedScoreSource(div);
+    }
+    // handleNewScoreButtonClick inserts a new score into current page immediately before the
+    // button that invoked it.  The new consists of a div with class'score' that contains
+    // a <details> element that contains a <pre> element of class 'source' and a Save button that
+    // invokes saveAsHtmlFile().
+    function handleNewScoreButtonClick(event) {
+      //console.log('handleNewScoreButtonClick');
+      const button = event.target;
+      dialog = document.getElementById('new-score-dialog');
+      // replace the dialog with a clone
+      // to prevent accumulation of event listeners.
+      dialog.replaceWith(dialog.cloneNode(true));
+      dialog = document.getElementById('new-score-dialog');
+
+      const cancelButton = dialog.querySelector('button[type="reset"]');
+      const confirmButton = dialog.querySelector('button[type="submit"]');
+
+      const cancelHandler = () => {
+        dialog.returnValue = '';
+        dialog.close();
+        return false;
+      };
+      const confirmHandler = () => {
+        dialog.returnValue = dialog.querySelector('input[name="choice"]:checked').value;
+        //console.log(`New score dialog submitted with ${dialog.returnValue}`);
+        return false;
+      };
+
+      cancelButton.addEventListener('click', cancelHandler);
+      confirmButton.addEventListener('click', confirmHandler);
+
+      dialog.addEventListener('close', () => {
+        if (dialog.returnValue !== '') {
+          //console.log(`New score dialog closed with ${dialog.returnValue}`);
+          insertNewScore(button, dialog.returnValue);
+        }
+        return false;
+      });
+
+      dialog.showModal();
+      return false;
+    }
+
+    // The export method creates a text file consisting of the source texts of each
+    // score in the document, catenated and separated by a blank line between scores.
+    // The source texts are located in the pre elements with class'source'.
+    function exportScores() {
+      // Get the source texts of each score
+      const scoreDivs = document.querySelectorAll('div.score');
+      const scoreTexts = [];
+      scoreDivs.forEach(div => {
+        scoreTexts.push(div.querySelector('pre.source').textContent);
+      });
+      // Create a text file
+      const blob = new Blob([scoreTexts.join('\nEndOfScore\n')], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      // get this html document's name and append '-source.fqs' to it.
+      const fqsName = window.location.pathname.split('/').pop().replace('.html', '-source.fqs');
+      a.setAttribute('download', fqsName);
+      let saveInitiated = true;
+      const initialTimestamp = Date.now();
+      a.click();
+      setTimeout(() => {
+        if (saveInitiated && Date.now() - initialTimestamp > 1000) {
+          // Assume save was successful if more than 1 second has passed.
+          // This approach isn't foolproof, but it may be the best we can
+          // do since the result of the File Save dialog is not available.
+          isDirty = false;
+        }
+      }, 1500);
+      // if the user cancels the download, do nothing. Otherwise clear isDirty
+      if (dialog.returnValue !== '') {
+        isDirty = false;
+      }
+      // Revoke the object URL to avoid memory leaks.
+      URL.revokeObjectURL(url);
+      return false;
+    }
+
+    function appendScores(text) {
+      const scoreTexts = text.split('\nEndOfScore\n');
+      scoreTexts.forEach(scoreText => {
+        const [div, link] = makeNewScoreDivAndLink(scoreText);
+        const newScoreButtons = document.querySelectorAll(`button.new-score-btn`);
+        let newScoreButton = newScoreButtons[newScoreButtons.length - 1]; // get the last new score button
+        newScoreButton.parentNode.insertBefore(div, newScoreButton.nextSibling);
+        // Add a new score button after the div
+        newScoreButton = document.createElement('button');
         newScoreButton.setAttribute('class', 'new-score-btn');
         newScoreButton.setAttribute('id', `insert-new-${div.id}`);
         newScoreButton.textContent = 'Insert New Score';
@@ -1930,294 +2028,196 @@ postscript: The postscript line is handy for copyright notices, etc.`,
 
         div.appendChild(link);
         renderEditedScoreSource(div);
-      }
-      // handleNewScoreButtonClick inserts a new score into current page immediately before the
-      // button that invoked it.  The new consists of a div with class'score' that contains
-      // a <details> element that contains a <pre> element of class 'source' and a Save button that
-      // invokes saveAsHtmlFile().
-      function handleNewScoreButtonClick(event) {
-        //console.log('handleNewScoreButtonClick');
-        const button = event.target;
-        dialog = document.getElementById('new-score-dialog');
-        // replace the dialog with a clone
-        // to prevent accumulation of event listeners.
-        dialog.replaceWith(dialog.cloneNode(true));
-        dialog = document.getElementById('new-score-dialog');
 
-        const cancelButton = dialog.querySelector('button[type="reset"]');
-        const confirmButton = dialog.querySelector('button[type="submit"]');
+        // Honor the current visibility of edit controls
+        scoreControlsVisible(scoreControlsShown)
+      });
+    }
 
-        const cancelHandler = () => {
-          dialog.returnValue = '';
-          dialog.close();
-          return false;
-        };
-        const confirmHandler = () => {
-          dialog.returnValue = dialog.querySelector('input[name="choice"]:checked').value;
-          //console.log(`New score dialog submitted with ${dialog.returnValue}`);
-          return false;
-        };
-
-        cancelButton.addEventListener('click', cancelHandler);
-        confirmButton.addEventListener('click', confirmHandler);
-
-        dialog.addEventListener('close', () => {
-          if (dialog.returnValue !== '') {
-            //console.log(`New score dialog closed with ${dialog.returnValue}`);
-            insertNewScore(button, dialog.returnValue);
-          }
-          return false;
+    function importFromFile() {
+      const file = document.createElement('input');
+      file.setAttribute('type', 'file');
+      file.setAttribute('accept', '.fqs');
+      file.addEventListener('change', event => {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.addEventListener('load', event => {
+          const text = event.target.result;
+          appendScores(text);
         });
+        reader.readAsText(file);
+      });
+      file.click();
+      return false;
+    }
 
-        dialog.showModal();
-        return false;
-      }
-
-      // The export method creates a text file consisting of the source texts of each
-      // score in the document, catenated and separated by a blank line between scores.
-      // The source texts are located in the pre elements with class'source'.
-      function exportScores() {
-        // Get the source texts of each score
-        const scoreDivs = document.querySelectorAll('div.score');
-        const scoreTexts = [];
-        scoreDivs.forEach(div => {
-          scoreTexts.push(div.querySelector('pre.source').textContent);
-        });
-        // Create a text file
-        const blob = new Blob([scoreTexts.join('\nEndOfScore\n')], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.setAttribute('href', url);
-        // get this html document's name and append '-source.fqs' to it.
-        const fqsName = window.location.pathname.split('/').pop().replace('.html', '-source.fqs');
-        a.setAttribute('download', fqsName);
-        let saveInitiated = true;
-        const initialTimestamp = Date.now();
-        a.click();
-        setTimeout(() => {
-          if (saveInitiated && Date.now() - initialTimestamp > 1000) {
-            // Assume save was successful if more than 1 second has passed.
-            // This approach isn't foolproof, but it may be the best we can
-            // do since the result of the File Save dialog is not available.
-            isDirty = false;
-          }
-        }, 1500);
-        // if the user cancels the download, do nothing. Otherwise clear isDirty
-        if (dialog.returnValue !== '') {
-          isDirty = false;
-        }
-        // Revoke the object URL to avoid memory leaks.
-        URL.revokeObjectURL(url);
-        return false;
-      }
-
-      function appendScores(text) {
-        const scoreTexts = text.split('\nEndOfScore\n');
-        scoreTexts.forEach(scoreText => {
-          const [div, link] = makeNewScoreDivAndLink(scoreText);
-          const newScoreButtons = document.querySelectorAll(`button.new-score-btn`);
-          let newScoreButton = newScoreButtons[newScoreButtons.length - 1]; // get the last new score button
-          newScoreButton.parentNode.insertBefore(div, newScoreButton.nextSibling);
-          // Add a new score button after the div
-          newScoreButton = document.createElement('button');
-          newScoreButton.setAttribute('class', 'new-score-btn');
-          newScoreButton.setAttribute('id', `insert-new-${div.id}`);
-          newScoreButton.textContent = 'Insert New Score';
-          newScoreButton.addEventListener('click', handleNewScoreButtonClick);
-          div.parentNode.insertBefore(newScoreButton, div.nextSibling);
-
-          div.appendChild(link);
-          renderEditedScoreSource(div);
-
-          // Honor the current visibility of edit controls
-          scoreControlsVisible(scoreControlsShown)
-        });
-      }
-
-      function importFromFile() {
-        const file = document.createElement('input');
-        file.setAttribute('type', 'file');
-        file.setAttribute('accept', '.fqs');
-        file.addEventListener('change', event => {
-          const file = event.target.files[0];
-          const reader = new FileReader();
-          reader.addEventListener('load', event => {
-            const text = event.target.result;
-            appendScores(text);
-          });
-          reader.readAsText(file);
-        });
-        file.click();
-        return false;
-      }
-
-      function importFromURL() {
-        const url = prompt('Enter the URL of the .fqs file:');
-        if (url) {
-          fetch(url)
-            .then(response => response.text())
-            .then(text => {
-              try {
-                appendScores(text);
-              } catch {
-                console.error('Error fetching .fqs file:', error);
-                alert('Error(s) encountered. Scores may be incorrectly rendered or may not be rendered at all.');
-              }
-            })
-            .catch(error => {
+    function importFromURL() {
+      const url = prompt('Enter the URL of the .fqs file:');
+      if (url) {
+        fetch(url)
+          .then(response => response.text())
+          .then(text => {
+            try {
+              appendScores(text);
+            } catch {
               console.error('Error fetching .fqs file:', error);
-              alert('Failed to fetch the .fqs file. Please check the URL and try again.');
-            });
-        }
-        return false;
+              alert('Error(s) encountered. Scores may be incorrectly rendered or may not be rendered at all.');
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching .fqs file:', error);
+            alert('Failed to fetch the .fqs file. Please check the URL and try again.');
+          });
       }
+      return false;
+    }
 
-      // updateFontSizes() updates the font sizes of the various elements of
-      // scores that will be rendered as SVG objects. The font default sizes are
-      // specified in the style element with id 'fqs-style', but we support
-      // overriding them via the bookParameters object. If the font sizes are not
-      // specified in the bookParameters object, we use the default font sizes and
-      // update corresponding vars in bookParameters.
-      function updateFontSizes() {
-        // Update the font sizes if user has specified them.
-        // First, get a reference to the stylesheet,
-        const stylesheet = document.getElementById('fqs-style').sheet;
-        const rules = stylesheet.cssRules || stylesheet.rules;
-        // define a closure that will update the font size of a rule
-        // whose index is i if the font height, fh is specified in 
-        // or if not specified, assign a numeric value
-        // to the value in fh.
-        update = (i, fh) => {
-          if (bookParameters[fh]) {
-            const v = bookParameters[fh];
-            rules[i].style.fontSize = v + 'px';
-          } else {
-            bookParameters[fh] = +rules[i].style.fontSize.slice(0, -2);
-          }
-        }
-        // loop over the rules to update font sizes.
-        for (let i = 0; i < rules.length; i++) {
-          switch (rules[i].selectorText) {
-            case '.title':
-              update(i, "titleFontHeight")
-              break;
-            case '.text':
-              update(i, 'textFontHeight');
-              break;
-            case '.preface':
-              update(i, 'prefaceFontHeight');
-              break;
-            case '.postscript':
-              update(i, 'postscriptFontHeight');
-              break;
-            case '.chord':
-              update(i, 'chordFontHeight');
-              break;
-            case '.pernote':
-              update(i, 'pernoteFontHeight');
-              break;
-            case '.fingering':
-              update(i, 'fingerFontHeight');
-              break;
-            case '.lyric':
-              update(i, 'lyricFontHeight');
-              break;
-            case '.pitch':
-              update(i, 'pitchFontHeight');
-              break;
-            case '.cue':
-              update(i, 'cueFontHeight');
-              break;
-            case '.perbar':
-              update(i, 'perbarFontHeight');
-              break;
-            case '.perbeat':
-              update(i, 'perbeatFontHeight');
-              break;
-            case '.counter':
-              update(i, 'counterFontHeight');
-              break;
-            case '.rest':
-              update(i, 'restFontHeight');
-              break;
-            case '.perline':
-              update(i, 'perlineFontHeight');
-              break;
-            case '.lineproblem':
-              update(i, 'lineproblemFontHeight');
-              break;
-          }
-        }
-      }
-      function toggleLayout() {
-        const scoreWrappers = document.querySelectorAll('.score-wrapper');
-        scoreWrappers.forEach(wrapper => {
-          switch (bookParameters.sideBySide) {
-            case true:
-              if (wrapper.classList.contains('side-by-side')) {
-                wrapper.classList.remove('side-by-side');
-              }
-              break;
-            case false:
-              if (!wrapper.classList.contains('side-by-side')) {
-                wrapper.classList.add('side-by-side');
-              }
-              break;
-          }
-        });
-        // toggle the book parameter
-        bookParameters.sideBySide = !bookParameters.sideBySide;
-      }
-      // newScoreBtnsVisible() and sourceEditorsVisible() are
-      // utilities to show/hide the new score and source editors
-      function newScoreBtnsVisible(visible) {
-        const newScoreBtns = document.querySelectorAll('.new-score-btn');
-        newScoreBtns.forEach(btn => {
-          btn.style.display = visible ? 'inline-block' : 'none';
-        });
-      }
-      function sourceEditorsVisible(visible) {
-        const scoreDivs = document.querySelectorAll('div.score');
-        scoreDivs.forEach(div => {
-          const details = div.querySelector('details');
-          details.open = false;
-          details.style.display = visible ? 'block' : 'none';
-        });
-      }
-      function scoreControlsVisible(visible) {
-        sourceEditorsVisible(visible);
-        newScoreBtnsVisible(visible);
-      }
-      function startExportButtonUpdateTimer() {
-        setInterval(updateExportButtonAppearance, 500);
-      }
-      function updateExportButtonAppearance() {
-        const exportButton = document.getElementById('exportButton');
-        if (isDirty) {
-          exportButton.style.backgroundColor = 'red';
-          exportButton.style.color = 'white';
+    // updateFontSizes() updates the font sizes of the various elements of
+    // scores that will be rendered as SVG objects. The font default sizes are
+    // specified in the style element with id 'fqs-style', but we support
+    // overriding them via the bookParameters object. If the font sizes are not
+    // specified in the bookParameters object, we use the default font sizes and
+    // update corresponding vars in bookParameters.
+    function updateFontSizes() {
+      // Update the font sizes if user has specified them.
+      // First, get a reference to the stylesheet,
+      const stylesheet = document.getElementById('fqs-style').sheet;
+      const rules = stylesheet.cssRules || stylesheet.rules;
+      // define a closure that will update the font size of a rule
+      // whose index is i if the font height, fh is specified in 
+      // or if not specified, assign a numeric value
+      // to the value in fh.
+      update = (i, fh) => {
+        if (bookParameters[fh]) {
+          const v = bookParameters[fh];
+          rules[i].style.fontSize = v + 'px';
         } else {
-          exportButton.style.backgroundColor = '';
-          exportButton.style.color = '';
+          bookParameters[fh] = +rules[i].style.fontSize.slice(0, -2);
         }
       }
-
-
-      // When the window load is complete, render the scores and add listeners to
-      // the buttons that invoke the functions to insert, save and delete scores.
-      window.onload = () => {
-        // update the stylesheet with any font sizes specified in the bookParameters object
-        // We need to make sure the font size vars in bookParameters and the style rules are in sync.
-        updateFontSizes();
-        toggleScoreControls(); // initialize the controls 
-        // Insert the built-in reference score.
-        const b1 = document.getElementById('first-new-score-btn');
-        insertNewScore(b1, 3);
-        isDirty = false
-        startExportButtonUpdateTimer();
+      // loop over the rules to update font sizes.
+      for (let i = 0; i < rules.length; i++) {
+        switch (rules[i].selectorText) {
+          case '.title':
+            update(i, "titleFontHeight")
+            break;
+          case '.text':
+            update(i, 'textFontHeight');
+            break;
+          case '.preface':
+            update(i, 'prefaceFontHeight');
+            break;
+          case '.postscript':
+            update(i, 'postscriptFontHeight');
+            break;
+          case '.chord':
+            update(i, 'chordFontHeight');
+            break;
+          case '.pernote':
+            update(i, 'pernoteFontHeight');
+            break;
+          case '.fingering':
+            update(i, 'fingerFontHeight');
+            break;
+          case '.lyric':
+            update(i, 'lyricFontHeight');
+            break;
+          case '.pitch':
+            update(i, 'pitchFontHeight');
+            break;
+          case '.cue':
+            update(i, 'cueFontHeight');
+            break;
+          case '.perbar':
+            update(i, 'perbarFontHeight');
+            break;
+          case '.perbeat':
+            update(i, 'perbeatFontHeight');
+            break;
+          case '.counter':
+            update(i, 'counterFontHeight');
+            break;
+          case '.rest':
+            update(i, 'restFontHeight');
+            break;
+          case '.perline':
+            update(i, 'perlineFontHeight');
+            break;
+          case '.lineproblem':
+            update(i, 'lineproblemFontHeight');
+            break;
+        }
       }
+    }
+    function toggleLayout() {
+      const scoreWrappers = document.querySelectorAll('.score-wrapper');
+      scoreWrappers.forEach(wrapper => {
+        switch (bookParameters.sideBySide) {
+          case true:
+            if (wrapper.classList.contains('side-by-side')) {
+              wrapper.classList.remove('side-by-side');
+            }
+            break;
+          case false:
+            if (!wrapper.classList.contains('side-by-side')) {
+              wrapper.classList.add('side-by-side');
+            }
+            break;
+        }
+      });
+      // toggle the book parameter
+      bookParameters.sideBySide = !bookParameters.sideBySide;
+    }
+    // newScoreBtnsVisible() and sourceEditorsVisible() are
+    // utilities to show/hide the new score and source editors
+    function newScoreBtnsVisible(visible) {
+      const newScoreBtns = document.querySelectorAll('.new-score-btn');
+      newScoreBtns.forEach(btn => {
+        btn.style.display = visible ? 'inline-block' : 'none';
+      });
+    }
+    function sourceEditorsVisible(visible) {
+      const scoreDivs = document.querySelectorAll('div.score');
+      scoreDivs.forEach(div => {
+        const details = div.querySelector('details');
+        details.open = false;
+        details.style.display = visible ? 'block' : 'none';
+      });
+    }
+    function scoreControlsVisible(visible) {
+      sourceEditorsVisible(visible);
+      newScoreBtnsVisible(visible);
+    }
+    function startExportButtonUpdateTimer() {
+      setInterval(updateExportButtonAppearance, 500);
+    }
+    function updateExportButtonAppearance() {
+      const exportButton = document.getElementById('exportButton');
+      if (isDirty) {
+        exportButton.style.backgroundColor = 'red';
+        exportButton.style.color = 'white';
+      } else {
+        exportButton.style.backgroundColor = '';
+        exportButton.style.color = '';
+      }
+    }
 
-    </script>
+
+    // When the window load is complete, render the scores and add listeners to
+    // the buttons that invoke the functions to insert, save and delete scores.
+    window.onload = () => {
+      // update the stylesheet with any font sizes specified in the bookParameters object
+      // We need to make sure the font size vars in bookParameters and the style rules are in sync.
+      updateFontSizes();
+      toggleScoreControls(); // initialize the controls 
+      // Insert the built-in reference score.
+      const b1 = document.getElementById('first-new-score-btn');
+      insertNewScore(b1, 3);
+      isDirty = false
+      startExportButtonUpdateTimer();
+    }
+
+  </script>
 <script type="text/javascript">
 // This is the reference score that documents FQS usage
 fqsReference=`
