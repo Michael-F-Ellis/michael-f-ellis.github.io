@@ -191,6 +191,16 @@
       padding: 0;
     }
 
+    .edit-button {
+      background: none;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .edit-button:hover {
+      background: #f0f0f0;/ad/add
+    }
 
     /* Font sizes (adjusted dynamically at render time) */
     .lineproblem {
@@ -242,7 +252,7 @@
     }
 
     .chord-pitch {
-      font: 12px monospace;
+      font: 10px monospace;
     }
 
     .pernote {
@@ -509,17 +519,13 @@
               continue;
             case "-":
               // a dash is never an attack but it may be a beat start.
-              if (this.text[i - 1] == " ") {
-                this.beats.push(pos);
-              }
+              detectAndPushBeat(i, pos);
               pos++;
               continue;
             case ";":
               this.rests.push(pos);
               // a rest is never an attack but it may be a beat start.
-              if (this.text[i - 1] == " ") {
-                this.beats.push(pos);
-              }
+              detectAndPushBeat(i, pos);
               pos++;
               continue;
             case ".":
@@ -1285,147 +1291,165 @@
       });
     } // end Cue class
 
-    // The PerNote class is used to render musical expressions, e.g. "cresc.", "mf", etc
-    // Expressions are rendered by looping through the tokens and rendering each one
-    // at the next attack from the lyric line.
-    class PerNote {
-      constructor(text) {
-        this.text = text;
-        // Trim the text and split on whitespace
-        this.tokens = this.text.trim().split(/\s+/);
+    class LineAnnotations {
+      constructor(lyricLine, y0, cssClasses) {
+        this.lyricLine = lyricLine;
+        this.y0 = y0;
+        this.cssClasses = cssClasses;
+        this.bars = lyricLine.bars;
+        this.beats = lyricLine.beats;
+        this.attacks = lyricLine.attacks;
+        // merge the bars and attacks array into one array by concatenating
+        // the two arrays and sorting the result.
+        this.positions = this.bars.concat(this.attacks).sort((a, b) => a - b);
       }
-      render = (function (svg, x0, y0, attacks, fontwidth) {
-        // x0 is the x coordinate of the left edge of the line
-        // y0 is the y coordinate of the baseline of the line
-        // fontwidth is the width of the lyric font in pixels.
-        // (the expression font will typically be smaller than the lyric font)
-        // As with the Pitch class, we will render the expression
-        // by looping through the tokens and rendering each one
-        // at the next attack from the lyric line. As a special
-        // case, if the expression text begins with a number, it
-        // is taken to be a measure number and is rendered at x0
-        // regardless of whether an attack exists at that position.
-        // This introduces some annoying bookkeeping as we have to
-        // track the width of the measure number to avoid overwriting
-        // it is there is an attack at the beginning of the line.
 
-        const mm = parseInt(this.tokens[0]);
-        if (!isNaN(mm)) {
-          const w = (1 + mm.toString().length) * fontwidth;
-          const attack0x = attacks[0] * fontwidth;
-          if (attack0x >= w) {
-            // insert an attack at 0 to render the measure number
-            attacks.splice(0, 0, 0);
+      nextBar(pos) {
+        // return the position of the next barline after the current position
+        // Add a lineProblem and return the pos unchanged if were at the last bar already.
+        for (let i = 0; i < this.bars.length; i++) {
+          let p = this.bars[i];
+          if (p > pos) {
+            console.log(`next bar at ${p}`)
+            return p
           }
         }
-        let i = 0;
-        for (let token of this.tokens) {
-          let x = x0;
-          let y = y0;
-          if (i < attacks.length) {
-            x = x0 + attacks[i] * fontwidth;
-            // replace any underscores with spaces
-            appendSVGTextChild(svg, x, y, token.replace(/_/g, " "), ["pernote"]);
-          }
-          i++;
-        }
-      })
-    } // end of PerNote class
-
-    // The  Finger class is used to render fingerings. It is almost identical to the PerNote class.
-    // except that it doesn't need to render a measure number at the beginning of the line.
-    class Finger {
-      constructor(text) {
-        this.text = text;
-        // Trim the text and split on whitespace
-        this.tokens = this.text.trim().split(/\s+/);
+        lineProblems.add("Already at last bar position")
+        return pos;
       }
-      render = (function (svg, x0, y0, attacks, fontwidth) {
-        // x0 is the x coordinate of the left edge of the line
-        // y0 is the y coordinate of the baseline of the line
-        // fontwidth is the width of the lyric font in pixels.
-        // (the expression font will typically be smaller than the lyric font)
-        // As with the Pitch class, we will render the expression
-        // by looping through the tokens and rendering each one
-        // at the next attack from the lyric line. 
-        let i = 0;
-        for (let token of this.tokens) {
-          let x = x0;
-          let y = y0;
-          if (i < attacks.length) {
-            x = x0 + attacks[i] * fontwidth + 0.1 * fontwidth;
-            // replace any underscores with spaces
-            appendSVGTextChild(svg, x, y, token.replace(/_/g, " "), ["fingering"]);
-          }
-          i++;
-        }
-      })
-    } // end of Finger class
 
-    // The PerBar class is used to render time signatures or other per bar information.
+      nextBeat(pos) {
+        for (let i = 0; i < this.beats.length; i++) {
+          let p = this.beats[i];
+          if (p > pos) {
+            console.log(`next beat at ${p}`)
+            return p
+          }
+        }
+        lineProblems.add("Already at or past last beat position");
+        return pos;
+      }
+      nextNote(pos) {
+        for (let i = 0; i < this.attacks.length; i++) {
+          let p = this.attacks[i];
+          if (p > pos) {
+            console.log(`next note at ${p}`)
+            return p
+          }
+        }
+        lineProblems.add("Already at or past last note position");
+        return pos;
+      }
+      render(svg, x0, text, step) {
+        if (!['bar', 'beat', 'note'].includes(step)) {
+          throw new Error(`Invalid step: ${step} : must be one of 'bar', 'beat', or 'note'`);
+        }
+        const tokens = text.trim().split(/\s+/);
+        let pos = 0;
+
+        tokens.forEach(token => {
+          switch (token) {
+            case "|":
+              pos = this.nextBar(pos);
+              switch (step) {
+                case 'beat':
+                  pos = this.nextBeat(pos)
+                  break;
+                case 'note':
+                  pos = this.nextNote(pos)
+                  break
+              }
+              break;
+            case "_":
+              switch (step) {
+                case 'bar':
+                  pos = this.nextBar(pos);
+                  break;
+                case 'beat':
+                  pos = this.nextBeat(pos)
+                  break
+                case 'note':
+                  pos = this.nextNote(pos);
+                  break;
+              }
+              break;
+            default:
+              let x = x0;
+              x += pos * bookParameters.lyricFontWidth;
+              // Replace underscores with spaces in the rendered text
+              appendSVGTextChild(svg, x, this.y0, token.replace(/_/g, ' '), this.cssClasses);
+              // Move to next step position if one is available
+              switch (step) {
+                case 'bar':
+                  if (pos < this.bars[this.bars.length - 1]) {
+                    pos = this.nextBar(pos);
+                  }
+                  break;
+                case 'beat':
+                  if (pos < this.beats[this.beats.length - 1]) {
+                    pos = this.nextBeat(pos);
+                  }
+                  break;
+                case 'note':
+                  if (pos < this.attacks[this.attacks.length - 1]) {
+                    pos = this.nextNote(pos);
+                  }
+                  break;
+                default:
+                  break;
+              }
+              break;
+          }
+          console.log(token, pos);
+        });
+      }
+    }
+
     class PerBar {
       constructor(text) {
         this.text = text;
-        // split the text on whitespace
-        this.tokens = this.text.split(/\s+/);
       }
-      render = (function (svg, x0, y0, bars, fontwidth) {
-        // x0 is the x coordinate of the left edge of the line y0 is the
-        // y coordinate of the baseline of the line. Bars is an array of
-        // bar line position.  fontwidth is the width of the lyric font
-        // in pixels.  (the time signature font will typically be
-        // smaller than the lyric font) Similarly to the Expression
-        // class, we will render the expression by looping through the
-        // tokens and rendering each one at the next bar. We use the
-        // under score character to skip barlines. Thus, `4/4 _ 3/4`
-        // will render a 4/4 time signature at the beginning of the line
-        // (position 0) and a 3/4 time signature above the barline at
-        // position the beginning of the third bar in the line.
-
-        let i = 0;
-        for (let token of this.tokens) {
-          let x = x0;
-          let y = y0;
-          if (i < bars.length) {
-            x = x0 + bars[i] * fontwidth;
-            // replace any underscores with spaces
-            appendSVGTextChild(svg, x, y, token.replace(/_/g, " "), ["perbar"]);
-          }
-          i++;
-        }
-      })
+      render(svg, x0, y0, lyricLine) {
+        const annotations = new LineAnnotations(lyricLine, y0, ['perbar']);
+        annotations.render(svg, x0, this.text, 'bar');
+      }
     }
 
-    // The PerBeatclass is used to render annotations that map to beats.
     class PerBeat {
       constructor(text) {
         this.text = text;
-        // split the text on whitespace
-        this.tokens = this.text.split(/\s+/);
       }
-      render = (function (svg, x0, y0, beats, fontwidth) {
-        // x0 is the x coordinate of the left edge of the line y0 is the
-        // y coordinate of the baseline of the line. Bars is an array of
-        // bar line position.  fontwidth is the width of the lyric font
-        // in pixels.  (the perbeat font will typically be
-        // smaller than the lyric font) Similarly to the PerBar
-        // class, we will render the expression by looping through the
-        // tokens and rendering each one at the next beat.
-
-        let i = 0;
-        for (let token of this.tokens) {
-          let x = x0;
-          let y = y0;
-          if (i < beats.length) {
-            x = x0 + beats[i] * fontwidth;
-            // replace any underscores with spaces
-            // text.textContent = token.replace(/_/g, " ");
-            appendSVGTextChild(svg, x, y, token.replace(/_/g, " "), ["perbeat"]);
-          }
-          i++;
-        }
-      })
+      render(svg, x0, y0, lyricLine) {
+        const annotations = new LineAnnotations(lyricLine, y0, ['perbeat']);
+        annotations.render(svg, x0, this.text, 'beat');
+      }
     }
+
+    class PerNote {
+      constructor(text) {
+        this.text = text;
+      }
+      render(svg, x0, y0, lyricLine) {
+        const annotations = new LineAnnotations(lyricLine, y0, ['pernote']);
+        annotations.render(svg, x0, this.text, 'note');
+      }
+    }
+
+    // The  Finger class is used to render fingerings. It is almost identical to the PerNote class.
+    // except that it adds a small fudge to the x position to make the tiny font
+    // align better with the pitch letters. 
+    class Finger {
+      constructor(text) {
+        this.text = text;
+      }
+      render(svg, x0, y0, lyricLine) {
+        const annotations = new LineAnnotations(lyricLine, y0, ['fingering']);
+        // Add a fudge to x positions for appearance
+        const x = x0 + 0.1 * bookParameters.lyricFontWidth
+        annotations.render(svg, x0, this.text, 'note');
+      }
+    }
+
     // The Counter class is similar to the PerBeat class. It provides
     // an automated method for rendering beat numbers above the beats.
     // The constructor takes 4 arguments, 
@@ -1809,9 +1833,9 @@
       if (line.chord) text += `chord: ${line.chord}\n`;
       if (line.text) text += `text: ${line.text}\n`;
       if (line.play) {
-        const minutes = line.play % 60;
-        const seconds = line.play - minutes * 60;
-        text += `play: ${minutes}:${seconds}\n`
+        const minutes = Math.floor(line.play / 60);
+        const seconds = line.play - (minutes * 60);
+        text += `play: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}\n`
       }
       if (line.finger) text += `finger: ${line.finger}\n`;
       if (line.perbeat) text += `perbeat: ${line.perbeat}\n`;
@@ -1840,6 +1864,34 @@
         editor.setAttribute('contenteditable', 'plaintext-only');
         editor.style.display = 'none';
         wrapper.appendChild(editor);
+        // Add triple tap detection because mobile devices use double-tap for zooming.
+        let tapCount = 0;
+        let lastTap = 0;
+
+        svg.addEventListener('touchend', (e) => {
+          const currentTime = new Date().getTime();
+          const tapLength = currentTime - lastTap;
+
+          if (tapLength < 500) { // Detect taps within 500ms
+            tapCount++;
+          } else {
+            tapCount = 1;
+            // Create and dispatch a click event for single taps
+            const clickEvent = new MouseEvent('click', {
+              bubbles: true,
+              cancelable: true,
+              view: window
+            });
+            e.target.dispatchEvent(clickEvent);
+          }
+
+          lastTap = currentTime;
+
+          if (tapCount === 3) {
+            editor.style.display = editor.style.display === 'none' ? 'block' : 'none';
+            tapCount = 0;
+          }
+        });
         // Add double-click handler to toggle editor
         svg.addEventListener('dblclick', () => {
           editor.style.display = editor.style.display === 'none' ? 'block' : 'none';
@@ -1941,13 +1993,13 @@
         if (line.perbeat && line.lyric) {
           y += bookParameters.perbeatFontHeight * 1.5
           const perbeat = new PerBeat(line.perbeat)
-          perbeat.render(svg, bookParameters.leftX, y, lyricline.beats, bookParameters.lyricFontWidth)
+          perbeat.render(svg, bookParameters.leftX, y, lyricline)
         }
         // Render the fingerings, if any
         if (line.finger && line.lyric) {
           y += bookParameters.fingerFontHeight * 1.5
           const finger = new Finger(line.finger)
-          finger.render(svg, bookParameters.leftX, y, lyricline.attacks, bookParameters.lyricFontWidth)
+          finger.render(svg, bookParameters.leftX, y, lyricline)
         }
         // Render the pitches, if any
         if (line.pitch && line.lyric) {
@@ -1964,7 +2016,7 @@
         if (line.perbar && line.lyric) {
           y += bookParameters.perbarFontHeight;
           const perbar = new PerBar(line.perbar);
-          perbar.render(svg, bookParameters.leftX, y, lyricline.bars, bookParameters.lyricFontWidth);
+          perbar.render(svg, bookParameters.leftX, y, lyricline);
 
         }
         // Render the lyric
@@ -1979,7 +2031,8 @@
         if (line.pernote && line.lyric) {
           y += bookParameters.pernoteFontHeight * 1.5; // 2 px extra space between exprs and lyric to clear descenders
           const expr = new PerNote(line.pernote);
-          expr.render(svg, bookParameters.leftX, y, lyricline.attacks, bookParameters.lyricFontWidth);
+          // expr.render(svg, bookParameters.leftX, y, lyricline.attacks, bookParameters.lyricFontWidth);
+          expr.render(svg, bookParameters.leftX, y, lyricline);
         }
         // Render the counter, if any
         if (line.counter && line.lyric) {
@@ -2638,13 +2691,13 @@ cue: counter: 3
 
 text: The 'music:' keyword tells the app to interpret what follows as a line of FQS notation.
 .
-A key signature is required. In this example, K#4, indicates E major ( 4 sharps ).
+   - A key signature is required. In this example, K#4, indicates E major ( 4 sharps ).
 .
-No time signature is needed ( but you can indicate one with an annotation).
+   - No time signature is needed ( but you can indicate one with an annotation).
 .
-The vertical bar symbol ( | ) ends a measure.
+   - The vertical bar symbol ( | ) ends a measure.
 .
-A hyphen ( - ) indicates a sustained pitch.
+   - A hyphen ( - ) indicates a sustained pitch.
 .
 By default, each pitch is rendered in the octave that puts it closest to
 the preceding pitch. A preceding caret ( ^ ) raises it to the next octave.
@@ -2653,7 +2706,8 @@ A preceding forward slash ( / ) lowers it one octave.
 The 'counter' keyword is optional.  It places small beat numbers below the staff.
 It takes a single number as an argument to enable support for pickup (partial) measures.
 
-text: NOTE: For technical reasons, editing scores is not possible with Firefox. 
+text: COMPATIBILITY: 
+For technical reasons, editing scores is not possible with Firefox. 
 Other browsers including Chrome, Safari, etc., work correctly.
 
 text: NOTATED CHORDS:
@@ -2664,7 +2718,7 @@ the staff as a group of pitches rotated left by 30°,  like this:
 music: K0 (ceg&b) /cegb c |
 counter: 1
 
-text: In the example above, the slanted characters indicate that all the pitches in the 
+text: In the example above, the smaller, back-slanted characters indicate that all the pitches in the 
 first beat are to be sounded together as a chord for one beat whereas the the four
 pitches in the second beat are to be played as four sixteenth notes (assuming a quarter note beat).
 .
@@ -2739,12 +2793,12 @@ cue: Largo (mm=48)
 cue: A section (player begins at repeat)
 music: K0 (cg^e^c) (/d^c)--a b | (/cg^e^&b) (fb)--g a | (/bd)-ef (cg^f)--d ef | cbca bd /gf |
 counter: 1
-play: 18:-402
+play: 11:18
 
 cue: 5
 music: K0 (/e^c^a) (/a^g)--e #fdfa | (/da^#f^c)--a (/g^d^c)--a cbag | (/#c^ga)-&bc (/d^b)-ac &e/#f | g (/g^g) - |
 counter: 1
-play: 38:-1582
+play: 11:38
 
 text: LYRICS:
 .
@@ -2835,12 +2889,18 @@ pitch: K&3 ^b g e | d c ^aa | g e f | e |
 lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
 pernote: mf cresc. _ _ _ ff
 
+text: FINGERING - finger annotations attach to individual notes above the staff.
+
+music: K0 ^g | c d e f | g - - - |
+finger: 0 4 1 -1 2 4
+
 text: EVERYTHING - Here's the last line of Happy Birthday once again, this time
 with all possible annotations.
 
 pitch: K&3 ^b g e | d c ^aa | g e f | e |
 lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
 counter: 1
+finger: | | 0 1 3
 perbeat: mm=120 _ rall. _ 𝄐 _a_tempo _ _ molto_rall.
 pernote: mf cresc. _ _ _ ff
 perbar: 3/4_Brightly
@@ -2904,8 +2964,19 @@ text: ANNOTATIONS (all optional):
     pernote: Items aligned to attacks, e.g. dynamic markings
     finger: Fingering numbers. Rendered in tiny font above the staff.
 .
-Underscores ( _ ) are used to skip beats, barlines, or attacks in annotations.
-        : e.g. 'perbar: 4/4 _ 3/4' puts 4/4 at the first measure and 3/4 at the third measure.`
+    LAYOUT CHARACTERS:
+    In perbar, perbeat, pernote and finger annotations, the underscore (_) and barline (|)
+    are treated specially.
+.
+    Underscores ( _ ) are used to skip beats, barlines, or attacks in annotations. For example:
+    "perbar: a_tempo _ molto_rall." puts 'a tempo' at the first measure and 'molto rall.' at 
+    the third measure.
+.   
+    Barlines ( | ) advance the layout to the next barline. This is particularly useful in per note
+    annotations to reduce the number of underscores needed to correctly place an annotation.
+
+music: K0 ^^g f e d | c b a g | f e d b | c - - - |
+pernote: a_tempo | | molto_rall.`
 </script>
 </body>
 </html>
