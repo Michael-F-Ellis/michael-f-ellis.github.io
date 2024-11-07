@@ -1854,14 +1854,22 @@
         editor.classList.add('section-editor');
         editor.setAttribute('contenteditable', 'plaintext-only');
         editor.style.display = 'none';
-        wrapper.appendChild(editor);
+        const editorDiv = document.createElement('div');
+        const reloadButton = document.createElement('button');
+        reloadButton.textContent = '↻';
+        reloadButton.setAttribute('class', 'reload-icon');
+        editorDiv.style.display = 'flex';
+        editorDiv.style.alignItems = 'flex-start';
+        editorDiv.appendChild(reloadButton);
+        editorDiv.appendChild(editor);
+        wrapper.appendChild(editorDiv);
 
         pencil.addEventListener("click", function (e) {
           e.stopPropagation();
           e.preventDefault();
           e.stopImmediatePropagation();
           console.log("pencil click");
-          editor.style.display = editor.style.display === 'none' ? 'block' : 'none';
+          editorDiv.style.display = editorDiv.style.display === 'none' ? 'block' : 'none';
           return false;
         }, true);
         return editor;
@@ -2056,17 +2064,6 @@
           const scoreDiv = wrapper.closest('div.score');
           const mainEditor = scoreDiv.querySelector('pre.source');
           mainEditor.textContent = fullText;
-          const activeIndex = Array.from(sectionEditors).indexOf(activeEditor);
-
-          score = scoreMap.get(scoreDiv.id);
-          score.render();
-
-          // Find and restore state of new editor at same index
-          const newEditors = wrapper.querySelectorAll('.section-editor');
-          const newActiveEditor = newEditors[activeIndex];
-          newActiveEditor.style.display = 'block';
-          newActiveEditor.focus();
-
         });
         editor.addEventListener('click', () => {
           // Save editor state
