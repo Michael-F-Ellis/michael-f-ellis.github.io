@@ -2046,11 +2046,9 @@
       sectionEditors.forEach(editor => {
         editor.addEventListener('input', () => {
           const activeEditor = document.activeElement;
-          // Get array of all editors. 
-          const allEditors = wrapper.querySelectorAll('.section-editor');
 
           // Update main source and render
-          const fullText = Array.from(allEditors)
+          const fullText = Array.from(sectionEditors)
             .map(ed => ed.textContent.trim())
             .filter(text => text.length > 0)
             .join('\n\n');
@@ -2058,6 +2056,16 @@
           const scoreDiv = wrapper.closest('div.score');
           const mainEditor = scoreDiv.querySelector('pre.source');
           mainEditor.textContent = fullText;
+          const activeIndex = Array.from(sectionEditors).indexOf(activeEditor);
+
+          score = scoreMap.get(scoreDiv.id);
+          score.render();
+
+          // Find and restore state of new editor at same index
+          const newEditors = wrapper.querySelectorAll('.section-editor');
+          const newActiveEditor = newEditors[activeIndex];
+          newActiveEditor.style.display = 'block';
+          newActiveEditor.focus();
 
         });
         editor.addEventListener('click', () => {
