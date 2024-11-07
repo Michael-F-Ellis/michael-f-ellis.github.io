@@ -65,7 +65,7 @@
 </head>
 
 <body>
-<p>Build: main-9f182b3</p>
+<p>Build: main-2c9dd52</p>
   <!--YouTube player div-->
   <div id="player"></div>
   <!-- Page controls -->
@@ -1786,7 +1786,6 @@
 
       return y;
     }
-    let currentlyPlaying = false;
     function playYouTubeAt(videoId, timeSeconds, rate = 1.0) {
       if (player.getPlayerState() === YT.PlayerState.PLAYING) {
         player.pauseVideo();
@@ -1833,13 +1832,6 @@
       return text;
     }
 
-    function reconstructFullScoreText(title, sectionEditors) {
-      let text = `title: ${title}\n\n`;
-      sectionEditors.forEach(editor => {
-        text += editor.textContent + '\n';
-      });
-      return text;
-    }
     // The renderScore function is used to render the score using the
     // members of the data object created by preprocessScore.
     //  - wrapper is a div element that will hold svg's we create
@@ -2162,6 +2154,8 @@ counter: 1
           return choices.minimal
       }
     }
+    // Score represents a score div and its associated editable source text.  It
+    // has a render method that renders the source text as FQS musical notation.
     class Score {
       constructor(text) {
         this.text = text;
@@ -2212,12 +2206,6 @@ counter: 1
         this.source.addEventListener('input', () => {
           this.render();
         });
-        // double click on the score to globally toggle editing
-        /*
-        this.outer.addEventListener('dblclick', () => {
-          toggleEdit();
-        });
-        */
       }
 
       // showSourceEditor() makes the source editor visible.
@@ -2269,6 +2257,9 @@ counter: 1
         isDirty = true // signal that the score has been edited
       }
     }
+    // insertNewScore() inserts a new score into the DOM. It is called
+    // when the user chooses one of the predefined score templates from
+    // the new score dialog.
     function insertNewScore(button, intChoice) {
       const scoreText = newScoreContent(parseInt(intChoice));
       scoreObj = new Score(scoreText);
@@ -2362,7 +2353,8 @@ counter: 1
       URL.revokeObjectURL(url);
       return false;
     }
-
+    // appendScores adds a set of scores to the document.  It is called from
+    // either the importFromFile or importFromURL function.
     function appendScores(text) {
       const scoreTexts = text.split('\nEndOfScore\n');
       scoreTexts.forEach(scoreText => {
@@ -2386,7 +2378,8 @@ counter: 1
       // Honor the current edit mode state.
       forceEditMode(editModeState);
     }
-
+    // importFromFile prompts the user to select an fqs file and imports the
+    // scores in the file.
     function importFromFile() {
       const file = document.createElement('input');
       file.setAttribute('type', 'file');
@@ -2403,9 +2396,11 @@ counter: 1
       file.click();
       return false;
     }
-
+    // importFromURL prompts the user to enter the URL of an fqs file and
+    // imports the scores
     function importFromURL() {
-      const url = prompt('Enter the URL of the .fqs file:');
+      const url = prompt('Enter the URL of the .fqs file:',
+        "https://www.example.com/myfile.fqs");
       if (url) {
         fetch(url)
           .then(response => response.text())
@@ -2502,34 +2497,15 @@ counter: 1
         }
       }
     }
-    function toggleLayout() {
-      const scoreWrappers = document.querySelectorAll('.score-wrapper');
-      scoreWrappers.forEach(wrapper => {
-        switch (bookParameters.sideBySide) {
-          case true:
-            if (wrapper.classList.contains('side-by-side')) {
-              wrapper.classList.remove('side-by-side');
-            }
-            break;
-          case false:
-            if (!wrapper.classList.contains('side-by-side')) {
-              wrapper.classList.add('side-by-side');
-            }
-            break;
-        }
-      });
-      // toggle the book parameter
-      bookParameters.sideBySide = !bookParameters.sideBySide;
-    }
-    // newScoreBtnsVisible() and sourceEditorsVisible() are
-    // utilities to show/hide the new score and source editors
+    // newScoreBtnsVisible() toggles the visibility of the new score buttons.  
     function newScoreBtnsVisible(visible) {
       const newScoreBtns = document.querySelectorAll('.new-score-btn');
       newScoreBtns.forEach(btn => {
         btn.style.display = visible ? 'inline-block' : 'none';
       });
     }
-
+    // startExportButtonUpdateTimer() starts a timer that will update the
+    // appearance of the export button if the score is dirty.
     function startExportButtonUpdateTimer() {
       setInterval(updateExportButtonAppearance, 500);
     }
@@ -2653,15 +2629,13 @@ In either case, if editing is already active, the same actions will hide the edi
 and return you to display mode.
 .
 One important difference is that editing in the side pane will update the displayed
-notation immediately, whereas you must double click in the small editors to see
+notation immediately, whereas you must click the reload icon in the small editors to see
 the result of your changes.
 .
-For example, the first line of the Happy Birthday sample above
-was created by entering the following two lines of text:
+Try it out! Click the pencil icon beside the line of music below and make some changes.
 
-cue: music: K#4 bb | c b e | d - bb | c b ^f | e - bb |
-
-cue: counter: 3
+music: K#4 bb | c b e | d - bb | c b ^f | e - bb |
+counter: 3
 
 text: The 'music:' keyword tells the app to interpret what follows as a line of FQS notation.
 .
@@ -2696,9 +2670,8 @@ text: In the example above, the smaller, back-slanted characters indicate that a
 first beat are to be sounded together as a chord for one beat whereas the the four
 pitches in the second beat are to be played as four sixteenth notes (assuming a quarter note beat).
 .
-The example above was entered as:
-
-cue: music: K0 (ceg&b) /cegb c |
+To enter notes as a chord, surround them with parentheses, e.g. (cegb). Try editing the
+music line above to add another chord.
 
 text: PAGE CONTROLS:
 .
