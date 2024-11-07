@@ -65,7 +65,7 @@
 </head>
 
 <body>
-<p>Build: main-b52df42-dirty</p>
+<p>Build: main-9f182b3</p>
   <!--YouTube player div-->
   <div id="player"></div>
   <!-- Page controls -->
@@ -1845,34 +1845,70 @@
     //  - wrapper is a div element that will hold svg's we create
     //  - data is an object containing the score
     function renderScore(wrapper, data) {
+      // The addEditor function is a closure that adds editing capabilities to a
+      // section of the score. The svg argument is the svg element that will
+      // be edited.  
       addEditor = (svg) => {
-        // Create a pencil icon that will be used to edit the section.
-        const pencil = appendSVGTextChild(svg, 0, 16, "✎", ['pencil-icon']);
-
-        // Creates separate editing area for an SVG section
-        const editor = document.createElement('pre');
-        editor.classList.add('section-editor');
-        editor.setAttribute('contenteditable', 'plaintext-only');
-        editor.style.display = 'none';
+        // Create a div that will hold the editor and the reload button.
         const editorDiv = document.createElement('div');
+        editorDiv.setAttribute('class', 'section-editor-div');
+        editorDiv.style.display = 'none';
+        editorDiv.style.alignItems = 'flex-start';
+        // Create the reload button
         const reloadButton = document.createElement('button');
         reloadButton.textContent = '↻';
         reloadButton.setAttribute('class', 'reload-icon');
-        editorDiv.style.display = 'flex';
-        editorDiv.style.alignItems = 'flex-start';
+        // Create the editor element
+        const editor = document.createElement('pre');
+        editor.classList.add('section-editor');
+        editor.setAttribute('contenteditable', 'plaintext-only');
+        editor.style.display = 'block';
+        // Wrap the button and editor in the editor div.
         editorDiv.appendChild(reloadButton);
         editorDiv.appendChild(editor);
         wrapper.appendChild(editorDiv);
 
+        // Create a pencil icon  that shows and hides the editor.
+        const pencil = appendSVGTextChild(svg, 0, 16, "✎", ['pencil-icon']);
         pencil.addEventListener("click", function (e) {
           e.stopPropagation();
           e.preventDefault();
           e.stopImmediatePropagation();
-          console.log("pencil click");
-          editorDiv.style.display = editorDiv.style.display === 'none' ? 'block' : 'none';
+          editorDiv.style.display = editorDiv.style.display === 'none' ? 'flex' : 'none';
           return false;
         }, true);
-        return editor;
+        // Each input event on the editor will update the main source
+        editor.addEventListener('input', () => {
+          const sectionEditors = wrapper.querySelectorAll('.section-editor');
+          // Update main source and render
+          const fullText = Array.from(sectionEditors)
+            .map(ed => ed.textContent.trim())
+            .filter(text => text.length > 0)
+            .join('\n\n');
+
+          const scoreDiv = wrapper.closest('div.score');
+          const mainEditor = scoreDiv.querySelector('pre.source');
+          mainEditor.textContent = fullText;
+        });
+        // The reload button will reload the edited score.
+        reloadButton.addEventListener('click', () => {
+          // Save editor state
+          const activeEditor = editor;
+          // Get index of active editor among siblings
+          const allEditors = wrapper.querySelectorAll('.section-editor');
+          const activeIndex = Array.from(allEditors).indexOf(activeEditor);
+
+          const scoreDiv = wrapper.closest('div.score');
+          score = scoreMap.get(scoreDiv.id);
+          score.render();
+
+          // Find and restore state of new editor at same index
+          const newEditorDivs = wrapper.querySelectorAll('.section-editor-div');
+          const newActiveEditor = newEditorDivs[activeIndex];
+          newActiveEditor.style.display = 'flex';
+          newActiveEditor.focus();
+        });
+        return editor; // so caller can add initial text content
       }
       // clear any existing content of the SVG element
       wrapper.innerHTML = "";
@@ -2048,41 +2084,6 @@
             event.target.clickProcessed = (event.detail === 2);
           });
         }
-      });
-      // Add input handler to each section editor
-      const sectionEditors = wrapper.querySelectorAll('.section-editor');
-      sectionEditors.forEach(editor => {
-        editor.addEventListener('input', () => {
-          const activeEditor = document.activeElement;
-
-          // Update main source and render
-          const fullText = Array.from(sectionEditors)
-            .map(ed => ed.textContent.trim())
-            .filter(text => text.length > 0)
-            .join('\n\n');
-
-          const scoreDiv = wrapper.closest('div.score');
-          const mainEditor = scoreDiv.querySelector('pre.source');
-          mainEditor.textContent = fullText;
-        });
-        editor.addEventListener('click', () => {
-          // Save editor state
-          const activeEditor = document.activeElement;
-          // Get index of active editor among siblings
-          const allEditors = wrapper.querySelectorAll('.section-editor');
-          const activeIndex = Array.from(allEditors).indexOf(activeEditor);
-
-          const scoreDiv = wrapper.closest('div.score');
-          score = scoreMap.get(scoreDiv.id);
-          score.render();
-
-          // Find and restore state of new editor at same index
-          const newEditors = wrapper.querySelectorAll('.section-editor');
-          const newActiveEditor = newEditors[activeIndex];
-          newActiveEditor.style.display = 'block';
-          newActiveEditor.focus();
-          // newActiveEditor.selectionStart = newActiveEditor.selectionEnd = cursorPosition;
-        });
       });
     }
 
