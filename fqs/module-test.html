@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="fqs.css">
+</head>
+
+<body>
+	<div id="player"></div>
+	<script type="module">
+		import { Score, initYouTubeAPI } from './fqs.js';
+
+		initYouTubeAPI();
+
+		const scoreText = `title: Simple Score
+
+music: K0 c d e f |
+counter: 1`;
+
+		const score = new Score(scoreText);
+		document.body.appendChild(score.outer);
+		score.render();
+	</script>
+</body>
+
+</html>
