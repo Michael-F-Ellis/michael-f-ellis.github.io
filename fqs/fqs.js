@@ -1382,7 +1382,7 @@ function preprocessScore(text) {
     parts.forEach(part => {
       part.trim()
       const [key, value] = splitFirst(part, ': ');
-      k = key.trim();
+      const k = key.trim();
       // Special handling for play:
       switch (k) {
         case "play":
