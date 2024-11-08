@@ -1,0 +1,174 @@
+  img {
+    margin-left: 5%;
+  }
+
+  div.edit {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 2em;
+    margin-bottom: 2em;
+    padding-left: 5%;
+  }
+
+
+  div.score,
+  div.score-toc {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 2em;
+    margin-bottom: 2em;
+    padding: 0;
+  }
+
+  .pencil-icon {
+    font-size: 16px;
+    fill: green;
+  }
+
+  /* Font sizes (adjusted dynamically at render time) */
+  .lineproblem {
+    font: 8px monospace;
+    fill: red;
+  }
+
+  .title {
+    font: 18px sans-serif;
+  }
+
+  .preface {
+    font: 10px sans-serif;
+  }
+
+  .postscript {
+    font: 10px sans-serif;
+  }
+
+  .text {
+    font: 10px sans-serif;
+  }
+
+  /* chord name, e.g. 'C' */
+  .chord {
+    font-family: monospace;
+    font-size: 13px;
+    font-style: bold;
+  }
+
+  /* chord text, e.g. 'maj7' */
+  .chord-text {
+    font-family: Arial, sans-serif;
+    font-size: 8px;
+    font-style: bold;
+  }
+
+  .grey {
+    fill: rgb(160, 160, 160);
+  }
+
+  .lyric {
+    font: 12px monospace;
+  }
+
+  .rest,
+  .pitch {
+    font: 12px monospace;
+  }
+
+  .chord-pitch {
+    font: 10px monospace;
+  }
+
+  .pernote {
+    font: 8px monospace;
+    font-style: italic;
+  }
+
+  .fingering {
+    font: 4px monospace;
+  }
+
+  .perbar {
+    font: 8px monospace;
+    font-style: italic;
+  }
+
+  .counter {
+    font: 6px monospace;
+    font-style: italic;
+  }
+
+  .perbeat {
+    font: 6px monospace;
+    font-style: italic;
+  }
+
+  .cue {
+    /* cue text */
+    fill: rgb(84, 84, 84);
+    font: 8px monospace;
+  }
+
+  /* Note that the color of the text is set with the    *
+       * fill property, the color property is for HTML only */
+  .♭ {
+    /* flat */
+    fill: rgb(152, 140, 254);
+    /* font-style: italic; */
+
+  }
+
+  .𝄫 {
+    /* double flat */
+    fill: rgb(4, 182, 4);
+    font-style: italic;
+  }
+
+  .♯ {
+    /* sharp */
+    fill: red;
+    /* font-style: italic; */
+  }
+
+  .𝄪 {
+    /* double sharp */
+    fill: orange;
+    font-style: italic;
+  }
+
+  /* styles for side by side layout */
+  div.score-wrapper {
+    display: flex;
+    flex-direction: row;
+  }
+
+  div.inner-wrapper {
+    position: sticky;
+    top: 0;
+    padding-left: 1%;
+    overflow-y: auto;
+  }
+
+  pre.source {
+    position: sticky;
+    top: 0;
+    padding-left: 5%;
+    overflow-y: auto;
+  }
+
+  .section-editor {
+    width: 90%;
+    min-height: 100px;
+    margin: 10px 5% 5% 10px;
+    padding: 1em;
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+  }
+
+  /* Center SVG elements with 5% padding left, right and bottom*/
+  svg {
+    padding-left: 5%;
+    display: block !important;
+    width: 100% !important;
+  }
