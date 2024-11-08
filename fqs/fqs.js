@@ -1496,7 +1496,7 @@ function renderScore(wrapper, data) {
   // The addEditor function is a closure that adds editing capabilities to a
   // section of the score. The svg argument is the svg element that will
   // be edited.  
-  addEditor = (svg) => {
+  const addEditor = (svg) => {
     // Create a div that will hold the editor and the reload button.
     const editorDiv = document.createElement('div');
     editorDiv.setAttribute('class', 'section-editor-div');
