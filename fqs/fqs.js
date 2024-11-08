@@ -24,34 +24,6 @@ function onYouTubeIframeAPIReady() {
   });
 }
 
-let editModeState = true;
-const editButton = document.getElementById('edit-btn');
-function toggleEdit() {
-  editModeState = !editModeState;
-  forceEditMode(editModeState);
-}
-function forceEditMode(boolValue) {
-  newScoreBtnsVisible(editModeState);
-  const scoreDivs = document.querySelectorAll('div.score');
-  scoreDivs.forEach(div => {
-    const editor = div.querySelector('div.source-div');
-    const rendered = div.querySelector('div.inner-wrapper');
-    const deleteBtn = div.querySelector('button.delete-btn');
-    if (editModeState) {
-      editor.style.display = 'block';
-      editor.style.width = '50%';
-      rendered.style.width = '50%';
-      deleteBtn.style.display = 'inline-block';
-      editButton.textContent = 'Hide edit controls';
-    } else {
-      editor.style.display = 'none';
-      rendered.style.width = '100%';
-      deleteBtn.style.display = 'none';
-      editButton.textContent = 'Show edit controls';
-    }
-  });
-}
-editButton.addEventListener('click', toggleEdit);
 const scoreMap = new Map();
 let isDirty = false; // global flag that is set when we edit a score and cleared when export the scores
 const bookParameters = {
