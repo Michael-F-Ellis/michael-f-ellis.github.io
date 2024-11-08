@@ -1324,7 +1324,7 @@ function preprocessScore(text) {
   data.tight = false; // don't squeeze beats together.
   // loop through the blocks in reverse order.
   for (let i = blocks.length - 1; i >= 0; i--) {
-    block = blocks[i].trim();
+    let block = blocks[i].trim();
     if (block.startsWith("youtube:")) {
       // youtube video id with optional default play rate
       // e.g. youtube:12345678 0.75
