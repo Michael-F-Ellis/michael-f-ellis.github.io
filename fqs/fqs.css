@@ -63,6 +63,11 @@
     font-style: bold;
   }
 
+  .rhythm-marker {
+    stroke-width: 2;
+    stroke: black;
+  }
+
   .grey {
     fill: rgb(160, 160, 160);
   }
@@ -141,6 +146,7 @@
   div.score-wrapper {
     display: flex;
     flex-direction: row;
+    width: 100%;
   }
 
   div.inner-wrapper {

@@ -7,9 +7,9 @@ function initYouTubeAPI() {
   let firstScriptTag = document.getElementsByTagName('script')[0];
   firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 }
+let player; //  module global player object
 // Minimal player initialization. This implementation avoids third-party cookie issues.
 // See https://stackoverflow.com/a/64444601/426853
-let player;
 function onYouTubeIframeAPIReady() {
   console.log('YouTube IFrame API ready');
   player = new YT.Player('player', {
@@ -23,22 +23,291 @@ function onYouTubeIframeAPIReady() {
     }
   });
 }
-
-const scoreMap = new Map();
-let isDirty = false; // global flag that is set when we edit a score and cleared when export the scores
-const bookParameters = {
-  // bookParameters control the behavior of the score editor and display.
+const defaultParameters = {
+  // parameters control the behavior of the score editor and display.
   leftX: 16, // Pixel position of the left edge of the score.
   sideBySide: true, // if true, render scores side-by-side with edit area
   barlineRgx: /:?\|:?/, // regular expression to match barlines
   lyricRgx: /[\p{L}']/u, // regular expression to match lyric alpha characters and apostrophes
   "lyricFontWidth": 7, // includes space between letters
   // Various font size parameters are are added to this object at runtime by 
-  // by the updateFontSizes() function in this file. These are needed by the functions
-  // that render the scores. If you need to change the font size, you should do so 
-  // in the style tag in this file with id "fqs-style".
+  // by the updateFontSizes() function in this module. These are needed by the functions
+  // that render the scores. If you need to change the font sizes, you should do so
+  // in the style tag in this in fqs.css".
+};
+updateFontSizes();
+
+class Book {
+  // A Book is a collection of Scores.
+  constructor(containerid) {
+    this.container = document.getElementById(containerid);
+    this.scores = new Map(); // Will hold scores keyed by score.id
+    this.delimiter = "\nEndOfScore\n" // delimiter between scores in exportable .fqs format
+    this.controlsVisible = true;
+    initYouTubeAPI();
+  }
+  // enforceControlsVisibility() hides or shows the book-actions div of each score according to the
+  // controlsVisible flag.
+  enforceControlsVisibility() {
+    const actiondivs = document.querySelectorAll('div.book-actions');
+    for (const actiondiv of actiondivs) {
+      actiondiv.style.display = this.controlsVisible ? 'block' : 'none';
+    }
+  }
+
+  // pageBreak returns a div that will force a page break.
+  // Credit: https://stackoverflow.com/a/58245474/426853
+  pageBreak() {
+    const pageBreakDiv = document.createElement('div');
+    pageBreakDiv.style.breakAfter = 'page';
+    return pageBreakDiv;
+  }
+
+  // addScore() adds a score to the book. If nextSibling is specified, the score
+  // will be inserted after the specified sibling. Otherwise, it will be
+  // appended to the end. A set of control buttons is prepended to the score.
+  addScore(scoreText, nextSibling) {
+    const score = new Score(scoreText, this.container);
+    if (!score) {
+      return;
+    }
+
+    // Create book-actions div with control buttons
+    const actionsDiv = document.createElement('div');
+    actionsDiv.classList.add('book-actions');
+
+    // Insert new score button
+    const insertButton = document.createElement('button');
+    insertButton.textContent = 'Insert new score';
+    insertButton.onclick = () => {
+      const newScore = this.addScore("title: New Score", score.outer.nextSibling);
+      newScore.showSourceEditor();
+    };
+    actionsDiv.appendChild(insertButton);
+
+    // Delete score button  
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Delete score';
+    deleteButton.onclick = () => {
+      if (confirm('Delete this score?')) {
+        this.deleteScore(score.id);
+      }
+    };
+    actionsDiv.appendChild(deleteButton);
+
+    // Edit mode toggle button
+    const editButton = document.createElement('button');
+    editButton.textContent = 'Toggle edit mode';
+    editButton.onclick = () => score.toggleEdit();
+    actionsDiv.appendChild(editButton);
+
+    // Jump to TOC button
+    const tocButton = document.createElement('button');
+    tocButton.textContent = 'Contents';
+    tocButton.onclick = () => {
+      document.getElementById('score-toc').scrollIntoView();
+    };
+    actionsDiv.appendChild(tocButton);
+
+    // Add actions div at top of score
+    score.outer.prepend(actionsDiv);
+    score.outer.append(this.pageBreak());
+
+    // Insert the score 
+    if (nextSibling) {
+      this.container.insertBefore(score.outer, nextSibling);
+    } else {
+      this.container.appendChild(score.outer);
+    }
+
+    // Add score to map and render
+    this.scores.set(score.id, score);
+    score.render();
+    this.updateToc();
+    return score;
+  }
+  // deleteScore(id) deletes the score with the given id.
+  deleteScore(id) {
+    const scorediv = document.getElementById(id);
+    scorediv.remove();
+    this.scores.delete(id);
+    this.updateToc();
+  }
+  // importFromText(text) imports scores from a string containing the scores in the
+  // format produced by exportToText().
+  importFromText(text) {
+    const scoreTexts = text.split(this.delimiter);
+    for (const scoreText of scoreTexts) {
+      if (scoreText.trim() === '') {
+        continue;
+      }
+      this.addScore(scoreText, null); // null means append to end of container
+    }
+  }
+  // exportToText() returns a string containing all the scores in the book with
+  // the delimiter expected by importFromText().
+  exportToText() {
+    let text = '';
+    const scores = this.getScores();
+    scores.forEach(score => {
+      text += score.getText() + this.delimiter;
+    });
+    return text;
+  }
+  // getScores() returns an array of scores in the order they appear in the container.
+  getScores() {
+    const scoredivs = document.querySelectorAll('div.score');
+    const scores = [];
+    for (const scorediv of scoredivs) {
+      const score = this.scores.get(scorediv.id);
+      if (score) {
+        scores.push(score);
+      }
+    }
+    return scores;
+  }
+
+  // render() renders all the scores in the book into the container.  before
+  // rendering it scans the container to determine the order of the scores.  The
+  // scores are rendered in the order they appear in the container.
+  render() {
+    // get the scores in order
+    const scores = this.getScores()
+    if (scores.length === 0) {
+      return;
+    }
+    const texts = scores.map(score => score.getText());
+
+    // clear the container
+    this.container.innerHTML = '';
+
+    // recreate and render the  scores in order
+    for (const text of texts) {
+      const score = new Score(text, this.container);
+      if (score) {
+        this.addScore(text, null); // null means append to end of container
+      }
+    }
+  }
+  // updateToc() updates the table of contents (TOC) at the top of the page.
+  updateToc() {
+    // get the toc div
+    const toc = document.getElementById('score-toc');
+    if (!toc) {
+      return;
+    }
+    // clear the toc
+    toc.innerHTML = '';
+
+    // get the scores in order
+    const scores = this.getScores()
+    // add the toc entries
+    toc.appendChild(document.createTextNode('Table of Scores\n'));
+    const ul = toc.appendChild(document.createElement('ul'));
+    scores.forEach(score => {
+      const li = document.createElement('li');
+      const link = document.createElement('a');
+      link.setAttribute('href', `#${score.id}`);
+      link.setAttribute('class', 'link-to-score');
+      link.textContent = score.getTitle();
+      li.appendChild(link);
+      ul.appendChild(li);
+    });
+  }
 }
 
+
+// updateFontSizes() updates the font sizes of the various elements of scores
+// that will be rendered as SVG objects. The font default sizes are specified
+// in fqs.css, but we support overriding them via the parameters object. If
+// the font sizes are not specified in the parameters object, we use the
+// default font sizes and update corresponding vars in defaultParameters.
+function updateFontSizes() {
+  // Update the font sizes if user has specified them.
+  // First, get a reference to the stylesheet,
+  const stylesheet = Array.from(document.styleSheets)
+    .find(sheet => sheet.href && sheet.href.includes('fqs.css'));
+
+  console.log("Stylesheets:", document.styleSheets);
+  console.log("Found stylesheet:", stylesheet);
+
+  if (!stylesheet) {
+    console.log("fqs.css stylesheet not found");
+    return;
+  }
+
+  const rules = stylesheet.cssRules || stylesheet.rules;
+  console.log("CSS rules:", rules);
+  // define a closure that will update the font size of a rule
+  // whose index is i if the font height, fh is specified in 
+  // or if not specified, assign a numeric value
+  // to the value in fh.
+  const update = (i, fh) => {
+    if (defaultParameters[fh]) {
+      const v = defaultParameters[fh];
+      rules[i].style.fontSize = v + 'px';
+    } else {
+      defaultParameters[fh] = +rules[i].style.fontSize.slice(0, -2);
+    }
+  }
+  // loop over the rules to update font sizes.
+  for (let i = 0; i < rules.length; i++) {
+    switch (rules[i].selectorText) {
+      case '.title':
+        update(i, "titleFontHeight")
+        break;
+      case '.text':
+        update(i, 'textFontHeight');
+        break;
+      case '.preface':
+        update(i, 'prefaceFontHeight');
+        break;
+      case '.postscript':
+        update(i, 'postscriptFontHeight');
+        break;
+      case '.chord':
+        update(i, 'chordFontHeight');
+        break;
+      case '.pernote':
+        update(i, 'pernoteFontHeight');
+        break;
+      case '.fingering':
+        update(i, 'fingerFontHeight');
+        break;
+      case '.lyric':
+        update(i, 'lyricFontHeight');
+        break;
+      case '.pitch':
+        update(i, 'pitchFontHeight');
+        break;
+      case '.cue':
+        update(i, 'cueFontHeight');
+        break;
+      case '.perbar':
+        update(i, 'perbarFontHeight');
+        break;
+      case '.perbeat':
+        update(i, 'perbeatFontHeight');
+        break;
+      case '.counter':
+        update(i, 'counterFontHeight');
+        break;
+      case '.rest':
+        update(i, 'restFontHeight');
+        break;
+      case '.perline':
+        update(i, 'perlineFontHeight');
+        break;
+      case '.lineproblem':
+        update(i, 'lineproblemFontHeight');
+        break;
+    }
+  }
+}
+
+
+const scoreMap = new Map();
+let isDirty = false; // global flag that is set when we edit a score and cleared when export the scores
 
 // appendSVGTextChild(svg, x, y, textContent, classList) adds a text element
 // to the svg element with the given x, y coordinates and textContent. The
@@ -64,6 +333,20 @@ function appendSVGTextChild(svg, x, y, textContent, classList) {
   return textEl;
 }
 
+function appendSVGLineChild(svg, x0, y0, x1, y1, classList) {
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  line.setAttribute("x1", x0);
+  line.setAttribute("y1", y0);
+  line.setAttribute("x2", x1);
+  line.setAttribute("y2", y1);
+  if (classList) {
+    line.classList.add(...classList);
+  }
+  svg.appendChild(line);
+  return line;
+}
+
+
 // The LineProblem class holds error and warning messages generated during
 // rendering of a score. It has a render method that will render the messages
 // into the SVG element immediately below the line where the problems were
@@ -83,7 +366,7 @@ class LineProblem {
     // by bookParameters.problemFontHeight for each message.
     let y = y0;
     this.messages.forEach((function (message) {
-      y += 1.1 * bookParameters.lineproblemFontHeight;
+      y += 1.1 * defaultParameters.lineproblemFontHeight;
       appendSVGTextChild(svg, x0, y, "⚠️" + message, ["lineproblem"]);
     }));
     return y
@@ -126,18 +409,30 @@ class LyricLine {
     this.beats = []; // beat positions
     this.bars = [0,]; // barline positions
     this.attacks = [];
-    this.rests = []
+    this.rests = [];
+    this.holds = [];
+    this.subBeats = [];
     this.tight = tight;
     this.showLyric = show;
+    let inChord = false;
+    let chordIndex = 0;
     // Call this closure to detect a beat and push its position
     const detectAndPushBeat = (i, pos) => {
       if (i == 0 || (this.text[i - 1] == " ")) {
         this.beats.push(pos);
-        return;
+        this.subBeats.push(pos);
+        return true;
       }
       if ((this.text[i - 1] == '(') && (i == 1 || (this.text[i - 2] == ' '))) {
         this.beats.push(pos);
+        this.subBeats.push(pos);
+        return true;
       }
+      // It's  not a beat start, but it may be a sub-beat.
+      if ((chordIndex == 0 && this.text[i] == "*") || this.text[i] == ";") {
+        this.subBeats.push(pos);
+      }
+      return false;
     }
     // loop over the lyric text, detecting the positions of attacks, beats,
     // rests and barlines.
@@ -153,9 +448,12 @@ class LyricLine {
           continue;
         case "(":
           // ignore left parenthesis. Don't advance pos.
+          inChord = true;
+          chordIndex = 0
           continue;
         case ")":
           // ignore right parenthesis. Don't advance pos.
+          inChord = false;
           continue;
         case "|":
           // barlines are never attacks or beat starts
@@ -164,8 +462,10 @@ class LyricLine {
           continue;
         case "-":
           // a dash is never an attack but it may be a beat start.
-          detectAndPushBeat(i, pos);
-          pos++;
+          if (detectAndPushBeat(i, pos)) {
+            this.holds.push(pos);
+            pos++;
+          }
           continue;
         case ";":
           this.rests.push(pos);
@@ -180,16 +480,15 @@ class LyricLine {
           pos++
           continue;
         case "*":
-          // an asterisk is always an attack. It is also a beat start if
+          // an asterisk is usually an attack. It is also a beat start if
           // it is preceded by a space (or the beginning of the text) or
           // a space followed by a left parenthesis, i.e. " ("
-          this.attacks.push(pos);
           detectAndPushBeat(i, pos);
+          this.attacks.push(pos);
           pos++;
-          continue;
         default:
           // Handle lyric characters (including pitch characters).
-          if (c.match(bookParameters.lyricRgx)) {
+          if (c.match(defaultParameters.lyricRgx)) {
             if (!show) {
               // This lyric is synthesized from the a music line. The only chars
               // that match lyricRgx will be /[a-g]/. These chars are always attacks
@@ -217,7 +516,7 @@ class LyricLine {
     // Extract the rhythm from the text of the lyric line.
     // The rhythm is the sequence of subdivided beat texts
     // The rhythm is returned as an array of strings of beats, e.g. 
-    // "foo.bar - ;baz * |n" would return ["**", "-", ";*", "*"]
+    // "foo.bar - ;baz * |\n" would return ["**", "-", ";*", "*"]
     let rhythm = [];
     // parse each each element of this.words, substituting '*' for attacks
     // to produce the desired result
@@ -869,6 +1168,7 @@ class PitchLine {
     const fontwidth = bookParms.lyricFontWidth;
     const attacks = lyricLine.attacks;
     const rests = lyricLine.rests;
+    const holds = lyricLine.holds;
     const bars = lyricLine.bars;
     // Draw the lines of the staff
     const yline0 = y0 + 2 * fontheight;
@@ -920,6 +1220,13 @@ class PitchLine {
       x = x0 + rest * fontwidth;
       appendSVGTextChild(svg, x, y, ";", ["rest", "grey"]);
     };
+    // Now render the holds
+    for (let hold of holds) {
+      let x = x0;
+      let y = yline1; // holds are rendered in the middle of the staff
+      x = x0 + hold * fontwidth;
+      appendSVGTextChild(svg, x, y, '-', ["hold", "grey"]);
+    }
   });
 }
 
@@ -1019,7 +1326,7 @@ class LineAnnotations {
           break;
         default:
           let x = x0;
-          x += pos * bookParameters.lyricFontWidth;
+          x += pos * defaultParameters.lyricFontWidth;
           // Replace underscores with spaces in the rendered text
           appendSVGTextChild(svg, x, this.y0, token.replace(/_/g, ' '), this.cssClasses);
           // Move to next step position if one is available
@@ -1089,7 +1396,7 @@ class Finger {
   render(svg, x0, y0, lyricLine) {
     const annotations = new LineAnnotations(lyricLine, y0, ['fingering']);
     // Add a fudge to x positions for appearance
-    const x = x0 + 0.1 * bookParameters.lyricFontWidth
+    const x = x0 + 0.1 * defaultParameters.lyricFontWidth
     annotations.render(svg, x0, this.text, 'note');
   }
 }
@@ -1130,35 +1437,6 @@ class Counter {
     }
     if (!useSubbeats) return;
     // We need to add the subbeat numbers if we reach this point.
-    // We need to add the subbeat numbers.
-    // We will use the rhythm markup to determine the subbeat numbers.
-    // The rhythm markup is a string of characters that indicate the
-    // number of beats in each subbeat. For example, "16" means
-    // that there are 16 subbeats in each beat. The rhythm markup
-    // is a string of characters that indicate the number of beats
-    // in each subbeat. For example, "16" means that there are 16
-    // subbeats in each beat. The rhythm markup is a string of
-    // characters that indicate the number of beats in each subbeat.
-    // For example, "16" means that there are 16 subbeats in each
-    // beat. The rhythm markup is a string of characters that
-    // indicate the number of beats in each subbeat. For example,
-    // "16" means that there are 16 subbeats in each beat. The
-    // rhythm markup is a string of characters that indicate the
-    // number of beats in each subbeat. For example, "16" means
-    // Now we need to add the subbeat numbers.
-    // We will use the rhythm markup to determine the subbeat numbers.
-    // The rhythm markup is a string of characters that indicate the
-    // number of beats in each subbeat. For example, "16" means
-    // that there are 16 subbeats in each beat. The rhythm markup
-    // is a string of characters that indicate the number of beats
-    // in each subbeat. For example, "16" means that there are 16
-    // subbeats in each beat. The rhythm markup is a string of
-    // characters that indicate the number of beats in each subbeat.
-    // For example, "16" means that there are 16 subbeats in each
-    // beat. The rhythm markup is a string of characters that
-    // indicate the number of beats in each subbeat. For example,
-    // "16" means that there are 16 subbeats in each beat. The
-    // rhythm markup is a string of
     // append rhythm to count ( minus the first char of the rhythm)
     const subbeats = this.rhythm[j].slice(1, this.rhythm[j].length)
     //console.log(beat, this.bars[i], count, subbeats);
@@ -1188,6 +1466,108 @@ class Counter {
   });
 }
 
+class RhythmMarkers {
+  // The purpose of this class is to draw a group of horizontal lines whose
+  // aligned with the beat notation and having lengths proportional to 
+  // the subbeats within the beat.  For example, "*-**" will be represented
+  // numerically as [0.5, 0.25, 0.25] because the first attack is sustained for
+  // 2 of the four subbeats.  For beats with all attacks the same length, we 
+  // will not draw any lines to reduce visual clutter. In that case, the 
+  // numerical representation will be an empty array, [].
+  constructor(rhythms) {
+    // rhythm is an array of rhythm markup,  as created by LyricLine.extractRhythm()`
+    this.rhythms = rhythms;
+    this.beatFractions = []; // an array of arrays of fractions
+    for (let i = 0; i < rhythms.length; i++) {
+      const rhythm = rhythms[i];
+      // we can move on the the next beat if the rhythm doesn't contain "-"
+      // or if the rhythm is only one or two subbeats long.
+      if (!rhythm.slice(1, rhythm.length).includes('-') || rhythm.length < 3) {
+        this.beatFractions.push([]);
+        continue;
+      }
+      let fractions = [];
+      const nchar = rhythm.length;
+      let chordIndex = -1; // -1  means not in a chord
+      let f = 0; // current beat fraction
+      for (let j = 0; j < nchar; j++) {
+        switch (rhythm[j]) {
+          case '(':
+            chordIndex = 0;
+            continue;
+          case ')':
+            chordIndex = -1;
+            continue;
+          case '-':
+            if (j == 0) {
+              f = 1;
+            } else {
+              f++;
+            }
+            continue;
+          case '*':
+            switch (chordIndex) {
+              case -1:
+                if (f > 0) {
+                  fractions.push(f);
+                }
+                f = 1;
+                break;
+              case 0:
+                if (f > 0) {
+                  fractions.push(f);
+                }
+                f = 1;
+                chordIndex++;
+                break;
+              default:
+                // ignore attacks in chords after the first  one.
+                chordIndex++;
+                break
+            }
+            continue;
+          case ';':
+            if (f > 0) {
+              console.log(fractions.length)
+              fractions.push(f)
+            }
+            f = 1;
+            continue;
+        }
+      }
+      // push the last fraction
+      fractions.push(f);
+      // divide each fraction by the sum of fractions
+      const sum = fractions.reduce((a, b) => a + b, 0);
+      for (let j = 0; j < fractions.length; j++) {
+        fractions[j] = fractions[j] / sum;
+      }
+      this.beatFractions.push(fractions);
+    }
+  }
+  render(svg, x0, y0, beats, fontwidth) {
+    // x0 is the x coordinate of the left edge of the line 
+    // y0 is the y coordinate of the baseline of the line.
+    // beats is an array of beat x positions,
+    // and fontwidth is the width of the lyric font in pixels. 
+    // We will render the rhythm markers by looping through the beats and and
+    // drawing a line for each beatFraction.  The length of each line will be
+    // proportional to the fraction of the beat and scaled so that the lines
+    // will fit within two fontwidths.
+    let i = 0;
+    for (let fractions of this.beatFractions) {
+      let x = x0 + beats[i] * fontwidth;
+      let y = y0 - fontwidth / 2;
+      let width = 0;
+      for (let fraction of fractions) {
+        width = fraction * 2 * fontwidth;
+        appendSVGLineChild(svg, x, y, x + width - 1, y, ["rhythm-marker"]);
+        x += width
+      }
+      i++;
+    }
+  }
+}
 // The Chord class is used to render chords symbols above beats.
 class Chord {
   constructor(text) {
@@ -1279,7 +1659,7 @@ function musicToPitchLyric(musicLine) {
   lyricLine = lyricLine.replace(/K[#&]?\d/g, "").replace(/\^*\/*[#&%]*[a-g]/g, "*");
 
   // Remove hold and rest characters from the pitch line
-  pitchLine = pitchLine.replace(/[-;]/g, "");
+  pitchLine = pitchLine.replace(/[-=;]/g, "");
 
   return {
     lyric: lyricLine.trim(),
@@ -1328,7 +1708,7 @@ function preprocessScore(text) {
     if (block.startsWith("youtube:")) {
       // youtube video id with optional default play rate
       // e.g. youtube:12345678 0.75
-      parts = block.slice(8).trim().split(" ");
+      const parts = block.slice(8).trim().split(" ");
       data.youtubeId = parts[0];
       if (parts.length > 1) {
         data.playRate = parseFloat(parts[1]);
@@ -1381,7 +1761,7 @@ function preprocessScore(text) {
     const parts = line.split(/\n/);
     parts.forEach(part => {
       part.trim()
-      const [key, value] = splitFirst(part, ': ');
+      const [key, value] = splitFirst(part, ':');
       const k = key.trim();
       // Special handling for play:
       switch (k) {
@@ -1395,9 +1775,18 @@ function preprocessScore(text) {
             obj.playRate = data.playRate;
           }
           break;
+        case "rhythm":
+          obj.rhythm = true;
+          break;
         default:
           if (k !== "" && value !== undefined) {
-            obj[k] = value.trim();
+            // if it's a lyric line, substiute '--' for '='
+            if (k === "lyric" || k === "music") {
+              const v = value.replace(/=/g, '--');
+              obj[k] = v.trim();
+            } else {
+              obj[k] = value.trim();
+            }
           }
       }
 
@@ -1434,7 +1823,7 @@ function renderMultiline(svg, x, y, text, fontHeight, className) {
       y += fontHeight;
       return
     }
-    dx = countLeadingSpaces(line) * fontHeight * 0.5 // assume fontwidth is half of font height
+    const dx = countLeadingSpaces(line) * fontHeight * 0.5 // assume fontwidth is half of font height
     // get the fontSize of the textElement
     appendSVGTextChild(svg, x + dx, y, line.trimEnd(), [className]);
     y += fontHeight
@@ -1443,6 +1832,11 @@ function renderMultiline(svg, x, y, text, fontHeight, className) {
   return y;
 }
 function playYouTubeAt(videoId, timeSeconds, rate = 1.0) {
+  // Wait for player to be ready
+  if (!player || !player.playVideo) {
+    setTimeout(() => playYouTubeAt(videoId, timeSeconds, rate), 100);
+    return;
+  }
   if (player.getPlayerState() === YT.PlayerState.PLAYING) {
     player.pauseVideo();
     return;
@@ -1473,6 +1867,7 @@ function reconstructSectionText(line) {
   }
   if (line.lyric) text += `lyric: ${line.lyric}\n`;
   if (line.counter) text += `counter: ${line.counter}\n`;
+  if (line.rhythm) text += `rhythm:\n`;
   if (line.chord) text += `chord: ${line.chord}\n`;
   if (line.text) text += `text: ${line.text}\n`;
   if (line.play) {
@@ -1547,7 +1942,7 @@ function renderScore(wrapper, data) {
       const activeIndex = Array.from(allEditors).indexOf(activeEditor);
 
       const scoreDiv = wrapper.closest('div.score');
-      score = scoreMap.get(scoreDiv.id);
+      const score = scoreMap.get(scoreDiv.id);
       score.render();
 
       // Find and restore state of new editor at same index
@@ -1568,12 +1963,12 @@ function renderScore(wrapper, data) {
 
   // Render any line problems that were encountered in
   // preliminary processing
-  y = lineProblems.render(svg, bookParameters.leftX, y);
+  y = lineProblems.render(svg, defaultParameters.leftX, y);
   lineProblems.clear();
 
   // Render the title at the top of the SVG element
-  y += 2 * bookParameters.titleFontHeight
-  appendSVGTextChild(svg, bookParameters.leftX, y, data.title, ['title']);
+  y += 2 * defaultParameters.titleFontHeight
+  appendSVGTextChild(svg, defaultParameters.leftX, y, data.title, ['title']);
 
   // Special handling for first SVG's section editor (title block)
   const titleEditor = wrapper.querySelector('.section-editor');
@@ -1610,10 +2005,10 @@ function renderScore(wrapper, data) {
 
     // If it's a text block, render it.
     if (line.text) {
-      y += 2 * bookParameters.lyricFontHeight + bookParameters.textFontHeight;
-      y = renderMultiline(svg, bookParameters.leftX, y,
-        line.text, bookParameters.textFontHeight, 'text');
-      y += bookParameters.textFontHeight
+      y += 2 * defaultParameters.lyricFontHeight + defaultParameters.textFontHeight;
+      y = renderMultiline(svg, defaultParameters.leftX, y,
+        line.text, defaultParameters.textFontHeight, 'text');
+      y += defaultParameters.textFontHeight
       return;
     }
     // Handle the music lines. If present, a music line replaces the
@@ -1630,73 +2025,73 @@ function renderScore(wrapper, data) {
       lyricline = new LyricLine(
         line.lyric, data.tight, line.showLyric);
     }
-    y += bookParameters.lyricFontHeight
+    y += defaultParameters.lyricFontHeight
 
     // Render the cue, if any
     if (line.cue) {
       if (!line.lyric) {
-        y += bookParameters.lyricFontHeight;
+        y += defaultParameters.lyricFontHeight;
       } else {
-        y += bookParameters.lyricFontHeight;
+        y += defaultParameters.lyricFontHeight;
       }
       const cue = new Cue(line.cue);
-      cue.render(svg, bookParameters.leftX, y);
+      cue.render(svg, defaultParameters.leftX, y);
     }
     // Render the chords, if any
     if (line.chord && line.lyric) {
-      y += bookParameters.chordFontHeight
+      y += defaultParameters.chordFontHeight
       const chord = new Chord(line.chord);
-      chord.render(svg, bookParameters.leftX, y, lyricline.beats, bookParameters.lyricFontWidth);
+      chord.render(svg, defaultParameters.leftX, y, lyricline.beats, defaultParameters.lyricFontWidth);
       // y += bookParameters.chordFontHeight / 3;
     }
     // Render per-beat items, if any
     if (line.perbeat && line.lyric) {
-      y += bookParameters.perbeatFontHeight * 1.5
+      y += defaultParameters.perbeatFontHeight * 1.5
       const perbeat = new PerBeat(line.perbeat)
-      perbeat.render(svg, bookParameters.leftX, y, lyricline)
+      perbeat.render(svg, defaultParameters.leftX, y, lyricline)
     }
     // Render the fingerings, if any
     if (line.finger && line.lyric) {
-      y += bookParameters.fingerFontHeight * 1.5
+      y += defaultParameters.fingerFontHeight * 1.5
       const finger = new Finger(line.finger)
-      finger.render(svg, bookParameters.leftX, y, lyricline)
+      finger.render(svg, defaultParameters.leftX, y, lyricline)
     }
     // Render the pitches, if any
     if (line.pitch && line.lyric) {
-      y += 1.5 * bookParameters.lyricFontHeight;
+      y += 1.5 * defaultParameters.lyricFontHeight;
       try {
         const pitchLine = new PitchLine(line.pitch);
-        pitchLine.render(svg, bookParameters.leftX, y, bookParameters, lyricline);
-        y += 2 * bookParameters.lyricFontHeight;
+        pitchLine.render(svg, defaultParameters.leftX, y, defaultParameters, lyricline);
+        y += 2 * defaultParameters.lyricFontHeight;
       } catch (e) {
         lineProblems.add("Pitch line error: " + e.message);
         //console.log(e);
       }
     }
     if (line.perbar && line.lyric) {
-      y += bookParameters.perbarFontHeight;
+      y += defaultParameters.perbarFontHeight;
       const perbar = new PerBar(line.perbar);
-      perbar.render(svg, bookParameters.leftX, y, lyricline);
+      perbar.render(svg, defaultParameters.leftX, y, lyricline);
 
     }
     // Render the lyric
     if (line.showLyric) {
-      y += 1.1 * bookParameters.lyricFontHeight;
+      y += 1.1 * defaultParameters.lyricFontHeight;
       if (line.lyric) {
-        lyricline.render(svg, bookParameters.leftX, y, bookParameters.lyricFontWidth);
+        lyricline.render(svg, defaultParameters.leftX, y, defaultParameters.lyricFontWidth);
       }
     }
 
     // Render the per note expression marks, if any.
     if (line.pernote && line.lyric) {
-      y += bookParameters.pernoteFontHeight * 1.5; // 2 px extra space between exprs and lyric to clear descenders
+      y += defaultParameters.pernoteFontHeight * 1.5; // 2 px extra space between exprs and lyric to clear descenders
       const expr = new PerNote(line.pernote);
       // expr.render(svg, bookParameters.leftX, y, lyricline.attacks, bookParameters.lyricFontWidth);
-      expr.render(svg, bookParameters.leftX, y, lyricline);
+      expr.render(svg, defaultParameters.leftX, y, lyricline);
     }
     // Render the counter, if any
     if (line.counter && line.lyric) {
-      y += bookParameters.counterFontHeight * 1.5
+      y += defaultParameters.counterFontHeight * 1.5
       // line counter may be an empty string or a string that should be convertible to an integer
       let npartial = 0;
       if (line.counter.length > 0) {
@@ -1711,11 +2106,21 @@ function renderScore(wrapper, data) {
         bars = bars.slice(1); // ignore the pseudo barline at 0
       }
       const counter = new Counter(npartial, lyricline.beats, bars, lyricline.extractRhythm());
-      counter.render(svg, bookParameters.leftX, y, bookParameters.lyricFontWidth)
+      counter.render(svg, defaultParameters.leftX, y, defaultParameters.lyricFontWidth)
       // y += bookParameters.counterFontHeight / 3;
     }
+    // Always render the rhythm markers.
+    if (line.lyric) {
+      const rhythm = new RhythmMarkers(lyricline.extractRhythm());
+      // check that there is a least one non-empty rhythm marker before
+      // rendering them. This saves vertical space when possible.
+      if (rhythm.beatFractions.map(r => r.length > 0).reduce((a, b) => a || b, true)) {
+        y += defaultParameters.counterFontHeight * 1.5
+        rhythm.render(svg, defaultParameters.leftX, y, lyricline.beats, defaultParameters.lyricFontWidth);
+      }
+    }
     // Render any line problems that were encountered
-    y = lineProblems.render(svg, bookParameters.leftX, y);
+    y = lineProblems.render(svg, defaultParameters.leftX, y);
     lineProblems.clear();
 
     // Add click handler for play click handlers
@@ -1738,23 +2143,19 @@ function renderScore(wrapper, data) {
 // Score represents a score div and its associated editable source text.  It
 // has a render method that renders the source text as FQS musical notation.
 class Score {
-  constructor(text) {
-    this.text = text;
+  constructor(text, container) {
     this.editMode = false;
     this.outer = document.createElement('div');
     this.outer.classList.add('score');
     this.id = `score-${Math.random().toString(36).substring(2, 15)}`;
     this.outer.setAttribute('id', this.id);
     scoreMap.set(this.id, this);
-    // the delete button goes at the top of the score
-    this.deleteBtn = document.createElement('button')
-    this.deleteBtn.textContent = 'Delete this score';
-    this.deleteBtn.classList.add('delete-btn');
-    this.outer.appendChild(this.deleteBtn)
     // next comes a wrapper div that will contain the rendered
     // and the editable source text.
     this.wrapper = document.createElement('div');
     this.wrapper.classList.add('score-wrapper');
+    this.wrapper.style.display = 'flex';
+    this.wrapper.style.width = '100%';
     this.outer.appendChild(this.wrapper)
     // the inner wrapper div is where the svg's that comprise each
     // line of the rendered score will go
@@ -1770,24 +2171,29 @@ class Score {
     this.source = document.createElement('pre');
     this.source.classList.add('source');
     this.source.setAttribute('contenteditable', 'plaintext-only');
-    this.source.textContent = this.text;
+    this.source.textContent = text;
     this.sourcediv.appendChild(this.source);
-    // const tocId = "score-toc";
-    this.tocLink = document.createElement('a');
-    this.tocLink.setAttribute('href', `#score-toc`);
-    this.tocLink.setAttribute('class', 'link-to-toc');
-    this.tocLink.textContent = 'Table of Scores';
-    this.outer.appendChild(this.tocLink);
 
-    // Add event listeners
-    this.deleteBtn.addEventListener('click', () => {
-      if (confirm(`Are you sure you want to delete this score?`)) {
-        deleteScore(this.id);
-      }
-    });
+    // Add the score to the container
+    container.appendChild(this.outer);
+
     this.source.addEventListener('input', () => {
       this.render();
     });
+  }
+
+  getText() {
+    return this.source.textContent;
+  }
+
+  getTitle() {
+    const text = this.getText();
+    // look for the first line that starts with a 'title:'
+    const titleLine = text.split('\n').find(line => line.startsWith('title:'));
+    if (titleLine) {
+      return titleLine.split(':')[1].trim();
+    }
+    throw new Error('No title found in score');
   }
 
   // showSourceEditor() makes the source editor visible.
@@ -1820,8 +2226,7 @@ class Score {
   // render() renders the score into the inner div.
   render() {
     // get the source text from the source pre element
-    this.text = this.source.textContent;
-    const data = preprocessScore(this.text);
+    const data = preprocessScore(this.source.textContent);
     renderScore(this.inner, data);
     const svgElements = this.inner.querySelectorAll('svg');
     for (const svg of svgElements) {
@@ -1846,86 +2251,10 @@ class Score {
         svg.setAttribute('viewBox', `0 0 ${xpix} ${height}`);
       }
     }
-    scoreToc(); // update the table of contents
+    // scoreToc(); // update the table of contents
     isDirty = true // signal that the score has been edited
+    this.forceEditMode(this.editMode);
   }
 }
 
-// updateFontSizes() updates the font sizes of the various elements of
-// scores that will be rendered as SVG objects. The font default sizes are
-// specified in the style element with id 'fqs-style', but we support
-// overriding them via the bookParameters object. If the font sizes are not
-// specified in the bookParameters object, we use the default font sizes and
-// update corresponding vars in bookParameters.
-function updateFontSizes() {
-  // Update the font sizes if user has specified them.
-  // First, get a reference to the stylesheet,
-  const stylesheet = document.getElementById('fqs-style').sheet;
-  const rules = stylesheet.cssRules || stylesheet.rules;
-  // define a closure that will update the font size of a rule
-  // whose index is i if the font height, fh is specified in 
-  // or if not specified, assign a numeric value
-  // to the value in fh.
-  update = (i, fh) => {
-    if (bookParameters[fh]) {
-      const v = bookParameters[fh];
-      rules[i].style.fontSize = v + 'px';
-    } else {
-      bookParameters[fh] = +rules[i].style.fontSize.slice(0, -2);
-    }
-  }
-  // loop over the rules to update font sizes.
-  for (let i = 0; i < rules.length; i++) {
-    switch (rules[i].selectorText) {
-      case '.title':
-        update(i, "titleFontHeight")
-        break;
-      case '.text':
-        update(i, 'textFontHeight');
-        break;
-      case '.preface':
-        update(i, 'prefaceFontHeight');
-        break;
-      case '.postscript':
-        update(i, 'postscriptFontHeight');
-        break;
-      case '.chord':
-        update(i, 'chordFontHeight');
-        break;
-      case '.pernote':
-        update(i, 'pernoteFontHeight');
-        break;
-      case '.fingering':
-        update(i, 'fingerFontHeight');
-        break;
-      case '.lyric':
-        update(i, 'lyricFontHeight');
-        break;
-      case '.pitch':
-        update(i, 'pitchFontHeight');
-        break;
-      case '.cue':
-        update(i, 'cueFontHeight');
-        break;
-      case '.perbar':
-        update(i, 'perbarFontHeight');
-        break;
-      case '.perbeat':
-        update(i, 'perbeatFontHeight');
-        break;
-      case '.counter':
-        update(i, 'counterFontHeight');
-        break;
-      case '.rest':
-        update(i, 'restFontHeight');
-        break;
-      case '.perline':
-        update(i, 'perlineFontHeight');
-        break;
-      case '.lineproblem':
-        update(i, 'lineproblemFontHeight');
-        break;
-    }
-  }
-}
-export { Score, initYouTubeAPI } 
+export { Book, Score, initYouTubeAPI, onYouTubeIframeAPIReady } 

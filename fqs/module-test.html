@@ -8,20 +8,64 @@
 
 <body>
 	<div id="player"></div>
-	<script type="module">
-		import { Score, initYouTubeAPI } from './fqs.js';
+	<div style="margin-left: 5%; margin-right: 5%;">
+		<em>Controls</em><br>
+		<button id="exportButton" onclick="exportScores()">Export</button> <em>Save the scores from this page in
+			<code>.fqs</code> text
+			format.</em><br>
+		<button onclick="importFromFile()">Import File</button> <em>Import scores from a local <code>.fqs</code>
+			file.</em><br>
+		<button onclick="importFromURL()">Import URL</button> <em>Import a <code>.fqs</code> file from a URL.</em><br>
+		<button onclick="toggleEditControls()">Toggle edit controls</button> <em>Show or hide the edit controls for all
+			scores.</em>
+		<script>
+			// importFromFile prompts the user to select an fqs file and imports the
+			// scores in the file.
+			function importFromFile() {
+				const file = document.createElement('input');
+				file.setAttribute('type', 'file');
+				file.setAttribute('accept', '.fqs');
+				file.addEventListener('change', event => {
+					const file = event.target.files[0];
+					const reader = new FileReader();
+					reader.addEventListener('load', event => {
+						const text = event.target.result;
+						window.book.importFromText(text)
+					});
+					reader.readAsText(file);
+				});
+				file.click();
+				return false;
+			}
+			function exportScores() {
+				const text = window.book.exportToText();
+				const blob = new Blob([text], { type: 'text/plain' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = 'scores.fqs';
+				a.click();
+				URL.revokeObjectURL(url);
+			}
+			function toggleEditControls() {
+				window.book.controlsVisible = !window.book.controlsVisible;
+				window.book.enforceControlsVisibility();
+			}
+		</script>
+	</div>
+	<div id="score-toc" class="score-toc"></div>
+	<div id="book-container">
+		<script type="module">
+			import { Book, Score, initYouTubeAPI, onYouTubeIframeAPIReady } from './fqs.js';
+			// Make onYouTubeIframeAPIReady globally available
+			window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
 
-		initYouTubeAPI();
+			initYouTubeAPI()
 
-		const scoreText = `title: Simple Score
-
-music: K0 c d e f |
-counter: 1`;
-
-		const score = new Score(scoreText);
-		document.body.appendChild(score.outer);
-		score.render();
-	</script>
+			const book = new Book("book-container");
+			window.book = book; // make book available outside this script
+			book.addScore(`title: Untitled Empty Score`)	
+		</script>
 </body>
 
 </html>
