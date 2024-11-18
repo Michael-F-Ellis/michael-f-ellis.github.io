@@ -39,14 +39,21 @@
 				return false;
 			}
 			function importFromURL() {
-				const url = prompt('Enter the URL of the .fqs file:');
+				const url = prompt('Enter the URL of the .fqs file:',
+					'https://michael-f-ellis.github.io/fqs/reference.fqs');
 				if (url) {
 					fetch(url)
 						.then(response => response.text())
 						.then(text => {
 							window.book.importFromText(text)
+						})
+						.catch(error => {
+							console.error('Error fetching .fqs file:', error);
+							alert('Failed to fetch the .fqs file. Please check the URL and try again.');
 						});
+
 				}
+				return false;
 			}
 			function exportScores() {
 				const text = window.book.exportToText();
