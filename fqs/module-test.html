@@ -9,6 +9,7 @@
 <body>
 	<div id="player"></div>
 	<div style="margin-left: 5%; margin-right: 5%;">
+		<h1>FQS Notation Demo</h1>
 		<em>Controls</em><br>
 		<button id="exportButton" onclick="exportScores()">Export</button> <em>Save the scores from this page in
 			<code>.fqs</code> text
@@ -36,6 +37,16 @@
 				});
 				file.click();
 				return false;
+			}
+			function importFromURL() {
+				const url = prompt('Enter the URL of the .fqs file:');
+				if (url) {
+					fetch(url)
+						.then(response => response.text())
+						.then(text => {
+							window.book.importFromText(text)
+						});
+				}
 			}
 			function exportScores() {
 				const text = window.book.exportToText();

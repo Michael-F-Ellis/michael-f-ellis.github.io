@@ -213,6 +213,7 @@ class Book {
       li.appendChild(link);
       ul.appendChild(li);
     });
+    toc.appendChild(this.pageBreak());
   }
 }
 
@@ -378,13 +379,12 @@ const lineProblems = new LineProblem();
 // The LyricLine class interprets the text of a lyric line and
 // and determines the location of beats, attacks and barlines.
 // It provides a render() method that will render the lyric line
-// into an svg element. The tight and show arguments control the
-// spacing of the rendered score. We need both of these to handle
+// into an svg element. The show argument controls the
+// spacing of the rendered score. We need it to handle
 // the distinction music line groups (which never show lyrics)
-// pitch plus lyric groups where lyrics are shown and tight is
-// ignored.
+// and pitch plus lyric groups where lyrics are shown.
 class LyricLine {
-  constructor(text, tight, show) {
+  constructor(text, show) {
     // trim leading or trailing whitespace
     // split the text on whitespace
     // join the text back together with single spaces
@@ -412,7 +412,6 @@ class LyricLine {
     this.rests = [];
     this.holds = [];
     this.subBeats = [];
-    this.tight = tight;
     this.showLyric = show;
     let inChord = false;
     let chordIndex = 0;
@@ -441,8 +440,8 @@ class LyricLine {
       const c = this.text[i];
       switch (c) {
         case " ":
-          // Spaces advance pos only if tight is false or show is true.
-          if (!tight || show) {
+          // Spaces advance pos only if show is true.
+          if (true || show) {
             pos++
           }
           continue;
@@ -553,7 +552,8 @@ class LyricLine {
 
 
   render = (function render(svg, x0, y0, fontwidth) {
-    if (this.tight && !this.showLyric) { return; } // tight mode does not render lyric lines as part of music lines
+    if (!this.showLyric) { return; } // Do not render lyric lines as part of music lines
+
     // Draw each char in this.text starting at x0, y0 and incrementing
     // x by fontwidth for each char.
     let x = x0;
@@ -1701,7 +1701,6 @@ function preprocessScore(text) {
   // with one of the following keywords: 
   //   cue:, perbar:,  pernote:, perbeat:, 
   //   chord:, music:, lyric:
-  data.tight = false; // don't squeeze beats together.
   // loop through the blocks in reverse order.
   for (let i = blocks.length - 1; i >= 0; i--) {
     let block = blocks[i].trim();
@@ -1730,11 +1729,6 @@ function preprocessScore(text) {
     }
     if (block.startsWith("postscript:")) {
       data.postscript = block.slice(11).trim();
-      blocks.splice(i, 1);
-      continue;
-    }
-    if (block.startsWith("tight:")) {
-      data.tight = true;
       blocks.splice(i, 1);
       continue;
     }
@@ -1873,7 +1867,11 @@ function reconstructSectionText(line) {
   if (line.play) {
     const minutes = Math.floor(line.play / 60);
     const seconds = line.play - (minutes * 60);
-    text += `play: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}\n`
+    text += `play: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`
+    if (line.playRate) {
+      text += ` ${line.playRate}`;
+    }
+    text += '\n';
   }
   if (line.finger) text += `finger: ${line.finger}\n`;
   if (line.perbeat) text += `perbeat: ${line.perbeat}\n`;
@@ -1986,10 +1984,6 @@ function renderScore(wrapper, data) {
       }
     }
 
-    if (data.tight) {
-      titleText += `\n\ntight:`;
-    }
-
     titleEditor.textContent = titleText;
   }
 
@@ -2023,7 +2017,7 @@ function renderScore(wrapper, data) {
     let lyricline = undefined
     if (line.lyric) {
       lyricline = new LyricLine(
-        line.lyric, data.tight, line.showLyric);
+        line.lyric, line.showLyric);
     }
     y += defaultParameters.lyricFontHeight
 

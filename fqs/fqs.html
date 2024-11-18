@@ -66,7 +66,7 @@
 </head>
 
 <body>
-<p>Build: main-b6e239f</p>
+<p>Build: main-b6e239f-dirty</p>
   <!--YouTube player div-->
   <div id="player"></div>
   <!-- Page controls -->
@@ -682,8 +682,8 @@ zoom: 130
 youtube: icx52BLixaw
 
 text: ABOUT:
-FQS is a musical notation system that makes music easier to read. This page, fqs.html,
-is a complete self-contained web app with no external dependencies. You can use it to
+FQS is a musical notation system that makes music easier to read. This page is
+a complete self-contained web app with no external dependencies. You can use it to
 create, edit and display multiple scores using the simple text format (.fqs) described
 in this reference. 
 .
@@ -730,26 +730,11 @@ text: KEY CONCEPTS
 .
      - Optional beat counter annotations below the staff clarify the rhythm.
 
-text: TIGHT MODE
-.
-FQS supports a slightly different display format known as "tight mode" where the 
-space between beats is suppressed in the notation display. It can be useful in some 
-scores where the rhythm of each measure is fairly constant. Some movements from
-the Bach Cello Suites are a good example of this having the majority of the measures
-notated as groups of eighth notes under a single bar line.
-.
-Tight mode makes such scores more closely resemble the original and may enable
-you to pack more measures into a line. The tradeoff is that measures with complex
-rhythms may be harder to read. To use tight mode, include the keyword "tight:" on
-an isolated line anywhere in your score text. The colon (:) after the word is 
-required. You can conveniently toggle tight mode on and off by deleting or adding 
-the colon.
-
 text: ENTRY AND EDITING
 .
 To enter notation, you must activate an editing mode. You can do this clicking the 
-"Show edit controls" button at the top of the page or by double-clicking on any line in
-the body of any score. The difference is that the button will open a pane at the side of
+"Toggle edit controls" button at the top of each score or by clicking the pencil icon by
+each line of the score. The difference is that the button will open a pane at the side of
 the score showing the entire text of the score, whereas clicking in the score will open
 a small editor for just that line.  
 .
@@ -814,21 +799,22 @@ Four buttons at the top of the page allow you to save, load, and edit your work.
 .
   Import URL - prompts you for a URL reference to load a remote .fqs file.
 .
-  Show (hide) Edit Controls - toggles the visibility of the editor and the buttons 
+  Toggle edit controls - toggles the visibility of the editor and the buttons 
   for inserting and deleting scores.
 .
 EDIT CONTROLS:
 .
-When the Edit Controls are shown, each score has 3 buttons:
+When the Edit Controls are shown, each score has 4 buttons:
 .
-   Edit this score - opens a text editing window containing the score source.
-   Changes you make are updated in real time in the displayed music.
+   Insert new score - Inserts a new score immediately after the current score.
 .
-   Delete - removes the score (after asking for confirmation). Does not affect
+   Delete score - removes the score (after asking for confirmation). Does not affect
    underlying files, but any unexported changes will be lost.
 .
-   Insert New Score - Allows a new score to be inserted immediately after the
-   current score.
+   Toggle edit mode - opens a text editing window containing the complete score source.
+   Changes you make are updated in real time in the displayed music.
+.
+   Contents - Jumps to the table of scores listing at the top of the page
 .
 WAYS TO LOSE YOUR WORK:
    1. Closing or reloading the page (without exporting first)
@@ -858,7 +844,7 @@ Click again to stop playback.
 Tip: Set the start time a couple of seconds before the first measure in the line to
 give yourself enough time to get ready to play the passage along with the recording.
 .
-Here's a complete example. The recording is the Sarabande from J.S. Bach's Cello Suite II
+Here's a complete example. The recording is the Sarabande from J.S. Bach's Cello Suite III
 in C Major, played live by Yo Yo Ma. Click either line to start playback at that line.
 .
 Note: The groups of back-slanted notes are FQS's way of indicating chords.
@@ -901,9 +887,8 @@ The syntax of the "pitch:" keyword is similar to that of the "music:" keyword
 except that you omit hyphens and semicolons and it's not necessary to use spaces 
 between pitches within a bar.  
 .
-In fact, bar lines are also optional, but it's wise to
-include them for clarity and also, to ensure that accidentals cancel at the 
-end of each measure.
+In fact, bar lines are also optional, but it's wise to include them for clarity 
+and also, to ensure that accidentals cancel at the  end of each measure.
 .
 LYRIC:
 The "lyric:" keyword contains the lyrics for the line, written in a special form
@@ -915,6 +900,8 @@ punctation characters to accomplish this.
 .
    A hyphen, ( - ) indicates a syllable that is sustained for all or part of a beat and 
    a semicolon ( ; ) is a rest.
+.
+   As a convenience, you may use an equal (=) sign as a shorthand for two successive hyphens (--).
 
 text: CHORDS:
 .
@@ -1051,7 +1038,9 @@ text: ANNOTATIONS (all optional):
     annotations to reduce the number of underscores needed to correctly place an annotation.
 
 music: K0 ^^g f e d | c b a g | f e d b | c - - - |
-pernote: a_tempo | | molto_rall.`
+pernote: a_tempo | | molto_rall.
+EndOfScore
+`
 </script>
 </body>
 </html>
