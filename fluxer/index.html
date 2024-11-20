@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Image Generation</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			max-width: 800px;
+			margin: 0 auto;
+			padding: 20px;
+		}
+
+		textarea {
+			width: 100%;
+			height: 100px;
+			margin-bottom: 10px;
+		}
+
+		#result {
+			margin-top: 20px;
+		}
+
+		img {
+			max-width: 100%;
+		}
+	</style>
+
+</head>
+
+<body>
+	<h1>Image Generation via Flux1.1 Pro</h1>
+	<textarea id="prompt" placeholder="An angry penguin">An angry penguin</textarea>
+
+	<div style="display: flex; align-items: center; margin-bottom: 10px;">
+		<label for="seed" style="margin-right: 10px;">Seed:</label>
+		<input type="number" id="seed" value="42" style="margin-right: 10px;">
+		<button onclick="randomizeSeed()">Random</button>
+
+		<div style="margin-left: 20px;">
+			<input type="checkbox" id="upsample" style="margin-right: 5px;">
+			<label for="upsample">Upsample prompt</label>
+		</div>
+
+	</div>
+
+	<button onclick="generateImage()">Generate Image</button>
+	<div id="result"></div>
+
+	<script>
+		let API_KEY = null;
+		while (!API_KEY) {
+			API_KEY = localStorage.getItem('FLUXER_API_KEY');
+			if (!API_KEY) {
+				API_KEY = prompt('Please enter your BFL API key:');
+				if (API_KEY) {
+					localStorage.setItem('FLUXER_API_KEY', API_KEY);
+				} else {
+					alert('API key from Black Forest Labs is required to generate FLUX images. See https://docs.bfl.ml/');
+				}
+			}
+		}
+
+		const API_URL = 'https://api.bfl.ml/v1';
+
+		function randomizeSeed() {
+			const SEED_MIN = 0;
+			const SEED_MAX = 4294967295;
+			const seed
+				= Math.floor(Math.random() * (SEED_MAX - SEED_MIN + 1)) + SEED_MIN;
+			document.getElementById('seed').value = seed;
+		}
+		function getUpsamplePrompt() {
+			return document.getElementById('upsample').checked;
+		}
+
+		async function generateImage() {
+			const prompt = document.getElementById('prompt').value;
+			const resultDiv = document.getElementById('result');
+			resultDiv.innerHTML = 'Generating image...';
+
+			try {
+				// POST request to generate image
+				const postRequest = await fetch(`${API_URL}/flux-pro-1.1`, {
+					method: 'POST',
+					headers: {
+						'accept': 'application/json',
+						'x-key': API_KEY,
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						prompt: prompt,
+						width: 1024,
+						height: 768,
+						prompt_upsampling: getUpsamplePrompt(),
+						seed: document.getElementById('seed').value,
+						safety_tolerance: 6
+					})
+				});
+
+				const postData = await postRequest.json();
+				const imageId = postData.id;
+
+				// GET request loop to retrieve image URL
+				let getData;
+				let retryCount = 0;
+				do {
+					const getResponse = await fetch(`${API_URL}/get_result?id=${imageId}`, {
+						method: 'GET',
+						headers: {
+							'accept': 'application/json'
+						}
+					});
+					getData = await getResponse.json();
+					if (getData.status === "Pending") {
+						resultDiv.innerHTML = 'Generating image... ' + retryCount;
+						retryCount++;
+						await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for 1 second before polling again
+					}
+				} while (getData.status === "Pending");
+
+				console.log(getData);
+
+				if (!getData.result) {
+					resultDiv.innerHTML = 'Error: Image generation failed: ' + getData.status;
+					return;
+				}
+				const imageUrl = getData.result.sample;
+
+				// Display the generated image and the (possibly) upsampled prompt below the image
+				resultDiv.innerHTML = `<img src="${imageUrl}" alt="Generated Image">`;
+				const actualPrompt = getData.result.prompt;
+				resultDiv.innerHTML += `<p><i><small>${actualPrompt}</small></i></p>`;
+			} catch (error) {
+				resultDiv.innerHTML = `Error: ${error.message}`;
+			}
+		}
+	</script>
+</body>
+
+</html>
