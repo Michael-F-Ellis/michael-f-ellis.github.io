@@ -114,6 +114,8 @@ class Book {
     score.outer.prepend(actionsDiv);
     score.outer.append(this.pageBreak());
 
+    // Add updateToc as a post-render callback
+    score.postRenderCallback = () => this.updateToc();
     // Insert the score 
     if (nextSibling) {
       this.container.insertBefore(score.outer, nextSibling);
@@ -2180,7 +2182,8 @@ class Score {
     this.source.setAttribute('contenteditable', 'plaintext-only');
     this.source.textContent = text;
     this.sourcediv.appendChild(this.source);
-
+    // a post-render callback, if needed, to update TOC, etc.
+    this.postRenderCallback = null;
     // Add the score to the container
     container.appendChild(this.outer);
 
@@ -2261,6 +2264,10 @@ class Score {
     // scoreToc(); // update the table of contents
     isDirty = true // signal that the score has been edited
     this.forceEditMode(this.editMode);
+    // if there is a postRenderCallback, call it
+    if (this.postRenderCallback) {
+      this.postRenderCallback();
+    }
   }
 }
 
