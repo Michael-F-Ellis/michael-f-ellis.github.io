@@ -66,7 +66,7 @@
 </head>
 
 <body>
-<p>Build: main-b6e239f-dirty</p>
+<p>Build: main-19f9e8a</p>
   <!--YouTube player div-->
   <div id="player"></div>
   <!-- Page controls -->
@@ -682,21 +682,22 @@ zoom: 130
 youtube: icx52BLixaw
 
 text: ABOUT:
-FQS is a musical notation system that makes music easier to read. This page is
-a complete self-contained web app with no external dependencies. You can use it to
-create, edit and display multiple scores using the simple text format (.fqs) described
-in this reference. 
+FQS is a musical notation system that makes music easier to read. This page is a
+complete self-contained web app with no external dependencies. You can use it to
+create, edit and display multiple scores using the simple text format (.fqs)
+described in this reference. 
 .
-(In case you're wondering, the name, FQS, comes from the initials of my three grandchildren
-Fiona, Quentin and Skylar.)
+(In case you're wondering, the name, FQS, comes from the initials of my three
+grandchildren: Fiona, Quentin and Skylar.)
 .
-You can also map each line of notation to a specific starting time in a YouTube recording
-of the piece and specify the play rate - typically to slow the playback down for careful
-listening.
+You can also map each line of notation to a specific starting time in a YouTube
+recording of the piece and specify the play rate - typically to slow the
+playback down for careful listening.
 .
-NOTE: This reference is a score, albeit one with far more text than usual. I encourage
-you to use the edit area to experiment with changes. You can even save your own version
-of the reference without losing this one since it's embedded in the fqs.html file.
+NOTE: This reference is a score, albeit one with far more text than usual. I
+encourage you to use the edit area to experiment with changes. You can even save
+your own version of the reference without losing this one since it's embedded in
+the fqs.html file.
 
 text: NOTATION BASICS:
 Let's start with an example:  Here's the melody for Happy Birthday, set in E major.
@@ -712,14 +713,15 @@ text: KEY CONCEPTS
    Pitch:
      - Letter names instead of note symbols
 .
-     - Color (and italics) indicate altered (sharp or flat) pitches. Red for
-       ♯ and blue for ♭. Double flats (green) and double sharps (orange) are also supported
+     - Color (and italics) indicate altered (sharp or flat) pitches. Red for ♯
+     and blue for ♭. Double flats (green) and double sharps (orange) are also
+     supported
 .
-     - Compressed vertical spacing preserves melodic shape (like regular notation),
-       but allows 3 octaves to be displayed in a single stave.
+     - Compressed vertical spacing preserves melodic shape (like regular
+     notation), but allows 3 octaves to be displayed in a single stave.
 .
-     - The spacing is also 'true' in the sense that each semitone is rendered exactly
-       1/12th of an octave higher than the next lower pitch.
+     - The spacing is also 'true' in the sense that each semitone is rendered
+     exactly 1/12th of an octave higher than the next lower pitch.
 .
    Rhythm:
      - Horizontal space separates beats.
@@ -732,27 +734,30 @@ text: KEY CONCEPTS
 
 text: ENTRY AND EDITING
 .
-To enter notation, you must activate an editing mode. You can do this clicking the 
-"Toggle edit controls" button at the top of each score or by clicking the pencil icon by
-each line of the score. The difference is that the button will open a pane at the side of
-the score showing the entire text of the score, whereas clicking in the score will open
-a small editor for just that line.  
+To enter notation, you must activate an editing mode. You can do this clicking
+the "Toggle edit controls" button at the top of each score or by clicking the
+pencil icon by each line of the score. The difference is that the button will
+open a pane at the side of the score showing the entire text of the score,
+whereas clicking in the score will open a small editor for just that line.  
 .
-In either case, if editing is already active, the same actions will hide the editor
-and return you to display mode.
+In either case, if editing is already active, the same actions will hide the
+editor and return you to display mode.
 .
-One important difference is that editing in the side pane will update the displayed
-notation immediately, whereas you must click the reload icon in the small editors to see
-the result of your changes.
+One important difference is that editing in the side pane will update the
+displayed notation immediately, whereas you must click the reload icon in the
+small editors to see the result of your changes.
 .
-Try it out! Click the pencil icon beside the line of music below and make some changes.
+Try it out! Click the pencil icon beside the line of music below and make some
+changes.
 
 music: K#4 bb | c b e | d - bb | c b ^f | e - bb |
 counter: 3
 
-text: The 'music:' keyword tells the app to interpret what follows as a line of FQS notation.
+text: The 'music:' keyword tells the app to interpret what follows as a line of
+FQS notation.
 .
-   - A key signature is required. In this example, K#4, indicates E major ( 4 sharps ).
+   - A key signature is required. In this example, K#4, indicates E major 
+   ( 4 sharps ).
 .
    - No time signature is needed ( but you can indicate one with an annotation).
 .
@@ -764,8 +769,9 @@ By default, each pitch is rendered in the octave that puts it closest to
 the preceding pitch. A preceding caret ( ^ ) raises it to the next octave.
 A preceding forward slash ( / ) lowers it one octave.
 .
-The 'counter' keyword is optional.  It places small beat numbers below the staff.
-It takes a single number as an argument to enable support for pickup (partial) measures.
+The 'counter' keyword is optional.  It places small beat numbers below the
+staff.  It takes a single number as an argument to enable support for pickup
+(partial) measures.
 
 text: COMPATIBILITY: 
 For technical reasons, editing scores is not possible with Firefox. 
@@ -773,18 +779,19 @@ Other browsers including Chrome, Safari, etc., work correctly.
 
 text: NOTATED CHORDS:
 .
-FQS supports a simple notation for pitches sounded simultaneously. A chord is rendered on
-the staff as a group of pitches rotated left by 30°,  like this:
+FQS supports a simple notation for pitches sounded simultaneously. A chord is
+rendered on the staff as a group of pitches rotated left by 30°,  like this:
 
 music: K0 (ceg&b) /cegb c |
 counter: 1
 
-text: In the example above, the smaller, back-slanted characters indicate that all the pitches in the 
-first beat are to be sounded together as a chord for one beat whereas the the four
-pitches in the second beat are to be played as four sixteenth notes (assuming a quarter note beat).
+text: In the example above, the smaller, back-slanted characters indicate that
+all the pitches in the first beat are to be sounded together as a chord for one
+beat whereas the the four pitches in the second beat are to be played as four
+sixteenth notes (assuming a quarter note beat).
 .
-To enter notes as a chord, surround them with parentheses, e.g. (cegb). Try editing the
-music line above to add another chord.
+To enter notes as a chord, surround them with parentheses, e.g. (cegb). Try
+editing the music line above to add another chord.
 
 text: PAGE CONTROLS:
 .
@@ -808,11 +815,11 @@ When the Edit Controls are shown, each score has 4 buttons:
 .
    Insert new score - Inserts a new score immediately after the current score.
 .
-   Delete score - removes the score (after asking for confirmation). Does not affect
-   underlying files, but any unexported changes will be lost.
+   Delete score - removes the score (after asking for confirmation). Does not
+   affect underlying files, but any unexported changes will be lost.
 .
-   Toggle edit mode - opens a text editing window containing the complete score source.
-   Changes you make are updated in real time in the displayed music.
+   Toggle edit mode - opens a text editing window containing the complete score
+   source.  Changes you make are updated in real time in the displayed music.
 .
    Contents - Jumps to the table of scores listing at the top of the page
 .
@@ -841,11 +848,13 @@ FQS supports synchronized playback from YouTube videos. To enable this:
 Click any line with a 'play' keyword to start playback from its specified time.
 Click again to stop playback.
 .
-Tip: Set the start time a couple of seconds before the first measure in the line to
-give yourself enough time to get ready to play the passage along with the recording.
+Tip: Set the start time a couple of seconds before the first measure in the line
+to give yourself enough time to get ready to play the passage along with the
+recording.
 .
-Here's a complete example. The recording is the Sarabande from J.S. Bach's Cello Suite III
-in C Major, played live by Yo Yo Ma. Click either line to start playback at that line.
+Here's a complete example. The recording is the Sarabande from J.S. Bach's Cello
+Suite III in C Major, played in concert by Yo Yo Ma. Click either line to start
+playback at that line.
 .
 Note: The groups of back-slanted notes are FQS's way of indicating chords.
 
@@ -854,12 +863,12 @@ cue: Largo (mm=48)
 cue: A section (player begins at repeat)
 music: K0 (cg^e^c) (/d^c)--a b | (/cg^e^&b) (fb)--g a | (/bd)-ef (cg^f)--d ef | cbca bd /gf |
 counter: 1
-play: 11:18
+play: 11:18 1
 
 cue: 5
 music: K0 (/e^c^a) (/a^g)--e #fdfa | (/da^#f^c)--a (/g^d^c)--a cbag | (/#c^ga)-&bc (/d^b)-ac &e/#f | g (/g^g) - |
 counter: 1
-play: 11:38
+play: 11:38 1
 
 text: LYRICS:
 .
@@ -879,12 +888,12 @@ text: The second line above was created from the following 3 lines of text:
   lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
   counter: 1
 .
-Writing scores with lyrics requires specifying the pitches and lyrics on separate
-lines. The corresponding keywords are "pitch:" and "lyric:"
+Writing scores with lyrics requires specifying the pitches and lyrics on
+separate lines. The corresponding keywords are "pitch:" and "lyric:"
 . 
 PITCH:
 The syntax of the "pitch:" keyword is similar to that of the "music:" keyword
-except that you omit hyphens and semicolons and it's not necessary to use spaces 
+except that you omit hyphens and semicolons and it's not necessary to use spaces
 between pitches within a bar.  
 .
 In fact, bar lines are also optional, but it's wise to include them for clarity 
@@ -895,13 +904,14 @@ The "lyric:" keyword contains the lyrics for the line, written in a special form
 that determines the placement and duration of the pitches. FQS uses certain
 punctation characters to accomplish this.
 .
-   A period ( . ) separates syllables that occupy the same beat. Writing Happy as 'Hap.py'
-   tells FQS that the two syllables share a beat, each taking half.
+   A period ( . ) separates syllables that occupy the same beat. Writing Happy
+   as 'Hap.py' tells FQS that the two syllables share a beat, each taking half.
 .
-   A hyphen, ( - ) indicates a syllable that is sustained for all or part of a beat and 
-   a semicolon ( ; ) is a rest.
+   A hyphen, ( - ) indicates a syllable that is sustained for all or part of a
+   beat and a semicolon ( ; ) is a rest.
 .
-   As a convenience, you may use an equal (=) sign as a shorthand for two successive hyphens (--).
+   As a convenience, you may use an equal (=) sign as a shorthand for two
+   successive hyphens (--).
 
 text: CHORDS:
 .
@@ -918,19 +928,21 @@ counter: 1
 chord: Am7 _ _ _ Dm7 _ _ _ G7 _ _ _ Cmaj7
 
 text: ANNOTATIONS:
-You can add annotations at several levels of granularity. Text annotations, such as this one,
-may contain multiple lines and paragraphs. The built-in annotations for FQS work well, but 
-you may find it easier to save the score to a pdf and use a pdf editor to mark it up.
+You can add annotations at several levels of granularity. Text annotations, such
+as this one, may contain multiple lines and paragraphs. The built-in annotations
+for FQS work well, but you may find it easier to save the score to a pdf and use
+a pdf editor to mark it up.
 
-text: CUE - cue annotations are text in a small monospace font. They're limited to one line of text.
+text: CUE - cue annotations are text in a small monospace font. They're limited
+to one line of text.
 
 cue: Cues, such as this one, may stand apart from the notation.
 
 cue: You may also attach a cue to any line of notation.
 music: K0 c d e f | g a b c |
 
-text: PER BAR - bar annotations attach to individual measures. They're useful for
-indicating changes in meter, measure numbers, etc., but you can use them for
+text: PER BAR - bar annotations attach to individual measures. They're useful
+for indicating changes in meter, measure numbers, etc., but you can use them for
 any text you want to tie to a particular measure.
 
 music: K0 ^ggg ccc | a f c | ^ggg ccc | d b g |
@@ -972,13 +984,18 @@ text: RHYTHM:
 FQS can represent common rhythms cleanly and unambiguously.
 
 cue: durations (assuming 4/4 meter)
-music: c - - - | d - d - | e e e e | ff ff ff ff |
+music: c - - - | d - d - | e e e e | ff f--f f-f ff-- |
 counter: 1
 perbar: whole halves quarters eighths
 
-music: ^ggg ggg ggg ggg | aaaa a-aa aa-a a--a | b-b -b- c - |
+music: ^ggg ggg ggg ggg | aaaa a-aa aa-a aaa- | b-b -b- c-c -c- |
 counter: 1
-perbar: triplets 16ths_and_dotted_rhythms two_beat_triplet
+perbar: triplets_rhythms 16th_rhythms two_beat_triplets
+
+text: Rhythm markers
+FQS renders rhythm markers beneath beats that contain notes of different
+durations. The rhythm markers indicate graphically how the beat is divided
+between the notes.
 
 text: FQS SYNTAX SUMMARY
 .
@@ -1012,14 +1029,14 @@ text: Pitch lines contain pitches, key signatures and barlines.
 .
 Octave marks and accidentals PRECEDE the pitch, so '/#c', NOT '/c#'' or 'c#/''
 .
-With the 'pitch:' keyword,  whitespace is not  significant between pitches. 'c d e f' 
-is the same as 'cdef'. This is NOT true with the 'music:' keyword.
+With the 'pitch:' keyword,  whitespace is not  significant between pitches.
+'c d e f' is the same as 'cdef'. This is NOT true with the 'music:' keyword.
 .
 Barlines are needed so altered pitches cancel at end of measure.
 
 text: ANNOTATIONS (all optional):
-    cue: A line of text you want to appear as a cue.
-        cues may be attached to the notation or stand alone if followed by a blank line.
+    cue: A line of text you want to appear as a cue.  Cues may be attached to
+         the notation or stand alone if followed by a blank line.
     chord: chord symbols aligned to beats
     perbar: Items aligned to barlines, e.g. time signatures
     perbeat: Items aligned to beats, e.g. tempo markings
@@ -1027,15 +1044,16 @@ text: ANNOTATIONS (all optional):
     finger: Fingering numbers. Rendered in tiny font above the staff.
 .
     LAYOUT CHARACTERS:
-    In perbar, perbeat, pernote and finger annotations, the underscore (_) and barline (|)
-    are treated specially.
+    In perbar, perbeat, pernote and finger annotations, the underscore (_) and
+    barline (|) are treated specially.
 .
-    Underscores ( _ ) are used to skip beats, barlines, or attacks in annotations. For example:
-    "perbar: a_tempo _ molto_rall." puts 'a tempo' at the first measure and 'molto rall.' at 
-    the third measure.
+    Underscores ( _ ) are used to skip beats, barlines, or attacks in
+    annotations. For example: "perbar: a_tempo _ molto_rall." puts 'a tempo' at
+    the first measure and 'molto rall.' at the third measure.
 .   
-    Barlines ( | ) advance the layout to the next barline. This is particularly useful in per note
-    annotations to reduce the number of underscores needed to correctly place an annotation.
+    Barlines ( | ) advance the layout to the next barline. This is particularly
+    useful in per note annotations to reduce the number of underscores needed to
+    correctly place an annotation.
 
 music: K0 ^^g f e d | c b a g | f e d b | c - - - |
 pernote: a_tempo | | molto_rall.

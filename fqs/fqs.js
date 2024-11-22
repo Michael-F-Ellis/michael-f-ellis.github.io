@@ -80,7 +80,8 @@ class Book {
     const insertButton = document.createElement('button');
     insertButton.textContent = 'Insert new score';
     insertButton.onclick = () => {
-      const newScore = this.addScore("title: New Score", score.outer.nextSibling);
+      const newScore = this.addScore("title: New Score", score.outer);
+      //const newScore = this.addScore("title: New Score", score.outer.nextSibling);
       newScore.showSourceEditor();
     };
     actionsDiv.appendChild(insertButton);
@@ -1160,7 +1161,7 @@ class PitchLine {
       prevPitch.octave = octave;
     }
   }
-  // render = (function (svg, x0, y0, attacks, fontwidth, fontheight, bars) {
+  // render draws the staff, the barlines, and the pitches.
   render = (function (svg, x0, y0, bookParms, lyricLine) {
     // x0 is the x coordinate of the left edge of the line
     // y0 corresponds to the baseline of the center octave (0)
@@ -1175,7 +1176,7 @@ class PitchLine {
     const yline1 = yline0 - fontheight
     const yline2 = yline1 - fontheight
     const yline3 = yline2 - fontheight
-    const xend = fontwidth * (1 + bars[bars.length - 1]); // extend line to last barline
+    const xend = x0 + fontwidth * (0.5 + bars[bars.length - 1]); // extend line to last barline
     for (let y of [yline0, yline1, yline2, yline3]) {
       let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
       line.setAttribute("x1", x0);
@@ -1187,10 +1188,10 @@ class PitchLine {
       svg.appendChild(line);
     };
     // Now draw barlines
-    for (let n of bars) {
-      if (n === 0) continue;
+    for (let xBar of bars) {
+      if (xBar === 0) continue;
       let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      let x = x0 + (n + 0.5) * fontwidth;
+      let x = x0 + (xBar + 0.5) * fontwidth;
       line.setAttribute("x1", x);
       line.setAttribute("y1", yline3);
       line.setAttribute("x2", x);
@@ -1465,7 +1466,15 @@ class Counter {
     }
   });
 }
-
+// The FracSpan class is used to represent a fraction. It is used by the
+// RhythmMarkers class to represent the subbeats within a beat and span (the number
+// of rendered char positions comprising the fraction.
+class FracSpan {
+  constructor(value, span) {
+    this.val = value;
+    this.span = span;
+  }
+}
 class RhythmMarkers {
   // The purpose of this class is to draw a group of horizontal lines whose
   // aligned with the beat notation and having lengths proportional to 
@@ -1477,7 +1486,7 @@ class RhythmMarkers {
   constructor(rhythms) {
     // rhythm is an array of rhythm markup,  as created by LyricLine.extractRhythm()`
     this.rhythms = rhythms;
-    this.beatFractions = []; // an array of arrays of fractions
+    this.beatFractions = []; // an array of arrays of FracSpan objects
     for (let i = 0; i < rhythms.length; i++) {
       const rhythm = rhythms[i];
       // we can move on the the next beat if the rhythm doesn't contain "-"
@@ -1489,35 +1498,33 @@ class RhythmMarkers {
       let fractions = [];
       const nchar = rhythm.length;
       let chordIndex = -1; // -1  means not in a chord
-      let f = 0; // current beat fraction
+      let f = new FracSpan(1, 1); // current beat fraction
       for (let j = 0; j < nchar; j++) {
         switch (rhythm[j]) {
           case '(':
             chordIndex = 0;
             continue;
           case ')':
+            f.span = chordIndex;
             chordIndex = -1;
             continue;
           case '-':
             if (j == 0) {
-              f = 1;
+              f.val = 1;
             } else {
-              f++;
+              f.val++;
             }
             continue;
           case '*':
+          case ';':
             switch (chordIndex) {
               case -1:
-                if (f > 0) {
+                if (j != 0) {
                   fractions.push(f);
+                  f = new FracSpan(1, 1);
                 }
-                f = 1;
                 break;
               case 0:
-                if (f > 0) {
-                  fractions.push(f);
-                }
-                f = 1;
                 chordIndex++;
                 break;
               default:
@@ -1527,20 +1534,18 @@ class RhythmMarkers {
             }
             continue;
           case ';':
-            if (f > 0) {
-              console.log(fractions.length)
-              fractions.push(f)
-            }
-            f = 1;
+            console.log(fractions.length)
+            fractions.push(new FracSpan(f, 1));
+            f = new FracSpan(1, 1);
             continue;
         }
       }
       // push the last fraction
       fractions.push(f);
       // divide each fraction by the sum of fractions
-      const sum = fractions.reduce((a, b) => a + b, 0);
+      const sum = fractions.reduce((a, b) => a + b.val, 0);
       for (let j = 0; j < fractions.length; j++) {
-        fractions[j] = fractions[j] / sum;
+        fractions[j].val = fractions[j].val / sum;
       }
       this.beatFractions.push(fractions);
     }
@@ -1557,13 +1562,21 @@ class RhythmMarkers {
     let i = 0;
     for (let fractions of this.beatFractions) {
       let x = x0 + beats[i] * fontwidth;
+      let xb0 = x; let xb1 = x; // left and right ends of the beat
       let y = y0 - fontwidth / 2;
       let width = 0;
       for (let fraction of fractions) {
-        width = fraction * 2 * fontwidth;
-        appendSVGLineChild(svg, x, y, x + width - 1, y, ["rhythm-marker"]);
-        x += width
+        // width = fraction * 2 * fontwidth;
+        width = fraction.val * fontwidth;
+        // appendSVGLineChild(svg, x, y, x + width - 1, y, ["rhythm-marker"]);
+        appendSVGLineChild(svg, x, y, x + width, y, ["rhythm-marker"]);
+        // x += width
+        xb1 = x + width;
+        x += fraction.span * fontwidth
       }
+      // Now draw a thin connector line across the bottom of the rhythm markers
+      // for the beat.
+      appendSVGLineChild(svg, xb0, y0, xb1, y0, ["rhythm-connector"]);
       i++;
     }
   }

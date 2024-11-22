@@ -64,7 +64,12 @@
   }
 
   .rhythm-marker {
-    stroke-width: 2;
+    stroke-width: 3;
+    stroke: black;
+  }
+
+  .rhythm-connector {
+    stroke-width: 0.5;
     stroke: black;
   }
 
