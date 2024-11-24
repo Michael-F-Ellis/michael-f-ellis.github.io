@@ -1,29 +1,83 @@
-title: FQS Reference
+title: About FQS
 
 zoom: 130
 
 youtube: icx52BLixaw
 
-text: ABOUT:
-FQS is a musical notation system that makes music easier to read. This page is a
+text: FQS is a musical notation system that makes music easier to read. This page is a
 complete self-contained web app with no external dependencies. You can use it to
 create, edit and display multiple scores using the simple text format (.fqs)
 described in this reference. 
-.
-(In case you're wondering, the name, FQS, comes from the initials of my three
-grandchildren: Fiona, Quentin and Skylar.)
 .
 You can also map each line of notation to a specific starting time in a YouTube
 recording of the piece and specify the play rate - typically to slow the
 playback down for careful listening.
 .
-NOTE: This reference is a score, albeit one with far more text than usual. I
-encourage you to use the edit area to experiment with changes. You can even save
-your own version of the reference without losing this one since it's embedded in
-the fqs.html file.
+In case you're wondering, the name, FQS, comes from the initials of my three
+grandchildren: Fiona, Quentin and Skylar.
+EndOfScore
+title: About this reference
 
-text: NOTATION BASICS:
-Let's start with an example:  Here's the melody for Happy Birthday, set in E major.
+zoom: 130
+
+text: This reference is a "Book" of "Scores", albeit one with far more text than usual.
+.
+FQS Scores are one of more lines of music and text that define a piece of music.
+.
+FQS Books are collections of Scores, stored in a text format with the file extension
+.fqs
+.
+Each Score, when rendered, includes editing capabilities that allow you alter the score
+and/or create new one.
+.
+As you read this reference, I encourage you to use the editing capability to explore the
+notation syntax and experiment with changes.
+.
+You can even save your own version of this reference using the Export button at the 
+top of the page.
+EndOfScore
+title: Strengths and Limitations
+
+zoom: 130
+
+text: FQS is not a complete replacement for conventional music notation.
+.
+In particular, it has (as yet) no explicit support for polyphony (2 or 
+more parts moving with different rhythms.) 
+.
+Secondly, it has (as yet)  no mechanism for aligning bar lines of multiple
+lines of music as one would need for piano, orchestral or choral scores.
+.
+Neither of those limitations are insuperable, but it's not my intent to
+take them on in the near future.
+.
+What FQS does very well is providing an alternative notation format for
+voice and instruments that (mostly) play a single melody at a time.
+.
+The notation is a simple text-based language that renders in a
+form that uses color to eliminate the need to worry about which note
+note names are assigned to particular lines and spaces and which 
+notes are altered by sharps and flats.
+.
+FQS is designed with computer and tablet screens in mind.
+.
+Conventional notation evolved over nearly 1000 years before the advent of 
+modern technology. It is a polished and beautiful language, but the 
+limitations of paper and ink in combination with the vast complexity of 
+the musical forms it must represent create difficulties even for expert
+musicians.
+.
+It's my belief that FQS is a valuable alternative that can reduce the
+effort required to decipher and learn music from a notated source.
+EndOfScore
+title: Two Examples
+
+zoom: 130
+
+youtube: icx52BLixaw
+
+text: Here's a simple example: the melody for Happy Birthday, set in E major.
+Try playing it if you have your instrument handy. The red notes are sharped.
 
 music: K#4 bb | c b e | d - bb | c b ^f | e - bb |
 counter: 3
@@ -31,142 +85,221 @@ counter: 3
 music: K#4 ^b g e | d c ^aa | g e f | e - ; |
 counter: 1
 
-text: KEY CONCEPTS
+text: Here's a more complex one: the first eight bars of the Sarabande from J. S. Bach's
+third Cello Suite. You can click on either line to hear an excerpt from a performance
+by Yo-Yo Ma. 
 .
-   Pitch:
-     - Letter names instead of note symbols
-.
-     - Color (and italics) indicate altered (sharp or flat) pitches. Red for ♯
-     and blue for ♭. Double flats (green) and double sharps (orange) are also
-     supported
-.
-     - Compressed vertical spacing preserves melodic shape (like regular
-     notation), but allows 3 octaves to be displayed in a single stave.
-.
-     - The spacing is also 'true' in the sense that each semitone is rendered
-     exactly 1/12th of an octave higher than the next lower pitch.
-.
-   Rhythm:
-     - Horizontal space separates beats.
-. 
-     - Pitches without space between them subdivide the beat equally.
-.
-     - A semicolon ( ; )  indicates a rest.
-.
-     - Optional beat counter annotations below the staff clarify the rhythm.
+Click again to stop - unless you just want to bliss out on the remainder of
+the suite!
 
-text: ENTRY AND EDITING
-.
-To enter notation, you must activate an editing mode. You can do this clicking
-the "Toggle edit controls" button at the top of each score or by clicking the
-pencil icon by each line of the score. The difference is that the button will
-open a pane at the side of the score showing the entire text of the score,
-whereas clicking in the score will open a small editor for just that line.  
-.
-In either case, if editing is already active, the same actions will hide the
-editor and return you to display mode.
-.
-One important difference is that editing in the side pane will update the
-displayed notation immediately, whereas you must click the reload icon in the
-small editors to see the result of your changes.
-.
-Try it out! Click the pencil icon beside the line of music below and make some
-changes.
+music: K0 (/c^g^e^c) (/d^c)--a b | (//c^g^e^&b) (fb)--g a | (/bd)-ef (/c^g^f)--d ef | cbca bd /gf |
+counter: 1
+play: 11:18 1
 
-music: K#4 bb | c b e | d - bb | c b ^f | e - bb |
-counter: 3
+cue: 5
+music: K0 (/e^c^g) (/a^g)--e #fdfa | (//d^a^#f^c)--a (/g^d^c)--a cbag | (/#c^ga)-&bc (/d^b)-ac &e/#f | g (/g^g) - |
+counter: 1
+play: 11:38 1
 
-text: The 'music:' keyword tells the app to interpret what follows as a line of
-FQS notation.
-.
-   - A key signature is required. In this example, K#4, indicates E major 
-   ( 4 sharps ).
-.
-   - No time signature is needed ( but you can indicate one with an annotation).
-.
-   - The vertical bar symbol ( | ) ends a measure.
-.
-   - A hyphen ( - ) indicates a sustained pitch.
-.
-By default, each pitch is rendered in the octave that puts it closest to
-the preceding pitch. A preceding caret ( ^ ) raises it to the next octave.
-A preceding forward slash ( / ) lowers it one octave.
-.
-The 'counter' keyword is optional.  It places small beat numbers below the
-staff.  It takes a single number as an argument to enable support for pickup
-(partial) measures.
+text: Feel free to click the pencil icons to see what input produced the notation.Then let's move
+on to learning exactly how FQS represents music. You'll be seeing more from both these examples.
+EndOfScore
+title: The Title
 
-text: COMPATIBILITY: 
-For technical reasons, editing scores is not possible with Firefox. 
-Other browsers including Chrome, Safari, etc., work correctly.
+zoom: 130
 
-text: NOTATED CHORDS:
+youtube: optional
+
+text: Every score requires a title block. In addition to the name of the score,
+the title block may include two other keyword items, 'zoom:' and 'youtube:'. 
 .
-FQS supports a simple notation for pitches sounded simultaneously. A chord is
-rendered on the staff as a group of pitches rotated left by 30°,  like this:
+If present, those items must be separated by blank lines.
+.
+Zoom controls the displayed size of the entire score. If omitted, the default is
+100. Practical values range from about 75 to 150.  Most of the scores in this
+reference use a zoom of 130. Click the pencil icon beside the title block and
+try changing the zoom value to various values to get a feel for it.
+.
+Youtube allows you to specify a youtube video id that will be played starting
+at specified timestamps that correspond to lines of music. You may specify only
+one id per score, but each score may have it's own youtube id. See the YouTube
+section of this reference for examples and usage instructions.
+EndOfScore
 
-music: K0 (ceg&b) /cegb c |
+title: The Staff
+
+zoom: 130
+
+text: The FQS staff has 4 lines. Each line represents a vertical span of 1 octave.
+
+music: K0 g ^g ^g ^g | ////cdef gabc defg abcd  efga bcde |
+
+text: Compressed vertical spacing preserves melodic shape (like regular
+notation), but allows 3 octaves to be displayed in a single stave.
+.
+The spacing is also 'true' in the sense that each semitone is rendered
+exactly 1/12th of an octave higher than the next lower pitch
+.
+Clef signs are not necessary in FQS because, unlike conventional notation, the use 
+of letters for pitches means you don't have to think of what note corresponds to a
+a given line. 
+.
+You might be thinking, "How do I know which octaves the notes are in?" Good question!
+The answer is to think about your instrument or vocal range and let the lowest line
+correspond to the lowest "G" in the range. For a guitar in standard tuning, that's G2
+(low E string, 3rd fret). For a flute, G4, and so on. The point is that you know your
+instrument's limits and can interpret the octaves accordingly.
+
+text: But what if I need more than three octaves?
+A. You can extend the notation above and below the staff as shown
+below. You can also consider adding annotations like 8va and 8vb when
+needed.
+
+music: K0 //g ^g ^g ^g ^g ^g ^g |
+
+
+EndOfScore
+title: Editing
+
+zoom: 130
+
+text: The pencil icons beside each score item are your primary means of 
+editing. Clicking the icon opens up a text area beneath the item containing 
+the FQS input that creates the item.
+.
+Click the reload icon beside the editor when you want to see the effect of 
+your changes.
+.
+Click the pencil icon again to close the editor.
+.
+There's a second editing option. Click the 'Toggle Edit Mode' button at the
+top of the score to open a side-by-side view of the entire score.
+.
+This gives you access to the full text of the score. The tradeoff is that this
+takes up half the screen, shrinking the score view. On the other hand, the
+changes you make are rendered immediately as you type without requiring you to
+click a reload icon.
+
+
+EndOfScore
+
+title: Sharps and flats
+
+zoom: 130
+
+cue: chromatic scale
+music: K0 c#cd#def#fg#ga#abc | cb&ba&ag&gfe&ed&dc |
+perbar: sharps_(red) flats_(blue)
+
+cue: FQS supports double flats (green) and double sharps (orange)
+music: K0 &&f &f %f #f ##f |
+pernote: 𝄫 ♭ ♮ ♯ 𝄪
+EndOfScore
+title: Key Signatures
+
+zoom: 130
+
+text: Key signatures are not displayed in FQS. They are, however,
+required in the input notation. At least one is required at the beginning
+of the first measure in each line or music, but you may change them at
+the beginning of any measure.
+
+music: K0 cdefgabc | K&3 /cdefgabc | K#4 /cdefgabc |
+perbar: C_major C_minor C♯_minor
+EndOfScore
+title: Rhythm
+
+zoom: 130
+
+text: FQS is beat oriented. You don't specify note durations. Instead, you tell
+it how each beat is divided.
+.
+  Horizontal space separates beats.
+  Pitches without space between them subdivide the beat equally.
+  A dash ( - ) extends the previous pitch.
+  A semicolon ( ; ) indicates a rest.
+  Optional beat counter annotations below the staff clarify the rhythm.
+
+cue: durations (assuming 4/4 meter)
+music: K0 c - - - | d - d - | e e e e |
+counter: 1
+perbar: whole_note half_notes quarters
+
+cue: Note the dash (-) symbols above. They indicate when a note is sustained across the next beat.
+
+cue: Evenly divided beats
+music: K0 ff ff ff ff | ggg ggg ggg ggg | aaaa aaaa aaaa aaaa |
+counter: 1
+perbar: eighths triplets sixteenths
+
+text: Q. What about unevenly divided beats, like dotted eighth + sixteenth?
+A. That deserves a section of it's own. See below.
+
+
+EndOfScore
+title: Uneven rhythms
+
+zoom: 130
+
+cue: Uneven beat divisions
+music: ^gg g--g gg-- g;-g | aaa a-aa aa-a aaa- |
 counter: 1
 
-text: In the example above, the smaller, back-slanted characters indicate that
-all the pitches in the first beat are to be sounded together as a chord for one
-beat whereas the the four pitches in the second beat are to be played as four
-sixteenth notes (assuming a quarter note beat).
-.
-To enter notes as a chord, surround them with parentheses, e.g. (cegb). Try
-editing the music line above to add another chord.
+text: When a beat is unevenly divided, rhythm markers appear below it. The
+length of each heavy line segment is proportional the fraction of the beat
+alloted to the pitch (or rest or sustain) above it.
 
-text: PAGE CONTROLS:
-.
-Four buttons at the top of the page allow you to save, load, and edit your work.
-.
-  Export -  allows you to save a local copy of all the scores on the page as
-    a .fqs file.
-    IMPORTANT: Don't rely your browser's Save command to save your
-    work. It will save a copy of this html file without the scores.
-.
-  Import File - loads a .fqs file from your disk drive.
-.
-  Import URL - prompts you for a URL reference to load a remote .fqs file.
-.
-  Toggle edit controls - toggles the visibility of the editor and the buttons 
-  for inserting and deleting scores.
-.
-EDIT CONTROLS:
-.
-When the Edit Controls are shown, each score has 4 buttons:
-.
-   Insert new score - Inserts a new score immediately after the current score.
-.
-   Delete score - removes the score (after asking for confirmation). Does not
-   affect underlying files, but any unexported changes will be lost.
-.
-   Toggle edit mode - opens a text editing window containing the complete score
-   source.  Changes you make are updated in real time in the displayed music.
-.
-   Contents - Jumps to the table of scores listing at the top of the page
-.
-WAYS TO LOSE YOUR WORK:
-   1. Closing or reloading the page (without exporting first)
-   2. Using your browser's Back button. The scores will be gone when you return.
+cue: Ties and triplets
+music: | b-b -b- c-c -c- | bbb ccc |
+counter: 1
+perbar: _ 2/2
+EndOfScore
+title: Chords
 
-text: YOUTUBE PLAYBACK:
-FQS supports synchronized playback from YouTube videos. To enable this:
+zoom: 100
+
+cue: To notate a chord, enclose 2 or more pitches in parentheses.
+music: K#2 (dfa) (/bdf) (egb) (/ace) | (d^a^f^c) (//b^f^d^a) (/e^b^g^d) (//a^e^c^g) | /dfa /bdf egb /ace | d^a^f^c //b^f^d^a /e^b^g^d //a^e^c^g |
+perbar: These_are_chords _ These_are_arpeggios
+counter: 1
+
+text: Chords are rendered in a smaller, back-slanted font. Rhythmically, chords are treated
+as single attacks.
+
+cue: The chord in beat two is 3/4 of a beat long.
+music: K0 (/c^g^e^c) (/d^c)--a b |
+counter: 1
+
+text: See the Bach Cello example in the YouTube section for more examples
+of mixing chords with linear melody.
+EndOfScore
+title: YouTube Audio Playback
+
+zoom: 130
+
+youtube: icx52BLixaw
+
+text: FQS supports synchronized playback from YouTube videos. To enable this:
 .
-1. Add a youtube keyword with the video ID at the start of your score, e.g:
+1. Add a youtube keyword with the video ID at the start of your score, e.g.
+.
    youtube: dQw4w9WgXcQ
 . 
    The youtube keyword takes an optional second argument to specify the 
    default playback speed. Most YouTube music videos support 
    0.25, 0.5, 1.0, 1.5, or 2.0 as allowed playback speed values.
 .
-2. Add a play keyword to any music or pitch/lyric line group, e.g.:
+2. Add a play keyword to any music or pitch/lyric line group, e.g.
+.
    play: 1:30 0.5
 .  
   The play keyword takes two arguments:
      - Start time in minutes:seconds format (required)
      - Playback speed: 0.25, 0.5, 1.0, 1.5, or 2.0 (optional, defaults to 1.0)
       If given, line playback speed overrides the default speed.
+.
+Adding the play keyword causes a speaker icon, 🔊, to appear beside the line to
+let you know the line can be played.
 .
 Click any line with a 'play' keyword to start playback from its specified time.
 Click again to stop playback.
@@ -181,21 +314,22 @@ playback at that line.
 .
 Note: The groups of back-slanted notes are FQS's way of indicating chords.
 
-cue: Largo (mm=48)
-
 cue: A section (player begins at repeat)
-music: K0 (cg^e^c) (/d^c)--a b | (/cg^e^&b) (fb)--g a | (/bd)-ef (cg^f)--d ef | cbca bd /gf |
+music: K0 (/c^g^e^c) (/d^c)--a b | (//c^g^e^&b) (fb)--g a | (/bd)-ef (/c^g^f)--d ef | cbca bd /gf |
 counter: 1
 play: 11:18 1
 
 cue: 5
-music: K0 (/e^c^a) (/a^g)--e #fdfa | (/da^#f^c)--a (/g^d^c)--a cbag | (/#c^ga)-&bc (/d^b)-ac &e/#f | g (/g^g) - |
+music: K0 (/e^c^g) (/a^g)--e #fdfa | (//d^a^#f^c)--a (/g^d^c)--a cbag | (/#c^ga)-&bc (/d^b)-ac &e/#f | g (/g^g) - |
 counter: 1
 play: 11:38 1
 
-text: LYRICS:
-.
-FQS also supports lyrics. Here's Happy Birthday again - this time in E♭ major.
+EndOfScore
+title: Lyrics
+
+zoom: 120
+
+text: FQS also supports lyrics. Here's Happy Birthday again - this time in E♭ major.
 
 pitch: K&3 bb | c b e | d bb | c b ^f | e bb |
 lyric: Hap.py | birth day to | you -; Hap.py | birth day to | you -; Hap.py |
@@ -235,10 +369,12 @@ punctation characters to accomplish this.
 .
    As a convenience, you may use an equal (=) sign as a shorthand for two
    successive hyphens (--).
+EndOfScore
+title: Chord Symbols
 
-text: CHORDS:
-.
-FQS supports chord abbreviations. Chords can be placed on any beat.
+zoom: 130
+
+text: FQS supports chord abbreviations. Chords can be placed on any beat.
 
 music: K#2 ^^g f e d | c b a g | f - - - |
 counter: 1
@@ -246,12 +382,16 @@ chord: Em7 _ _ _ A7 _ _ _ Dmaj7
 
 text: Chords can also be aligned with lyrics alone. (Very handy for songwriting.)
 
-lyric: Fly -me to the | moon ; let me | play -a mong the | stars - ; ; |
+lyric: Fly -me to.the -moon | - ; let me | play -a mong.the -stars | - - ; ; |
 counter: 1
 chord: Am7 _ _ _ Dm7 _ _ _ G7 _ _ _ Cmaj7
 
-text: ANNOTATIONS:
-You can add annotations at several levels of granularity. Text annotations, such
+EndOfScore
+title: Annotations
+
+zoom: 130
+
+text: You can add annotations at several levels of granularity. Text annotations, such
 as this one, may contain multiple lines and paragraphs. The built-in annotations
 for FQS work well, but you may find it easier to save the score to a pdf and use
 a pdf editor to mark it up.
@@ -292,42 +432,88 @@ music: K0 ^g | c d e f | g - - - |
 finger: 0 4 1 -1 2 4
 
 text: EVERYTHING - Here's the last line of Happy Birthday once again, this time
-with all possible annotations.
+with all possible annotation types.
 
+cue: Everything
 pitch: K&3 ^b g e | d c ^aa | g e f | e |
 lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
 counter: 1
+chord: Eb _ _ Ab _ _ Eb _ Bb7 Eb
 finger: | | 0 1 3
 perbeat: mm=120 _ rall. _ 𝄐 _a_tempo _ _ molto_rall.
 pernote: mf cresc. _ _ _ ff
 perbar: 3/4_Brightly
+EndOfScore
+title: Notation Language Overview
 
-text: RHYTHM:
+zoom: 130
+
+text: At the top level, FQS is a simple "keyword: values" language. The currently
+defined keywords are:
 .
-FQS can represent common rhythms cleanly and unambiguously.
-
-cue: durations (assuming 4/4 meter)
-music: c - - - | d - d - | e e e e | ff f--f f-f ff-- |
-counter: 1
-perbar: whole halves quarters eighths
-
-music: ^ggg ggg ggg ggg | aaaa a-aa aa-a aaa- | b-b -b- c-c -c- |
-counter: 1
-perbar: triplets_rhythms 16th_rhythms two_beat_triplets
-
-text: Rhythm markers
-FQS renders rhythm markers beneath beats that contain notes of different
-durations. The rhythm markers indicate graphically how the beat is divided
-between the notes.
-
-text: FQS SYNTAX SUMMARY
+  title:
+  text:
+  cue:
+  chord:
+  counter:
+  music:
+  pitch:
+  lyric:
+  perbar:
+  perbeat:
+  pernote:
+  finger:
+  youtube:
+  zoom:
+. 
+Some keywords are standalone. They must be separated by blank lines from each other.
+These include title, text, youtube, and zoom. Cue may also stand alone.
 .
-Lyric lines define the rhythm using the following characters.
-   Attack: ( * ) or a syllable of alphabetic characters.
-   Sustain: '-' continues the note from the prior attack.'
-   Rest: ( ; ) semicolon
+Text is the only multiline, standalone keyword, i.e. you may follow the first line
+with an arbitrary number of text lines before terminating with a blank line.
+.
+The other keywords control the display of musical lines. They must be grouped together
+without empty lines between, e.g.
+.
+  music:
+  cue:
+  chord:
+  perbeat:
+  perbar:
+  pernote:
+  finger:
+  counter:
+.
+or
+.
+  lyric:
+  pitch:
+  cue:
+  chord:
+  perbeat:
+  perbar:
+  pernote:
+  finger:
+  counter:
+.
+The lyric and music keywords may not be present in the same group. The order of keywords
+in each group is not important. The layout will be the same regardless of the order.
+.
+Each keyword may appear only once in each group.
+EndOfScore
+title: Syntax Summary
+
+zoom: 130
+
+text: FQS defines rhythm using the following characters for the 'music:'
+and 'lyric:' keywords:
    Barline: ( | ) separates measures.
    Whitespace: separates beats.
+   Attack: ( * ) indicates the start of a note 
+   Sustain: ( - ) continues the note from the prior attack.'
+   Rest: ( ; ) semicolon indicates a rest.
+For the 'lyric:' keyword only:
+   Syllable: A group of contiguous letter indicates an attack.
    Period: A period ( . ) separates syllables that fall in the same beat.
 
 text: Pitch lines contain pitches, key signatures and barlines.
@@ -340,8 +526,13 @@ text: Pitch lines contain pitches, key signatures and barlines.
    K&2 = B-flat major
    etc...
 .
-   Pitch examples:
-       c : C natural, octave nearest to prior pitch 
+   A pitch is a letter, [a-g], optionally preceded by sharp (#), flat (&) or 
+   natural (%) indicators, optionally preceded by octave indicators (^) up, or
+   (/) down.
+.
+   Examples:
+       c : C, possibly altered by key signature or prior accidental.
+      %c : C natural, always.
       #d : D-sharp
      ##e : E-double-sharp
       &f : F-flat
@@ -353,14 +544,18 @@ text: Pitch lines contain pitches, key signatures and barlines.
 Octave marks and accidentals PRECEDE the pitch, so '/#c', NOT '/c#'' or 'c#/''
 .
 With the 'pitch:' keyword,  whitespace is not  significant between pitches.
-'c d e f' is the same as 'cdef'. This is NOT true with the 'music:' keyword.
+'c d e f' is the same as 'cdef'. This is NOT true with the 'music:' keyword
+because it also defines the rhythm and needs whitespace to separate beats.
 .
 Barlines are needed so altered pitches cancel at end of measure.
 
 text: ANNOTATIONS (all optional):
+    chord: chord symbols aligned to beats
+    counter: displays small beat numbers below the start of each beat. takes
+      an integer argument to specify the beat number to start at (for 
+      partial measures.)
     cue: A line of text you want to appear as a cue.  Cues may be attached to
          the notation or stand alone if followed by a blank line.
-    chord: chord symbols aligned to beats
     perbar: Items aligned to barlines, e.g. time signatures
     perbeat: Items aligned to beats, e.g. tempo markings
     pernote: Items aligned to attacks, e.g. dynamic markings
@@ -376,8 +571,8 @@ text: ANNOTATIONS (all optional):
 .   
     Barlines ( | ) advance the layout to the next barline. This is particularly
     useful in per note annotations to reduce the number of underscores needed to
-    correctly place an annotation.
+    correctly place an annotation. See the input for the example below.
 
 music: K0 ^^g f e d | c b a g | f e d b | c - - - |
-pernote: a_tempo | | molto_rall.
+pernote: a_tempo | _ cresc. | molto_rall.
 EndOfScore

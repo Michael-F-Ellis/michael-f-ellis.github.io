@@ -27,6 +27,11 @@
     fill: green;
   }
 
+  .speaker-icon {
+    font-size: 12px;
+    fill: rgb(61, 7, 123);
+  }
+
   /* Font sizes (adjusted dynamically at render time) */
   .lineproblem {
     font: 8px monospace;
@@ -171,6 +176,7 @@
   .section-editor {
     width: 90%;
     min-height: 100px;
+    height: fit-content;
     margin: 10px 5% 5% 10px;
     padding: 1em;
     border: 1px solid #ccc;

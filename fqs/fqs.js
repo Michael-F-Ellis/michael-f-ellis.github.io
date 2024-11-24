@@ -205,7 +205,7 @@ class Book {
     // get the scores in order
     const scores = this.getScores()
     // add the toc entries
-    toc.appendChild(document.createTextNode('Table of Scores\n'));
+    toc.appendChild(document.createTextNode('Contents\n'));
     const ul = toc.appendChild(document.createElement('ul'));
     scores.forEach(score => {
       const li = document.createElement('li');
@@ -1869,15 +1869,19 @@ function reconstructSectionText(line) {
   let text = '';
   // Build section text from line properties
   if (line.cue) text += `cue: ${line.cue}\n`;
+  if (line.chord) text += `chord: ${line.chord}\n`;
+  if (line.perbeat) text += `perbeat: ${line.perbeat}\n`;
+  if (line.finger) text += `finger: ${line.finger}\n`;
   if (line.music) {
     text += `music: ${line.music}\n`;
   } else if (line.pitch) {
-    text = `pitch: ${line.pitch}\n`;
+    text += `pitch: ${line.pitch}\n`;
   }
+  if (line.perbar) text += `perbar: ${line.perbar}\n`;
   if (line.lyric) text += `lyric: ${line.lyric}\n`;
+  if (line.pernote) text += `pernote: ${line.pernote}\n`;
   if (line.counter) text += `counter: ${line.counter}\n`;
   if (line.rhythm) text += `rhythm:\n`;
-  if (line.chord) text += `chord: ${line.chord}\n`;
   if (line.text) text += `text: ${line.text}\n`;
   if (line.play) {
     const minutes = Math.floor(line.play / 60);
@@ -1888,10 +1892,6 @@ function reconstructSectionText(line) {
     }
     text += '\n';
   }
-  if (line.finger) text += `finger: ${line.finger}\n`;
-  if (line.perbeat) text += `perbeat: ${line.perbeat}\n`;
-  if (line.pernote) text += `pernote: ${line.pernote}\n`;
-  if (line.perbar) text += `perbar: ${line.perbar}\n`;
   // ... add other line properties
   return text;
 }
@@ -2135,6 +2135,8 @@ function renderScore(wrapper, data) {
     // Add click handler for play click handlers
     if (data.youtubeId && line.play !== undefined) {
       svg.style.cursor = 'pointer';
+      appendSVGTextChild(svg, 0, 48, "🔊", ["speaker-icon"]);
+
       svg.addEventListener('click', (event) => {
         if (event.detail === 1) { // Single click
           setTimeout(() => {

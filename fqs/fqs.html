@@ -1,1064 +1,140 @@
-<!-- This file is auto-generated. Do not edit it manually. -->
 <!DOCTYPE html>
 <html>
-<!--
-  This file contains an HTML app for writing and rendering musical scores
-  using the FQS notation system.  It defines the structure and layout of the
-  score, including the placement of various elements such as title, cue, lyric,
-  chord, dynamics, time signature, and pitches.
-
-  The app uses SVG (Scalable Vector Graphics) to render the musical
-  notation. The SVG elements are dynamically generated and positioned based on
-  the provided musical data and configuration parameters.
-  
-  To understand how the app works and how the musical data is processed and
-  rendered, you can refer to the following sections in the JavaScript code:
-
-  0. The window.onload function: This function is called when the HTML file is
-  loaded. It finds all the score elements (div.score) in the HTML file and
-  renders them using the `renderEditedScoreSource()` function.
-  
-  1. The `renderScore()` function: This is the main entry point for rendering a
-  score. It sets up the SVG container, applies the necessary transformations,
-  and calls the respective rendering functions for each musical element class.
-  
-  2. The rendering functions for each musical element class (e.g.,
-  Title.render(), Cue.render(), Lyric.render(), etc.): These functions handle
-  the rendering of specific musical elements based on the provided data. They
-  create the necessary SVG elements, set their attributes, and position them
-  correctly within the score.
-  
-  3. The `bookParameters` object: This object contains various configuration
-  parameters that control the rendering of the score, such as font heights,
-  spacing, and positioning. These parameters are used throughout the rendering
-  process to ensure consistent and customizable formatting. Also, see the
-  <style> element in the HTML file for the CSS rules that control the formatting
-  of the score.
-  
-  4. The `handleNewScoreButtonClick()` function: This function is called when
-  the user clicks the Insert button.  It opens the dialog box for selecting a
-  score template. This function is called when the user clicks the Insert
-  button. It opens a dialog box where the user can choose an initial score
-  template (e.g., Minimal, Full, Cheat sheet) and inserts a new score based on
-  the selected template using the insertNewScore() function.
-  
-  5. The export() and importFromFile() functions: These functions are invoked
-  by buttons in the control dropdown at the top of the page. The export
-  function saves the current score data to a file and the importFromFile
-  function loads a score file, splits the text into individual scores, and
-  appends them to the page as separate scores.
-
-  6. Common syntax errors in the pitch line are detected and displayed in the
-  rendered output in red text below the line where the error occurred. See the
-  LineProblems class and renderScore() for details. Processing continues if
-  possible so that the user is not interrupted by a syntax error while
-  transcribing a score.
-  
-  Feel free to explore the code and experiment with different musical data and
-  configuration parameters to understand how the app works and how you can
-  customize it to suit your needs.
--->
 
 <head>
-  <meta charset="utf-8">
-  </meta>
-  <link rel="stylesheet" href="fqs.css">
+	<meta charset="utf-8">
+	<link rel="stylesheet" href="fqs.css">
 </head>
 
 <body>
-<p>Build: main-ec5048b</p>
-  <!--YouTube player div-->
-  <div id="player"></div>
-  <!-- Page controls -->
-  <div style="margin-left: 5%; margin-right: 5%;">
-    <em>Controls</em><br>
-    <button id="exportButton" onclick="exportScores()">Export</button> <em>Save the scores from this page in
-      <code>.fqs</code> text
-      format.</em><br>
-    <button onclick="importFromFile()">Import File</button> <em>Import scores from a local <code>.fqs</code>
-      file.</em><br>
-    <button onclick="importFromURL()">Import URL</button> <em>Import a <code>.fqs</code> file from a URL.</em><br>
-    <button id="edit-btn">Show edit controls</button> <em>Display the editable source beside the score. </em>
-
-    <script>
-      // Add right after the first <script> tag
-      let tag = document.createElement('script');
-      tag.src = "https://www.youtube.com/iframe_api";
-      tag.onload = () => {
-        console.log('YouTube IFrame API script loaded');
-      };
-      let firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-      let editModeState = true;
-      const editButton = document.getElementById('edit-btn');
-      function toggleEdit() {
-        editModeState = !editModeState;
-        forceEditMode(editModeState);
-      }
-      function forceEditMode(boolValue) {
-        newScoreBtnsVisible(editModeState);
-        const scoreDivs = document.querySelectorAll('div.score');
-        scoreDivs.forEach(div => {
-          const editor = div.querySelector('div.source-div');
-          const rendered = div.querySelector('div.inner-wrapper');
-          const deleteBtn = div.querySelector('button.delete-btn');
-          if (editModeState) {
-            editor.style.display = 'block';
-            editor.style.width = '50%';
-            rendered.style.width = '50%';
-            deleteBtn.style.display = 'inline-block';
-            editButton.textContent = 'Hide edit controls';
-          } else {
-            editor.style.display = 'none';
-            rendered.style.width = '100%';
-            deleteBtn.style.display = 'none';
-            editButton.textContent = 'Show edit controls';
-          }
-        });
-      }
-      editButton.addEventListener('click', toggleEdit);
-      // deleteScore(id) deletes the score div with the given id and all its
-      // content from the DOM along with the Insert button that follows it.
-      function deleteScore(id) {
-        const score = document.getElementById(id);
-        if (score === null) {
-          return
-        }
-        score.remove();
-        btnId = "insert-new-" + id;
-        const insertButton = document.getElementById(btnId);
-        if (insertButton !== null) {
-          insertButton.remove();
-        }
-        scoreToc(); // update the table of contents
-      }
-      // scoreToc is a function that generates a table of contents for the scores in the
-      // current page. It creates a ul element that contains li elements for each score.
-      // Each li element contains a link to the score's div element. The link text is the
-      // title of the score. The title is extracted from the first line of the score's
-      // source. The ul is inserted into the div with id'score-toc'.
-      function scoreToc() {
-        let toc = document.getElementById('score-toc');
-        // if score-toc div doesn't exist, create it as the first
-        // child of body
-        if (toc === null) {
-          const body = document.querySelector('body');
-          toc = document.createElement('div');
-          toc.id = 'score-toc';
-          body.insertBefore(toc, body.firstChild);
-        } else {
-          toc.innerHTML = ''; // Clear it
-        }
-        const scores = document.querySelectorAll('div.score');
-        if (scores.length === 0) {
-          return;
-        }
-        const ul = document.createElement('ul');
-        for (const score of scores) {
-          const text = score.querySelector('pre.source').textContent.split('\n');
-          // find the title line of the score's source
-          const titleline = text.find(line => line.trim().startsWith('title:'));
-          const title = titleline.split(':')[1].trim();
-          const li = document.createElement('li');
-          const a = document.createElement('a');
-          a.setAttribute('href', `#${score.id}`);
-          a.textContent = title;
-          li.appendChild(a);
-          ul.appendChild(li);
-        }
-        // insert the ul of score links into the toc div
-        toc.appendChild(ul);
-        insertPageBreak(toc);
-        return;
-      }
-
-      function newScoreContent(intChoice) {
-        const choices = {
-          minimal: `title: Untitled 
-
-music: K0 c d e f |
-counter: 1
-
-`,
-
-          cheatsheet: fqsReference
-        }
-        switch (intChoice) {
-          case 1:
-            return choices.minimal;
-          case 3:
-            return choices.cheatsheet
-          default:
-            return choices.minimal
-        }
-      }
-      // The export method creates a text file consisting of the source texts of each
-      // score in the document, catenated and separated by a blank line between scores.
-      // The source texts are located in the pre elements with class'source'.
-      function exportScores() {
-        // Get the source texts of each score
-        const scoreDivs = document.querySelectorAll('div.score');
-        const scoreTexts = [];
-        scoreDivs.forEach(div => {
-          scoreTexts.push(div.querySelector('pre.source').textContent);
-        });
-        // Create a text file
-        const blob = new Blob([scoreTexts.join('\nEndOfScore\n')], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.setAttribute('href', url);
-        // get this html document's name and append '-source.fqs' to it.
-        const fqsName = window.location.pathname.split('/').pop().replace('.html', '-source.fqs');
-        a.setAttribute('download', fqsName);
-        let saveInitiated = true;
-        const initialTimestamp = Date.now();
-        a.click();
-        setTimeout(() => {
-          if (saveInitiated && Date.now() - initialTimestamp > 1000) {
-            // Assume save was successful if more than 1 second has passed.
-            // This approach isn't foolproof, but it may be the best we can
-            // do since the result of the File Save dialog is not available.
-            isDirty = false;
-          }
-        }, 1500);
-        // Revoke the object URL to avoid memory leaks.
-        URL.revokeObjectURL(url);
-        return false;
-      }
-      // appendScores adds a set of scores to the document.  It is called from
-      // either the importFromFile or importFromURL function.
-      function appendScores(text) {
-        const scoreTexts = text.split('\nEndOfScore\n');
-        scoreTexts.forEach(scoreText => {
-          scoreObj = new Score(scoreText);
-          let div = scoreObj.outer;
-          const newScoreButtons = document.querySelectorAll(`button.new-score-btn`);
-          let newScoreButton = newScoreButtons[newScoreButtons.length - 1]; // get the last new score button
-          newScoreButton.parentNode.insertBefore(div, newScoreButton.nextSibling);
-          // Add a new score button after the div
-          newScoreButton = document.createElement('button');
-          newScoreButton.setAttribute('class', 'new-score-btn');
-          newScoreButton.setAttribute('id', `insert-new-${div.id}`);
-          newScoreButton.textContent = 'Insert New Score';
-          newScoreButton.addEventListener('click', handleNewScoreButtonClick);
-          div.parentNode.insertBefore(newScoreButton, div.nextSibling);
-
-          // div.appendChild(link);
-          insertPageBreak(div)
-          scoreObj.render()
-        });
-        // Honor the current edit mode state.
-        forceEditMode(editModeState);
-      }
-      // importFromFile prompts the user to select an fqs file and imports the
-      // scores in the file.
-      function importFromFile() {
-        const file = document.createElement('input');
-        file.setAttribute('type', 'file');
-        file.setAttribute('accept', '.fqs');
-        file.addEventListener('change', event => {
-          const file = event.target.files[0];
-          const reader = new FileReader();
-          reader.addEventListener('load', event => {
-            const text = event.target.result;
-            appendScores(text);
-          });
-          reader.readAsText(file);
-        });
-        file.click();
-        return false;
-      }
-      // importFromURL prompts the user to enter the URL of an fqs file and
-      // imports the scores
-      function importFromURL() {
-        const url = prompt('Enter the URL of the .fqs file:',
-          "https://www.example.com/myfile.fqs");
-        if (url) {
-          fetch(url)
-            .then(response => response.text())
-            .then(text => {
-              try {
-                appendScores(text);
-              } catch {
-                console.error('Error fetching .fqs file:', error);
-                alert('Error(s) encountered. Scores may be incorrectly rendered or may not be rendered at all.');
-              }
-            })
-            .catch(error => {
-              console.error('Error fetching .fqs file:', error);
-              alert('Failed to fetch the .fqs file. Please check the URL and try again.');
-            });
-        }
-        return false;
-      }
-    </script>
-
-  </div>
-  <h3>
-    Scores
-  </h3>
-  <div id="score-toc" class="score-toc">
-  </div>
-  <button id="first-new-score-btn" , class="new-score-btn" onclick="handleNewScoreButtonClick(event)">
-    Insert New Score
-  </button>
-  <dialog id=new-score-dialog>
-    <form method="dialog">
-      <p>Choose an initial score template:</p>
-      <label><input type="radio" name="choice" value="1" checked> Minimal</label><br>
-      <label><input type="radio" name="choice" value="3"> FQS Reference</label><br>
-      <button id="cancelBtn" type="reset">Cancel</button>
-      <button id="confirmBtn" type="submit">Confirm</button>
-    </form>
-  </dialog>
-  <!-- The CSS styles for the score editor and display -->
-  <style id="fqs-style">
-    html,
-    body {
-      width: 100%;
-    }
-
-    summary {
-      margin-left: 5%;
-    }
-
-    button {
-      margin: 2px;
-    }
-
-    button.new-score-btn {
-      margin-left: 5%;
-    }
-
-    button.delete-btn {
-      margin-left: 5%;
-    }
-
-    .link-to-toc {
-      /* toc links should be at the right edge of the document */
-      position: absolute;
-      right: 5%;
-
-    }
-
-    h2,
-    h3,
-    p,
-    ul,
-    ol {
-      margin-left: 5%;
-      margin-right: 5%;
-    }
-  </style>
-  <script type="module">
-    import { Score, initYouTubeAPI, onYouTubeIframeAPIReady } from './fqs.js';
-
-    // Make YouTube callback globally available
-    window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
-
-    // Initialize YouTube API
-    initYouTubeAPI();
-
-    const scoreMap = new Map();
-    let isDirty = false; // global flag that is set when we edit a score and cleared when export the scores
-    const bookParameters = {
-      // bookParameters control the behavior of the score editor and display.
-      leftX: 16, // Pixel position of the left edge of the score.
-      sideBySide: true, // if true, render scores side-by-side with edit area
-      barlineRgx: /:?\|:?/, // regular expression to match barlines
-      lyricRgx: /[\p{L}']/u, // regular expression to match lyric alpha characters and apostrophes
-      "lyricFontWidth": 7, // includes space between letters
-      // Various font size parameters are are added to this object at runtime by 
-      // by the updateFontSizes() function in this file. These are needed by the functions
-      // that render the scores. If you need to change the font size, you should do so 
-      // in the style tag in this file with id "fqs-style".
-    }
-    // insertNewScore() inserts a new score into the DOM. It is called
-    // when the user chooses one of the predefined score templates from
-    // the new score dialog.
-    function insertNewScore(button, intChoice) {
-      const scoreText = newScoreContent(parseInt(intChoice));
-      scoreObj = new Score(scoreText);
-      let div = scoreObj.outer;
-      button.parentNode.insertBefore(div, button.nextSibling);
-
-      const newScoreButton = document.createElement('button');
-      newScoreButton.setAttribute('class', 'new-score-btn');
-      newScoreButton.setAttribute('id', `insert-new-${div.id}`);
-      newScoreButton.textContent = 'Insert New Score';
-      newScoreButton.addEventListener('click', handleNewScoreButtonClick);
-      div.parentNode.insertBefore(newScoreButton, div.nextSibling);
-
-      // div.appendChild(link);
-      insertPageBreak(div)
-      scoreObj.render()
-      forceEditMode(editModeState);
-    }
-    // handleNewScoreButtonClick inserts a new score into current page immediately before the
-    // button that invoked it.  The new consists of a div with class'score' that contains
-    // a <details> element that contains a <pre> element of class 'source' and a Save button that
-    // invokes saveAsHtmlFile().
-    function handleNewScoreButtonClick(event) {
-      //console.log('handleNewScoreButtonClick');
-      const button = event.target;
-      dialog = document.getElementById('new-score-dialog');
-      // replace the dialog with a clone
-      // to prevent accumulation of event listeners.
-      dialog.replaceWith(dialog.cloneNode(true));
-      dialog = document.getElementById('new-score-dialog');
-
-      const cancelButton = dialog.querySelector('button[type="reset"]');
-      const confirmButton = dialog.querySelector('button[type="submit"]');
-
-      const cancelHandler = () => {
-        dialog.returnValue = '';
-        dialog.close();
-        return false;
-      };
-      const confirmHandler = () => {
-        dialog.returnValue = dialog.querySelector('input[name="choice"]:checked').value;
-        //console.log(`New score dialog submitted with ${dialog.returnValue}`);
-        return false;
-      };
-
-      cancelButton.addEventListener('click', cancelHandler);
-      confirmButton.addEventListener('click', confirmHandler);
-
-      dialog.addEventListener('close', () => {
-        if (dialog.returnValue !== '') {
-          //console.log(`New score dialog closed with ${dialog.returnValue}`);
-          insertNewScore(button, dialog.returnValue);
-        }
-        return false;
-      });
-
-      dialog.showModal();
-      return false;
-    }
-
-    // The export method creates a text file consisting of the source texts of each
-    // score in the document, catenated and separated by a blank line between scores.
-    // The source texts are located in the pre elements with class'source'.
-    function exportScores() {
-      // Get the source texts of each score
-      const scoreDivs = document.querySelectorAll('div.score');
-      const scoreTexts = [];
-      scoreDivs.forEach(div => {
-        scoreTexts.push(div.querySelector('pre.source').textContent);
-      });
-      // Create a text file
-      const blob = new Blob([scoreTexts.join('\nEndOfScore\n')], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.setAttribute('href', url);
-      // get this html document's name and append '-source.fqs' to it.
-      const fqsName = window.location.pathname.split('/').pop().replace('.html', '-source.fqs');
-      a.setAttribute('download', fqsName);
-      let saveInitiated = true;
-      const initialTimestamp = Date.now();
-      a.click();
-      setTimeout(() => {
-        if (saveInitiated && Date.now() - initialTimestamp > 1000) {
-          // Assume save was successful if more than 1 second has passed.
-          // This approach isn't foolproof, but it may be the best we can
-          // do since the result of the File Save dialog is not available.
-          isDirty = false;
-        }
-      }, 1500);
-      // Revoke the object URL to avoid memory leaks.
-      URL.revokeObjectURL(url);
-      return false;
-    }
-    // appendScores adds a set of scores to the document.  It is called from
-    // either the importFromFile or importFromURL function.
-    function appendScores(text) {
-      const scoreTexts = text.split('\nEndOfScore\n');
-      scoreTexts.forEach(scoreText => {
-        scoreObj = new Score(scoreText);
-        let div = scoreObj.outer;
-        const newScoreButtons = document.querySelectorAll(`button.new-score-btn`);
-        let newScoreButton = newScoreButtons[newScoreButtons.length - 1]; // get the last new score button
-        newScoreButton.parentNode.insertBefore(div, newScoreButton.nextSibling);
-        // Add a new score button after the div
-        newScoreButton = document.createElement('button');
-        newScoreButton.setAttribute('class', 'new-score-btn');
-        newScoreButton.setAttribute('id', `insert-new-${div.id}`);
-        newScoreButton.textContent = 'Insert New Score';
-        newScoreButton.addEventListener('click', handleNewScoreButtonClick);
-        div.parentNode.insertBefore(newScoreButton, div.nextSibling);
-
-        // div.appendChild(link);
-        insertPageBreak(div)
-        scoreObj.render()
-      });
-      // Honor the current edit mode state.
-      forceEditMode(editModeState);
-    }
-    // importFromFile prompts the user to select an fqs file and imports the
-    // scores in the file.
-    function importFromFile() {
-      const file = document.createElement('input');
-      file.setAttribute('type', 'file');
-      file.setAttribute('accept', '.fqs');
-      file.addEventListener('change', event => {
-        const file = event.target.files[0];
-        const reader = new FileReader();
-        reader.addEventListener('load', event => {
-          const text = event.target.result;
-          appendScores(text);
-        });
-        reader.readAsText(file);
-      });
-      file.click();
-      return false;
-    }
-    // importFromURL prompts the user to enter the URL of an fqs file and
-    // imports the scores
-    function importFromURL() {
-      const url = prompt('Enter the URL of the .fqs file:',
-        "https://www.example.com/myfile.fqs");
-      if (url) {
-        fetch(url)
-          .then(response => response.text())
-          .then(text => {
-            try {
-              appendScores(text);
-            } catch {
-              console.error('Error fetching .fqs file:', error);
-              alert('Error(s) encountered. Scores may be incorrectly rendered or may not be rendered at all.');
-            }
-          })
-          .catch(error => {
-            console.error('Error fetching .fqs file:', error);
-            alert('Failed to fetch the .fqs file. Please check the URL and try again.');
-          });
-      }
-      return false;
-    }
-
-    // updateFontSizes() updates the font sizes of the various elements of
-    // scores that will be rendered as SVG objects. The font default sizes are
-    // specified in the style element with id 'fqs-style', but we support
-    // overriding them via the bookParameters object. If the font sizes are not
-    // specified in the bookParameters object, we use the default font sizes and
-    // update corresponding vars in bookParameters.
-    function updateFontSizes() {
-      // Update the font sizes if user has specified them.
-      // First, get a reference to the stylesheet,
-      const stylesheet = Array.from(document.styleSheets)
-        .find(sheet => sheet.href && sheet.href.includes('fqs.css'));
-
-      console.log("Stylesheets:", document.styleSheets);
-      console.log("Found stylesheet:", stylesheet);
-
-      if (!stylesheet) {
-        console.log("fqs.css stylesheet not found");
-        return;
-      }
-
-      const rules = stylesheet.cssRules || stylesheet.rules;
-      console.log("CSS rules:", rules);
-      // define a closure that will update the font size of a rule
-      // whose index is i if the font height, fh is specified in 
-      // or if not specified, assign a numeric value
-      // to the value in fh.
-      const update = (i, fh) => {
-        if (bookParameters[fh]) {
-          const v = bookParameters[fh];
-          rules[i].style.fontSize = v + 'px';
-        } else {
-          bookParameters[fh] = +rules[i].style.fontSize.slice(0, -2);
-        }
-      }
-      // loop over the rules to update font sizes.
-      for (let i = 0; i < rules.length; i++) {
-        switch (rules[i].selectorText) {
-          case '.title':
-            update(i, "titleFontHeight")
-            break;
-          case '.text':
-            update(i, 'textFontHeight');
-            break;
-          case '.preface':
-            update(i, 'prefaceFontHeight');
-            break;
-          case '.postscript':
-            update(i, 'postscriptFontHeight');
-            break;
-          case '.chord':
-            update(i, 'chordFontHeight');
-            break;
-          case '.pernote':
-            update(i, 'pernoteFontHeight');
-            break;
-          case '.fingering':
-            update(i, 'fingerFontHeight');
-            break;
-          case '.lyric':
-            update(i, 'lyricFontHeight');
-            break;
-          case '.pitch':
-            update(i, 'pitchFontHeight');
-            break;
-          case '.cue':
-            update(i, 'cueFontHeight');
-            break;
-          case '.perbar':
-            update(i, 'perbarFontHeight');
-            break;
-          case '.perbeat':
-            update(i, 'perbeatFontHeight');
-            break;
-          case '.counter':
-            update(i, 'counterFontHeight');
-            break;
-          case '.rest':
-            update(i, 'restFontHeight');
-            break;
-          case '.perline':
-            update(i, 'perlineFontHeight');
-            break;
-          case '.lineproblem':
-            update(i, 'lineproblemFontHeight');
-            break;
-        }
-      }
-    }
-    // newScoreBtnsVisible() toggles the visibility of the new score buttons.  
-    function newScoreBtnsVisible(visible) {
-      const newScoreBtns = document.querySelectorAll('.new-score-btn');
-      newScoreBtns.forEach(btn => {
-        btn.style.display = visible ? 'inline-block' : 'none';
-      });
-    }
-    // startExportButtonUpdateTimer() starts a timer that will update the
-    // appearance of the export button if the score is dirty.
-    function startExportButtonUpdateTimer() {
-      setInterval(updateExportButtonAppearance, 500);
-    }
-    function updateExportButtonAppearance() {
-      const exportButton = document.getElementById('exportButton');
-      if (isDirty) {
-        exportButton.style.backgroundColor = 'red';
-        exportButton.style.color = 'white';
-      } else {
-        exportButton.style.backgroundColor = '';
-        exportButton.style.color = '';
-      }
-    }
-
-    // insertPageBreak inserts the follow content in the html document
-    // with element 'el'.
-    // <div style="break-after:page"></div>
-    // Credit: https://stackoverflow.com/a/58245474/426853
-    function insertPageBreak(el) {
-      const pageBreakDiv = document.createElement('div');
-      pageBreakDiv.style.breakAfter = 'page';
-      el.appendChild(pageBreakDiv);
-    }
-
-    // When the window load is complete, render the scores and add listeners to
-    // the buttons that invoke the functions to insert, save and delete scores.
-    window.onload = () => {
-      // update the stylesheet with any font sizes specified in the bookParameters object
-      // We need to make sure the font size vars in bookParameters and the style rules are in sync.
-      updateFontSizes();
-      // Simulate click on first new score button to let user choose template
-      const firstNewScoreBtn = document.getElementById('first-new-score-btn');
-      firstNewScoreBtn.click();
-      isDirty = false
-      startExportButtonUpdateTimer();
-      // toggleEdit();
-    }
-
-  </script>
-<script type="text/javascript">
-// This is the reference score that documents FQS usage
-fqsReference=`title: FQS Reference
-
-zoom: 130
-
-youtube: icx52BLixaw
-
-text: ABOUT:
-FQS is a musical notation system that makes music easier to read. This page is a
-complete self-contained web app with no external dependencies. You can use it to
-create, edit and display multiple scores using the simple text format (.fqs)
-described in this reference. 
-.
-(In case you're wondering, the name, FQS, comes from the initials of my three
-grandchildren: Fiona, Quentin and Skylar.)
-.
-You can also map each line of notation to a specific starting time in a YouTube
-recording of the piece and specify the play rate - typically to slow the
-playback down for careful listening.
-.
-NOTE: This reference is a score, albeit one with far more text than usual. I
-encourage you to use the edit area to experiment with changes. You can even save
-your own version of the reference without losing this one since it's embedded in
-the fqs.html file.
-
-text: NOTATION BASICS:
-Let's start with an example:  Here's the melody for Happy Birthday, set in E major.
-
-music: K#4 bb | c b e | d - bb | c b ^f | e - bb |
-counter: 3
-
-music: K#4 ^b g e | d c ^aa | g e f | e - ; |
-counter: 1
-
-text: KEY CONCEPTS
-.
-   Pitch:
-     - Letter names instead of note symbols
-.
-     - Color (and italics) indicate altered (sharp or flat) pitches. Red for ♯
-     and blue for ♭. Double flats (green) and double sharps (orange) are also
-     supported
-.
-     - Compressed vertical spacing preserves melodic shape (like regular
-     notation), but allows 3 octaves to be displayed in a single stave.
-.
-     - The spacing is also 'true' in the sense that each semitone is rendered
-     exactly 1/12th of an octave higher than the next lower pitch.
-.
-   Rhythm:
-     - Horizontal space separates beats.
-. 
-     - Pitches without space between them subdivide the beat equally.
-.
-     - A semicolon ( ; )  indicates a rest.
-.
-     - Optional beat counter annotations below the staff clarify the rhythm.
-
-text: ENTRY AND EDITING
-.
-To enter notation, you must activate an editing mode. You can do this clicking
-the "Toggle edit controls" button at the top of each score or by clicking the
-pencil icon by each line of the score. The difference is that the button will
-open a pane at the side of the score showing the entire text of the score,
-whereas clicking in the score will open a small editor for just that line.  
-.
-In either case, if editing is already active, the same actions will hide the
-editor and return you to display mode.
-.
-One important difference is that editing in the side pane will update the
-displayed notation immediately, whereas you must click the reload icon in the
-small editors to see the result of your changes.
-.
-Try it out! Click the pencil icon beside the line of music below and make some
-changes.
-
-music: K#4 bb | c b e | d - bb | c b ^f | e - bb |
-counter: 3
-
-text: The 'music:' keyword tells the app to interpret what follows as a line of
-FQS notation.
-.
-   - A key signature is required. In this example, K#4, indicates E major 
-   ( 4 sharps ).
-.
-   - No time signature is needed ( but you can indicate one with an annotation).
-.
-   - The vertical bar symbol ( | ) ends a measure.
-.
-   - A hyphen ( - ) indicates a sustained pitch.
-.
-By default, each pitch is rendered in the octave that puts it closest to
-the preceding pitch. A preceding caret ( ^ ) raises it to the next octave.
-A preceding forward slash ( / ) lowers it one octave.
-.
-The 'counter' keyword is optional.  It places small beat numbers below the
-staff.  It takes a single number as an argument to enable support for pickup
-(partial) measures.
-
-text: COMPATIBILITY: 
-For technical reasons, editing scores is not possible with Firefox. 
-Other browsers including Chrome, Safari, etc., work correctly.
-
-text: NOTATED CHORDS:
-.
-FQS supports a simple notation for pitches sounded simultaneously. A chord is
-rendered on the staff as a group of pitches rotated left by 30°,  like this:
-
-music: K0 (ceg&b) /cegb c |
-counter: 1
-
-text: In the example above, the smaller, back-slanted characters indicate that
-all the pitches in the first beat are to be sounded together as a chord for one
-beat whereas the the four pitches in the second beat are to be played as four
-sixteenth notes (assuming a quarter note beat).
-.
-To enter notes as a chord, surround them with parentheses, e.g. (cegb). Try
-editing the music line above to add another chord.
-
-text: PAGE CONTROLS:
-.
-Four buttons at the top of the page allow you to save, load, and edit your work.
-.
-  Export -  allows you to save a local copy of all the scores on the page as
-    a .fqs file.
-    IMPORTANT: Don't rely your browser's Save command to save your
-    work. It will save a copy of this html file without the scores.
-.
-  Import File - loads a .fqs file from your disk drive.
-.
-  Import URL - prompts you for a URL reference to load a remote .fqs file.
-.
-  Toggle edit controls - toggles the visibility of the editor and the buttons 
-  for inserting and deleting scores.
-.
-EDIT CONTROLS:
-.
-When the Edit Controls are shown, each score has 4 buttons:
-.
-   Insert new score - Inserts a new score immediately after the current score.
-.
-   Delete score - removes the score (after asking for confirmation). Does not
-   affect underlying files, but any unexported changes will be lost.
-.
-   Toggle edit mode - opens a text editing window containing the complete score
-   source.  Changes you make are updated in real time in the displayed music.
-.
-   Contents - Jumps to the table of scores listing at the top of the page
-.
-WAYS TO LOSE YOUR WORK:
-   1. Closing or reloading the page (without exporting first)
-   2. Using your browser's Back button. The scores will be gone when you return.
-
-text: YOUTUBE PLAYBACK:
-FQS supports synchronized playback from YouTube videos. To enable this:
-.
-1. Add a youtube keyword with the video ID at the start of your score, e.g:
-   youtube: dQw4w9WgXcQ
-. 
-   The youtube keyword takes an optional second argument to specify the 
-   default playback speed. Most YouTube music videos support 
-   0.25, 0.5, 1.0, 1.5, or 2.0 as allowed playback speed values.
-.
-2. Add a play keyword to any music or pitch/lyric line group, e.g.:
-   play: 1:30 0.5
-.  
-  The play keyword takes two arguments:
-     - Start time in minutes:seconds format (required)
-     - Playback speed: 0.25, 0.5, 1.0, 1.5, or 2.0 (optional, defaults to 1.0)
-      If given, line playback speed overrides the default speed.
-.
-Click any line with a 'play' keyword to start playback from its specified time.
-Click again to stop playback.
-.
-Tip: Set the start time a couple of seconds before the first measure in the line
-to give yourself enough time to get ready to play the passage along with the
-recording.
-.
-Here's a complete example. The recording is the Sarabande from J.S. Bach's Cello
-Suite III in C Major, played in concert by Yo Yo Ma. Click either line to start
-playback at that line.
-.
-Note: The groups of back-slanted notes are FQS's way of indicating chords.
-
-cue: Largo (mm=48)
-
-cue: A section (player begins at repeat)
-music: K0 (cg^e^c) (/d^c)--a b | (/cg^e^&b) (fb)--g a | (/bd)-ef (cg^f)--d ef | cbca bd /gf |
-counter: 1
-play: 11:18 1
-
-cue: 5
-music: K0 (/e^c^a) (/a^g)--e #fdfa | (/da^#f^c)--a (/g^d^c)--a cbag | (/#c^ga)-&bc (/d^b)-ac &e/#f | g (/g^g) - |
-counter: 1
-play: 11:38 1
-
-text: LYRICS:
-.
-FQS also supports lyrics. Here's Happy Birthday again - this time in E♭ major.
-
-pitch: K&3 bb | c b e | d bb | c b ^f | e bb |
-lyric: Hap.py | birth day to | you -; Hap.py | birth day to | you -; Hap.py |
-counter: 3
-
-pitch: K&3 ^b g e | d c ^aa | g e f | e |
-lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
-counter: 1
-
-text: The second line above was created from the following 3 lines of text:
-.
-  pitch: K&3 ^b g e | d c ^aa | g e f | e |
-  lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
-  counter: 1
-.
-Writing scores with lyrics requires specifying the pitches and lyrics on
-separate lines. The corresponding keywords are "pitch:" and "lyric:"
-. 
-PITCH:
-The syntax of the "pitch:" keyword is similar to that of the "music:" keyword
-except that you omit hyphens and semicolons and it's not necessary to use spaces
-between pitches within a bar.  
-.
-In fact, bar lines are also optional, but it's wise to include them for clarity 
-and also, to ensure that accidentals cancel at the  end of each measure.
-.
-LYRIC:
-The "lyric:" keyword contains the lyrics for the line, written in a special form
-that determines the placement and duration of the pitches. FQS uses certain
-punctation characters to accomplish this.
-.
-   A period ( . ) separates syllables that occupy the same beat. Writing Happy
-   as 'Hap.py' tells FQS that the two syllables share a beat, each taking half.
-.
-   A hyphen, ( - ) indicates a syllable that is sustained for all or part of a
-   beat and a semicolon ( ; ) is a rest.
-.
-   As a convenience, you may use an equal (=) sign as a shorthand for two
-   successive hyphens (--).
-
-text: CHORDS:
-.
-FQS supports chord abbreviations. Chords can be placed on any beat.
-
-music: K#2 ^^g f e d | c b a g | f - - - |
-counter: 1
-chord: Em7 _ _ _ A7 _ _ _ Dmaj7
-
-text: Chords can also be aligned with lyrics alone. (Very handy for songwriting.)
-
-lyric: Fly -me to the | moon ; let me | play -a mong the | stars - ; ; |
-counter: 1
-chord: Am7 _ _ _ Dm7 _ _ _ G7 _ _ _ Cmaj7
-
-text: ANNOTATIONS:
-You can add annotations at several levels of granularity. Text annotations, such
-as this one, may contain multiple lines and paragraphs. The built-in annotations
-for FQS work well, but you may find it easier to save the score to a pdf and use
-a pdf editor to mark it up.
-
-text: CUE - cue annotations are text in a small monospace font. They're limited
-to one line of text.
-
-cue: Cues, such as this one, may stand apart from the notation.
-
-cue: You may also attach a cue to any line of notation.
-music: K0 c d e f | g a b c |
-
-text: PER BAR - bar annotations attach to individual measures. They're useful
-for indicating changes in meter, measure numbers, etc., but you can use them for
-any text you want to tie to a particular measure.
-
-music: K0 ^ggg ccc | a f c | ^ggg ccc | d b g |
-perbar: 6/8 3/4 6/8 3/4
-
-text: PER BEAT - beat annotations attach to individual beats. Useful for tempo
-markings but, again, use them in whatever way is useful to you.
-
-pitch: K&3 ^b g e | d c ^aa | g e f | e |
-lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
-counter: 1
-perbeat: mm=120 _ rall. _ 𝄐 _a_tempo _ _ molto_rall.
-
-text: PER NOTE - note annotations attach to individual notes. Use them
-as you wish. I tend to use them for dynamic markings.
-
-pitch: K&3 ^b g e | d c ^aa | g e f | e |
-lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
-pernote: mf cresc. _ _ _ ff
-
-text: FINGERING - finger annotations attach to individual notes above the staff.
-
-music: K0 ^g | c d e f | g - - - |
-finger: 0 4 1 -1 2 4
-
-text: EVERYTHING - Here's the last line of Happy Birthday once again, this time
-with all possible annotations.
-
-pitch: K&3 ^b g e | d c ^aa | g e f | e |
-lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
-counter: 1
-finger: | | 0 1 3
-perbeat: mm=120 _ rall. _ 𝄐 _a_tempo _ _ molto_rall.
-pernote: mf cresc. _ _ _ ff
-perbar: 3/4_Brightly
-
-text: RHYTHM:
-.
-FQS can represent common rhythms cleanly and unambiguously.
-
-cue: durations (assuming 4/4 meter)
-music: c - - - | d - d - | e e e e | ff f--f f-f ff-- |
-counter: 1
-perbar: whole halves quarters eighths
-
-music: ^ggg ggg ggg ggg | aaaa a-aa aa-a aaa- | b-b -b- c-c -c- |
-counter: 1
-perbar: triplets_rhythms 16th_rhythms two_beat_triplets
-
-text: Rhythm markers
-FQS renders rhythm markers beneath beats that contain notes of different
-durations. The rhythm markers indicate graphically how the beat is divided
-between the notes.
-
-text: FQS SYNTAX SUMMARY
-.
-Lyric lines define the rhythm using the following characters.
-   Attack: ( * ) or a syllable of alphabetic characters.
-   Sustain: '-' continues the note from the prior attack.'
-   Rest: ( ; ) semicolon
-   Barline: ( | ) separates measures.
-   Whitespace: separates beats.
-   Period: A period ( . ) separates syllables that fall in the same beat.
-
-text: Pitch lines contain pitches, key signatures and barlines.
-.
-   Key signatures: 'K0' or K#|&[1-7], 
-   K0 = C major, 
-   K#1 = G major
-   K#2 = D major
-   K&1 = F major
-   K&2 = B-flat major
-   etc...
-.
-   Pitch examples:
-       c : C natural, octave nearest to prior pitch 
-      #d : D-sharp
-     ##e : E-double-sharp
-      &f : F-flat
-     &&g : G-double-flat
-     /&a : A-flat one octave lower
-     ^&b : B-flat one octave higher
-    //#c : C-sharp, two octaves lower
-.
-Octave marks and accidentals PRECEDE the pitch, so '/#c', NOT '/c#'' or 'c#/''
-.
-With the 'pitch:' keyword,  whitespace is not  significant between pitches.
-'c d e f' is the same as 'cdef'. This is NOT true with the 'music:' keyword.
-.
-Barlines are needed so altered pitches cancel at end of measure.
-
-text: ANNOTATIONS (all optional):
-    cue: A line of text you want to appear as a cue.  Cues may be attached to
-         the notation or stand alone if followed by a blank line.
-    chord: chord symbols aligned to beats
-    perbar: Items aligned to barlines, e.g. time signatures
-    perbeat: Items aligned to beats, e.g. tempo markings
-    pernote: Items aligned to attacks, e.g. dynamic markings
-    finger: Fingering numbers. Rendered in tiny font above the staff.
-.
-    LAYOUT CHARACTERS:
-    In perbar, perbeat, pernote and finger annotations, the underscore (_) and
-    barline (|) are treated specially.
-.
-    Underscores ( _ ) are used to skip beats, barlines, or attacks in
-    annotations. For example: "perbar: a_tempo _ molto_rall." puts 'a tempo' at
-    the first measure and 'molto rall.' at the third measure.
-.   
-    Barlines ( | ) advance the layout to the next barline. This is particularly
-    useful in per note annotations to reduce the number of underscores needed to
-    correctly place an annotation.
-
-music: K0 ^^g f e d | c b a g | f e d b | c - - - |
-pernote: a_tempo | | molto_rall.
-EndOfScore
-`
-</script>
+<p>Build: main-c289edb</p>
+	<div id="player"></div>
+	<div style="margin-left: 5%; margin-right: 5%;">
+		<h1>FQS Notation Demo</h1>
+		<em>Controls</em><br>
+		<button onclick="addNewScore()">New score</button> <em>Add a new, empty score.</em><br>
+		<button id="exportButton" onclick="exportScores()">Export</button> <em>Save the scores from this page in
+			<code>.fqs</code> text
+			format.</em><br>
+		<button onclick="importFromFile()">Import File</button> <em>Import scores from a local <code>.fqs</code>
+			file.</em><br>
+		<button onclick="importFromURL()">Import URL</button> <em>Import a <code>.fqs</code> file from a URL.</em><br>
+		<button onclick="toggleEditControls()">Toggle edit controls</button> <em>Show or hide the edit buttons for all
+			scores.</em><br>
+		<button onclick="printScores()">Print</button> <em>Print all scores without buttons, icons, or editors</em><br>
+
+		<script>
+			function addNewScore() {
+				const scoreText = `title: New Empty Score\n\nzoom: 100\n\n`;
+				window.book.addScore(scoreText, null);
+				window.book.enforceControlsVisibility();
+			}
+			function exportScores() {
+				const text = window.book.exportToText();
+				const blob = new Blob([text], { type: 'text/plain' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = 'scores.fqs';
+				a.click();
+				URL.revokeObjectURL(url);
+			}
+			function toggleEditControls() {
+				window.book.controlsVisible = !window.book.controlsVisible;
+				window.book.enforceControlsVisibility();
+			}
+			// importFromFile prompts the user to select an fqs file and imports the
+			// scores in the file.
+			function importFromFile() {
+				const file = document.createElement('input');
+				file.setAttribute('type', 'file');
+				file.setAttribute('accept', '.fqs');
+				file.addEventListener('change', event => {
+					const file = event.target.files[0];
+					const reader = new FileReader();
+					reader.addEventListener('load', event => {
+						const text = event.target.result;
+						window.book.importFromText(text)
+					});
+					reader.readAsText(file);
+				});
+				file.click();
+				return false;
+			}
+			function importFromURL() {
+				const url = prompt('Enter the URL of the .fqs file:',
+					'https://michael-f-ellis.github.io/fqs/reference.fqs');
+				if (url) {
+					fetch(url)
+						.then(response => response.text())
+						.then(text => {
+							window.book.importFromText(text)
+						})
+						.catch(error => {
+							console.error('Error fetching .fqs file:', error);
+							alert('Failed to fetch the .fqs file. Please check the URL and try again.');
+						});
+
+				}
+				return false;
+			}
+			function exportScores() {
+				const text = window.book.exportToText();
+				const blob = new Blob([text], { type: 'text/plain' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = 'scores.fqs';
+				a.click();
+				URL.revokeObjectURL(url);
+			}
+			function toggleEditControls() {
+				window.book.controlsVisible = !window.book.controlsVisible;
+				window.book.enforceControlsVisibility();
+			}
+			function printScores() {
+				// Hide controls
+				window.book.controlsVisible = false;
+				window.book.enforceControlsVisibility();
+
+				// Close any open editors and hide icons
+				const scores = window.book.getScores();
+				scores.forEach(score => {
+					score.editMode = false;
+					score.hideSourceEditor();
+					// find the section editor divs and hide them
+					const sectionEditors = document.querySelectorAll('.section-editor-div');
+					sectionEditors.forEach(editor => editor.style.display = 'none');
+				});
+
+				// Hide pencil and speaker icons
+				const icons = document.querySelectorAll('.pencil-icon, .speaker-icon');
+				icons.forEach(icon => icon.style.display = 'none');
+
+				// Print
+				window.print();
+
+				// Restore controls visibility
+				window.book.controlsVisible = true;
+				window.book.enforceControlsVisibility();
+
+				// Restore icons
+				icons.forEach(icon => icon.style.display = 'block');
+			}
+		</script>
+	</div>
+	<div id="score-toc" class="score-toc"></div>
+	<div id="book-container">
+		<script type="module">
+			import { Book, Score, initYouTubeAPI, onYouTubeIframeAPIReady } from './fqs.js';
+			// Make onYouTubeIframeAPIReady globally available
+			window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+
+			initYouTubeAPI()
+
+			const book = new Book("book-container");
+			window.book = book; // make book available outside this script
+		</script>
 </body>
+
 </html>
