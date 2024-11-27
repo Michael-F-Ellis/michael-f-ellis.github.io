@@ -32,6 +32,10 @@
     fill: rgb(61, 7, 123);
   }
 
+  .picture-icon {
+    font-size: 12px;
+  }
+
   /* Font sizes (adjusted dynamically at render time) */
   .lineproblem {
     font: 8px monospace;

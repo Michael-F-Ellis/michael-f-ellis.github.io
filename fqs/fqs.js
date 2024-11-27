@@ -1640,6 +1640,63 @@ class Chord {
     }
   })
 }
+class ImageLine {
+  constructor(text) {
+    this.text = text.trim();
+    this.valid = false;
+
+    // Parse URL and optional scale factor
+    const parts = this.text.split(/\s+/);
+    try {
+      this.url = new URL(parts[0]);
+      this.scale = parts[1] ? parseFloat(parts[1]) : 1.0;
+      if (isNaN(this.scale) || this.scale <= 0) {
+        lineProblems.add("image: scale must be a positive number");
+        return;
+      }
+      this.valid = true;
+    } catch (e) {
+      lineProblems.add(`image: invalid URL: ${parts[0]}`);
+      return;
+    }
+  }
+  render(svg, x0, y0) {
+    if (!this.valid) return;
+
+    // Create picture icon
+    const icon = appendSVGTextChild(svg, 0, 80, "🖼️", ["picture-icon"]);
+
+    // Create popup div
+    const popup = document.createElement('div');
+    popup.className = 'image-popup';
+    popup.style.display = 'none';
+    popup.style.position = 'fixed';
+    popup.style.zIndex = '1000';
+    popup.style.backgroundColor = 'white';
+    popup.style.border = '1px solid black';
+    popup.style.left = '50%';
+    popup.style.top = '50%';
+    popup.style.transform = 'translate(-50%, -50%)';
+
+    // Create img element instead of canvas
+    const img = document.createElement('img');
+    img.src = this.url;
+    img.onload = () => {
+      const viewportWidth = window.innerWidth;
+      img.style.width = `${viewportWidth * this.scale}px`;
+      img.style.height = 'auto';  // Maintain aspect ratio
+    };
+
+    popup.appendChild(img);
+    document.body.appendChild(popup);
+
+    // Toggle popup on icon click
+    icon.addEventListener('click', () => {
+      popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+    });
+  }
+}
+
 // splitFirst splits a string on the supplied separator and returns
 // a two-element array of strings containing the part that preceded the
 // separator and the remainder of the string, e.g.
@@ -1892,6 +1949,9 @@ function reconstructSectionText(line) {
     }
     text += '\n';
   }
+  if (line.image) {
+    text += `image: ${line.image}\n`;
+  }
   // ... add other line properties
   return text;
 }
@@ -2035,7 +2095,13 @@ function renderScore(wrapper, data) {
         line.lyric, line.showLyric);
     }
     y += defaultParameters.lyricFontHeight
-
+    // Render the image, if any. 
+    if (line.image) {
+      const image = new ImageLine(line.image);
+      if (image.valid) {
+        image.render(svg, defaultParameters.leftX, y);
+      }
+    }
     // Render the cue, if any
     if (line.cue) {
       if (!line.lyric) {
@@ -2135,9 +2201,9 @@ function renderScore(wrapper, data) {
     // Add click handler for play click handlers
     if (data.youtubeId && line.play !== undefined) {
       svg.style.cursor = 'pointer';
-      appendSVGTextChild(svg, 0, 48, "🔊", ["speaker-icon"]);
+      const speaker = appendSVGTextChild(svg, 0, 48, "🔊", ["speaker-icon"]);
 
-      svg.addEventListener('click', (event) => {
+      speaker.addEventListener('click', (event) => {
         if (event.detail === 1) { // Single click
           setTimeout(() => {
             if (!event.target.clickProcessed) {
