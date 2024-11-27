@@ -193,14 +193,40 @@ play: 18:09 1
 EndOfScore
 title: Cello Suite III - Bourree II
 
-zoom: 200
+zoom: 150
 
 youtube: icx52BLixaw
+
+cue: A section
+music: K&2 --^cd | e-dc bc | dc%ba gfed | egfe dfed | c%bcd efg&a |
+counter: 2
+play: 16:19 1
+image: https://michael-f-ellis.github.io/fqs/bouree2.png 0.8
+
+cue: 5
+music: K&2 ^b-&ag fe | defg &abcd | e-dc b&agf | e |
+counter: 1
+play: 16:26 1
+
+cue: 9 B Section
+music: K&3 --ef | g-gf g%a | b%abc bcdb | gb%ab cbag | #f-%ef d^dc |
+counter: 2
+play: 16:33 1
+
+cue: 13
+music: K&3 ^d-/ed eg | c%bcd ed | cbag bag#f | gd /g-^ga |
+counter: 1
+play: 16:40 1
+
+cue: 17
+music: K&3 ^b-ag f%efg | bagf ^d- | -%bcd edce | dc%b%a gfed |
+counter: 1
+play: 16:47 1
 
 cue: 21
 music: K&2 edfe gf&ag | /g%a%bc defd | fedc edc%b | (/c^c) -; |
 counter: 1
-play: 17:21 1
+play: 16:54 1
 EndOfScore
 title: Cello Suite III - Gigue
 
