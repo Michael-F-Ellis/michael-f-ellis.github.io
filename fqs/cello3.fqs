@@ -33,22 +33,23 @@ play: 7:15 1
 EndOfScore
 title: Cello Suite III - Courante
 
-zoom: 200
+zoom: 150
+
 
 youtube: icx52BLixaw
 
 text: Look for open string opportunities
 
 cue: A section (play twice)
+finger: _ _ _ _ _ _ _ _1 25 _ _ _ _ 47 _ 0 0 2 _ _ 47
 music: K0 ;^c | cgecge | ^c^cdcbc | dbgdbg | f^^dcbag |
 play: 8:10 1
-finger: _ _ _ _ _ _ _ _1 25 _ _ _ _ 47 _ 0 0 2 _ _ 47
 
 cue: 5
+finger: _ _ _ 0 2 _ _ 0 2 1
 music: K0 ^cbagfe | fd/g^agf | edcbcg | ^c --cd e#f |
 counter: 1
 play: 8:15 1
-finger: _ _ _ 0 2 _ _ 0 2 1
 
 cue: 9
 music: K0 bdgabc | #g^d/e^dcb | cba#gae | cdecag |
@@ -95,9 +96,9 @@ music: K0 c^aecb^g | /a^fcag^e | /f^dafe^c | d^cbcd/#g |
 play: 9:04 1
 
 cue: 53
+finger: 28 39 _ _ _ _ 47 _ _ _ _ _ _ 12
 music: K0 c^edcba | e^dbca#g | aedcde | /a -^ab cbca |
 play: 9:08 1
-finger: 28 39 _ _ _ _ 47 _ _ _ _ _ _ 12
 
 cue: 57
 music: K0 ^geceg&b | //e^^dc&bag | afefcf | /ac/f^aga |
@@ -112,24 +113,24 @@ music: K0 #g^fedcb | acfafd | b^agfed | ceacaf |
 play: 9:23 1
 
 cue: 69
+finger: 0 _ _ _ _ _ 1 0 4 3 _ 17 28 39 _ _ _ _ 39 _ _ 0 0 1
 music: K0 d^cbagf | egceca | f^edcba | bdbgdb |
 play: 9:27 1
-finger: 0 _ _ _ _ _ 1 0 4 3 _ 17 28 39 _ _ _ _ 39 _ _ 0 0 1
 
 cue: 73
+finger: 2 3 _ _ _ _ _ _ _ _ _ _ 3
 music: K0 g^fdf/b^f | /g^fdf/b^f | /g^&ecebe | /g^&ecebe |
 play: 9:32 1
-finger: 2 3 _ _ _ _ _ _ _ _ _ _ 3
 
 cue: 77
+finger: 4 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 1 2 -2 2
 music: K0 &adcdbd | &adcdbd | f/gbdfb | d--cba |
 play: 9:36 1
-finger: 4 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 1 2 -2 2
 
 cue: 81
+finger: 0 _ _ 4
 music: K0 ^gfegfd | edcedb | c^gafd^b | /cg^e^c - -; |
 play: 9:41 1
-finger: 0 _ _ 4
 EndOfScore
 title: Cello Suite III - Sarabande
 
@@ -198,7 +199,8 @@ zoom: 150
 youtube: icx52BLixaw
 
 cue: A section
-music: K&2 --^cd | e-dc bc | dc%ba gfed | egfe dfed | c%bcd efg&a |
+finger: V | _ IV | _ _ _ _ _ I | _ _ _ _ 0 V
+music: K&2 --^cd | e-dc %bc | dc%ba gfed | egfe dfed | c%bcd efg&a |
 counter: 2
 play: 16:19 1
 image: https://michael-f-ellis.github.io/fqs/bouree2.png 0.8
@@ -209,16 +211,17 @@ counter: 1
 play: 16:26 1
 
 cue: 9 B Section
-music: K&3 --ef | g-gf g%a | b%abc bcdb | gb%ab cbag | #f-%ef d^dc |
+music: K&3 --ef | g-gf g%a | b%abc bcdb | gb%ab cbag | #f-%ef d-^dc |
 counter: 2
 play: 16:33 1
 
 cue: 13
-music: K&3 ^d-/ed eg | c%bcd ed | cbag bag#f | gd /g-^ga |
+music: K&2 ^d-/ed eg | c%bcd ed | cbag bag#f | gd /g-^ga |
 counter: 1
 play: 16:40 1
 
 cue: 17
+finger: | _ _ 0 2 VII | _ _ _ _ 0 I
 music: K&3 ^b-ag f%efg | bagf ^d- | -%bcd edce | dc%b%a gfed |
 counter: 1
 play: 16:47 1
