@@ -233,9 +233,12 @@ text: In the example above, the input is "c g c f". The g below the c is closer 
 one above (musical 4th vs musical 5th) and the f above the c is closer than the one below.
 .
 In the next example, we use octave shifts, '^' and '/' to change the placements. The input
-is "c ^g /c /f"
+is "c ^g /c /f  |  ^c ^&g /c /#f |"
+.
+Note that octave shifts must appear BEFORE any sharps or flats and that sharps and flats are
+not taken into consideration when calculating which octave is closest.
 
-music: K0 c ^g /c /f |
+music: K0 c ^g /c /f | ^c ^&g /c /#f |
 nomarkers:
 EndOfScore
 title: Rhythm
