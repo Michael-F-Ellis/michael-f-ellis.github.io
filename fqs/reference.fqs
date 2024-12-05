@@ -81,9 +81,11 @@ Try playing it if you have your instrument handy. The red notes are sharped.
 
 music: K#4 bb | c b e | d - bb | c b ^f | e - bb |
 counter: 3
+nomarkers:
 
 music: K#4 ^b g e | d c ^aa | g e f | e - ; |
 counter: 1
+nomarkers:
 
 text: Here's a more complex one: the first eight bars of the Sarabande from J. S. Bach's
 third Cello Suite. You can click on either line to hear an excerpt from a performance
@@ -127,10 +129,10 @@ try changing the zoom value to various values to get a feel for it.
 .
 Youtube allows you to specify a youtube video id that will be played starting
 at specified timestamps that correspond to lines of music. You may specify only
-one id per score, but each score may have it's own youtube id. See the YouTube
-section of this reference for examples and usage instructions.
+one id per score, but each score may have its own youtube id. 
+.
+See the YouTube section of this reference for examples and usage instructions.
 EndOfScore
-
 title: The Staff
 
 zoom: 130
@@ -138,6 +140,7 @@ zoom: 130
 text: The FQS staff has 4 lines. Each line represents a vertical span of 1 octave.
 
 music: K0 g ^g ^g ^g | ////cdef gabc defg abcd  efga bcde |
+nomarkers:
 
 text: Compressed vertical spacing preserves melodic shape (like regular
 notation), but allows 3 octaves to be displayed in a single stave.
@@ -161,8 +164,7 @@ below. You can also consider adding annotations like 8va and 8vb when
 needed.
 
 music: K0 //g ^g ^g ^g ^g ^g ^g |
-
-
+nomarkers:
 EndOfScore
 title: Editing
 
@@ -187,7 +189,6 @@ click a reload icon.
 
 
 EndOfScore
-
 title: Sharps and flats
 
 zoom: 130
@@ -195,10 +196,14 @@ zoom: 130
 cue: chromatic scale
 music: K0 c#cd#def#fg#ga#abc | cb&ba&ag&gfe&ed&dc |
 perbar: sharps_(red) flats_(blue)
+nomarkers:
 
 cue: FQS supports double flats (green) and double sharps (orange)
 music: K0 &&f &f %f #f ##f |
 pernote: 𝄫 ♭ ♮ ♯ 𝄪
+nomarkers:
+
+
 EndOfScore
 title: Key Signatures
 
@@ -211,6 +216,27 @@ the beginning of any measure.
 
 music: K0 cdefgabc | K&3 /cdefgabc | K#4 /cdefgabc |
 perbar: C_major C_minor C♯_minor
+nomarkers:
+EndOfScore
+title: Octaves
+
+zoom: 130
+
+text: FQS determines the octave placement of each pitch relative to the pitch
+immediately before it. By default, the new pitch will land in the the nearest octave
+position.
+
+music: K0 c g c f |
+nomarkers:
+
+text: In the example above, the input is "c g c f". The g below the c is closer than the
+one above (musical 4th vs musical 5th) and the f above the c is closer than the one below.
+.
+In the next example, we use octave shifts, '^' and '/' to change the placements. The input
+is "c ^g /c /f"
+
+music: K0 c ^g /c /f |
+nomarkers:
 EndOfScore
 title: Rhythm
 
@@ -223,24 +249,31 @@ it how each beat is divided.
   Pitches without space between them subdivide the beat equally.
   A dash ( - ) extends the previous pitch.
   A semicolon ( ; ) indicates a rest.
-  Optional beat counter annotations below the staff clarify the rhythm.
+.
+  Rhythm markers above the staff and beat counter annotations below the staff
+  clarify the rhythm. Both are optional. 
+.
+  Rhythm markers appear by default, to suppress them, specify "nomarkers:" on 
+  a separate line.
+.
+  Beat counter annotations are omitted by default. To display them, specify
+  "counter: N" where N is the first beat number. Use 1 for N unless the line
+  starts with a partial measure.
 
 cue: durations (assuming 4/4 meter)
 music: K0 c - - - | d - d - | e e e e |
-counter: 1
 perbar: whole_note half_notes quarters
+counter: 1
 
 cue: Note the dash (-) symbols above. They indicate when a note is sustained across the next beat.
 
 cue: Evenly divided beats
 music: K0 ff ff ff ff | ggg ggg ggg ggg | aaaa aaaa aaaa aaaa |
-counter: 1
 perbar: eighths triplets sixteenths
+counter: 1
 
 text: Q. What about unevenly divided beats, like dotted eighth + sixteenth?
 A. That deserves a section of it's own. See below.
-
-
 EndOfScore
 title: Uneven rhythms
 
@@ -250,14 +283,14 @@ cue: Uneven beat divisions
 music: ^gg g--g gg-- g;-g | aaa a-aa aa-a aaa- |
 counter: 1
 
-text: When a beat is unevenly divided, rhythm markers appear below it. The
-length of each heavy line segment is proportional the fraction of the beat
-alloted to the pitch (or rest or sustain) above it.
+text: When a beat is unevenly divided, the vertical length of each heavy line
+segment is proportional the fraction of the beat alloted to the pitch 
+(or rest or sustain) below it.
 
 cue: Ties and triplets
 music: | b-b -b- c-c -c- | bbb ccc |
-counter: 1
 perbar: _ 2/2
+counter: 1
 EndOfScore
 title: Chords
 
@@ -348,7 +381,6 @@ text: The 'image:' keyword takes two values:
   - scale (optional, defaults to 0.9) How wide the image should be as a fraction of
     the browser window width.
 EndOfScore
-
 title: Lyrics
 
 zoom: 120
@@ -358,10 +390,12 @@ text: FQS also supports lyrics. Here's Happy Birthday again - this time in E♭ 
 pitch: K&3 bb | c b e | d bb | c b ^f | e bb |
 lyric: Hap.py | birth day to | you -; Hap.py | birth day to | you -; Hap.py |
 counter: 3
+nomarkers:
 
 pitch: K&3 ^b g e | d c ^aa | g e f | e |
 lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
 counter: 1
+nomarkers:
 
 text: The second line above was created from the following 3 lines of text:
 .
@@ -400,16 +434,17 @@ zoom: 130
 
 text: FQS supports chord abbreviations. Chords can be placed on any beat.
 
+chord: Em7 _ _ _ A7 _ _ _ Dmaj7
 music: K#2 ^^g f e d | c b a g | f - - - |
 counter: 1
-chord: Em7 _ _ _ A7 _ _ _ Dmaj7
+nomarkers:
 
 text: Chords can also be aligned with lyrics alone. (Very handy for songwriting.)
 
+chord: Am7 _ _ _ Dm7 _ _ _ G7 _ _ _ Cmaj7
 lyric: Fly -me to.the -moon | - ; let me | play -a mong.the -stars | - - ; ; |
 counter: 1
-chord: Am7 _ _ _ Dm7 _ _ _ G7 _ _ _ Cmaj7
-
+nomarkers:
 EndOfScore
 title: Annotations
 
@@ -427,6 +462,7 @@ cue: Cues, such as this one, may stand apart from the notation.
 
 cue: You may also attach a cue to any line of notation.
 music: K0 c d e f | g a b c |
+nomarkers:
 
 text: PER BAR - bar annotations attach to individual measures. They're useful
 for indicating changes in meter, measure numbers, etc., but you can use them for
@@ -438,10 +474,11 @@ perbar: 6/8 3/4 6/8 3/4
 text: PER BEAT - beat annotations attach to individual beats. Useful for tempo
 markings but, again, use them in whatever way is useful to you.
 
+perbeat: mm=120 _ rall. _ 𝄐 _a_tempo _ _ molto_rall.
 pitch: K&3 ^b g e | d c ^aa | g e f | e |
 lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
 counter: 1
-perbeat: mm=120 _ rall. _ 𝄐 _a_tempo _ _ molto_rall.
+nomarkers:
 
 text: PER NOTE - note annotations attach to individual notes. Use them
 as you wish. I tend to use them for dynamic markings.
@@ -449,24 +486,26 @@ as you wish. I tend to use them for dynamic markings.
 pitch: K&3 ^b g e | d c ^aa | g e f | e |
 lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
 pernote: mf cresc. _ _ _ ff
+nomarkers:
 
 text: FINGERING - finger annotations attach to individual notes above the staff.
 
-music: K0 ^g | c d e f | g - - - |
 finger: 0 4 1 -1 2 4
+music: K0 ^g | c d e f | g - - - |
+nomarkers:
 
 text: EVERYTHING - Here's the last line of Happy Birthday once again, this time
 with all possible annotation types.
 
 cue: Everything
-pitch: K&3 ^b g e | d c ^aa | g e f | e |
-lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
-counter: 1
 chord: Eb _ _ Ab _ _ Eb _ Bb7 Eb
-finger: | | 0 1 3
 perbeat: mm=120 _ rall. _ 𝄐 _a_tempo _ _ molto_rall.
-pernote: mf cresc. _ _ _ ff
+finger: | | 0 1 3
+pitch: K&3 ^b g e | d c ^aa | g e f | e |
 perbar: 3/4_Brightly
+lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
+pernote: mf cresc. _ _ _ ff
+counter: 1
 EndOfScore
 title: Notation Language Overview
 
@@ -483,6 +522,7 @@ defined keywords are:
   music:
   pitch:
   lyric:
+  nomarkers:
   perbar:
   perbeat:
   pernote:
@@ -502,6 +542,7 @@ without empty lines between, e.g.
   music:
   cue:
   chord:
+  nomarkers:
   perbeat:
   perbar:
   pernote:
@@ -514,6 +555,7 @@ or
   pitch:
   cue:
   chord:
+  nomarkers:
   perbeat:
   perbar:
   pernote:
@@ -599,4 +641,5 @@ text: ANNOTATIONS (all optional):
 
 music: K0 ^^g f e d | c b a g | f e d b | c - - - |
 pernote: a_tempo | _ cresc. | molto_rall.
+nomarkers:
 EndOfScore

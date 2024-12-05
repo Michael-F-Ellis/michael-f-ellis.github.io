@@ -1493,10 +1493,12 @@ class RhythmMarkers {
       const rhythm = rhythms[i];
       // we can move on the the next beat if the rhythm doesn't contain "-"
       // or if the rhythm is only one or two subbeats long.
+      /*
       if (!rhythm.slice(1, rhythm.length).includes('-') || rhythm.length < 3) {
         this.beatFractions.push([]);
         continue;
       }
+        */
       let fractions = [];
       const nchar = rhythm.length;
       let chordIndex = -1; // -1  means not in a chord
@@ -1562,23 +1564,22 @@ class RhythmMarkers {
     // proportional to the fraction of the beat and scaled so that the lines
     // will fit within two fontwidths.
     let i = 0;
+    const fh = defaultParameters.lyricFontHeight
+    const width = fontwidth / 4;
     for (let fractions of this.beatFractions) {
       let x = x0 + beats[i] * fontwidth;
       let xb0 = x; let xb1 = x; // left and right ends of the beat
-      let y = y0 - fontwidth / 2;
-      let width = 0;
+      let y = y0 - fh;
+      let height = 0;
       for (let fraction of fractions) {
-        // width = fraction * 2 * fontwidth;
-        width = fraction.val * fontwidth;
-        // appendSVGLineChild(svg, x, y, x + width - 1, y, ["rhythm-marker"]);
-        appendSVGLineChild(svg, x, y, x + width, y, ["rhythm-marker"]);
-        // x += width
-        xb1 = x + width;
+        height = fraction.val * fh;
+        appendSVGLineChild(svg, x, y, x, y + height, ["rhythm-marker"]);
+        xb1 = x + width - 1;
         x += fraction.span * fontwidth
       }
-      // Now draw a thin connector line across the bottom of the rhythm markers
+      // Now draw a thin connector line across the top of the rhythm markers
       // for the beat.
-      appendSVGLineChild(svg, xb0, y0, xb1, y0, ["rhythm-connector"]);
+      appendSVGLineChild(svg, xb0, y, xb1, y, ["rhythm-connector"]);
       i++;
     }
   }
@@ -1903,8 +1904,8 @@ function preprocessScore(text) {
             obj.playRate = data.playRate;
           }
           break;
-        case "rhythm":
-          obj.rhythm = true;
+        case "nomarkers":
+          obj.nomarkers = true;
           break;
         default:
           if (k !== "" && value !== undefined) {
@@ -2013,6 +2014,9 @@ function reconstructSectionText(line) {
   }
   if (line.image) {
     text += `image: ${line.image}\n`;
+  }
+  if (line.nomarkers) {
+    text += `nomarkers:\n`;
   }
   // ... add other line properties
   return text;
@@ -2193,6 +2197,16 @@ function renderScore(wrapper, data) {
       const finger = new Finger(line.finger)
       finger.render(svg, defaultParameters.leftX, y, lyricline)
     }
+    // Render the rhythm markers unless nomarkers has been set.
+    if (line.lyric && !line.nomarkers) {
+      const rhythm = new RhythmMarkers(lyricline.extractRhythm());
+      // check that there is a least one non-empty rhythm marker before
+      // rendering them. This saves vertical space when possible.
+      if (rhythm.beatFractions.map(r => r.length > 0).reduce((a, b) => a || b, true)) {
+        y += defaultParameters.lyricFontHeight * 1.1
+        rhythm.render(svg, defaultParameters.leftX, y, lyricline.beats, defaultParameters.lyricFontWidth);
+      }
+    }
     // Render the pitches, if any
     if (line.pitch && line.lyric) {
       y += 1.5 * defaultParameters.lyricFontHeight;
@@ -2245,16 +2259,6 @@ function renderScore(wrapper, data) {
       const counter = new Counter(npartial, lyricline.beats, bars, lyricline.extractRhythm());
       counter.render(svg, defaultParameters.leftX, y, defaultParameters.lyricFontWidth)
       // y += bookParameters.counterFontHeight / 3;
-    }
-    // Always render the rhythm markers.
-    if (line.lyric) {
-      const rhythm = new RhythmMarkers(lyricline.extractRhythm());
-      // check that there is a least one non-empty rhythm marker before
-      // rendering them. This saves vertical space when possible.
-      if (rhythm.beatFractions.map(r => r.length > 0).reduce((a, b) => a || b, true)) {
-        y += defaultParameters.counterFontHeight * 1.5
-        rhythm.render(svg, defaultParameters.leftX, y, lyricline.beats, defaultParameters.lyricFontWidth);
-      }
     }
     // Render any line problems that were encountered
     y = lineProblems.render(svg, defaultParameters.leftX, y);
