@@ -72,9 +72,22 @@
     font-style: bold;
   }
 
-  .rhythm-marker {
+  /* next 4 classes are used by RhythmMarkers.render()*/
+  .pitch-marker {
     stroke-width: 2;
     stroke: black;
+  }
+
+  .rest-marker {
+    stroke-width: 2;
+    stroke: rgb(216, 223, 12);
+    /* yellowish */
+  }
+
+  .hold-marker {
+    stroke-width: 2;
+    stroke: rgb(160, 160, 160);
+    /* grey */
   }
 
   .rhythm-connector {
@@ -84,6 +97,10 @@
 
   .grey {
     fill: rgb(160, 160, 160);
+  }
+
+  .yellowish {
+    fill: rgb(216, 223, 12);
   }
 
   .lyric {

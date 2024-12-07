@@ -342,7 +342,7 @@ text: FQS supports synchronized playback from YouTube videos. To enable this:
 Adding the play keyword causes a speaker icon, 🔊, to appear beside the line to
 let you know the line can be played.
 .
-Click any line with a 'play' keyword to start playback from its specified time.
+Click the speaker icon beside a line to start playback from its specified time.
 Click again to stop playback.
 .
 Tip: Set the start time a couple of seconds before the first measure in the line
@@ -350,8 +350,8 @@ to give yourself enough time to get ready to play the passage along with the
 recording.
 .
 Here's a complete example. The recording is the Sarabande from J.S. Bach's Cello
-Suite III in C Major, played in concert by Yo Yo Ma. Click either line to start
-playback at that line.
+Suite III in C Major, played in concert by Yo Yo Ma. Click either speaker icon
+to start playback at that line.
 .
 Note: The groups of back-slanted notes are FQS's way of indicating chords.
 

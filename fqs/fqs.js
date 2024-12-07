@@ -1221,7 +1221,7 @@ class PitchLine {
       let x = x0;
       let y = yline1; // rests are rendered in the middle of the staff
       x = x0 + rest * fontwidth;
-      appendSVGTextChild(svg, x, y, ";", ["rest", "grey"]);
+      appendSVGTextChild(svg, x, y, ";", ["rest", "yellowish"]);
     };
     // Now render the holds
     for (let hold of holds) {
@@ -1472,37 +1472,28 @@ class Counter {
 // RhythmMarkers class to represent the subbeats within a beat and span (the number
 // of rendered char positions comprising the fraction.
 class FracSpan {
-  constructor(value, span) {
+  constructor(value, span, kind = '*') {
     this.val = value;
     this.span = span;
+    this.kind = kind; // one of attack '*', hold '-', or rest ';'
   }
 }
 class RhythmMarkers {
-  // The purpose of this class is to draw a group of horizontal lines whose
-  // aligned with the beat notation and having lengths proportional to 
-  // the subbeats within the beat.  For example, "*-**" will be represented
-  // numerically as [0.5, 0.25, 0.25] because the first attack is sustained for
-  // 2 of the four subbeats.  For beats with all attacks the same length, we 
-  // will not draw any lines to reduce visual clutter. In that case, the 
-  // numerical representation will be an empty array, [].
+  // The purpose of this class is to draw a group of vertical lines whose x
+  // coordinates are aligned with the beat notation and having lengths
+  // proportional to the subbeats within the beat.  For example, "*-**" will be
+  // represented numerically as [0.5, 0.25, 0.25] because the first attack is
+  // sustained for 2 of the four subbeats. 
   constructor(rhythms) {
     // rhythm is an array of rhythm markup,  as created by LyricLine.extractRhythm()`
     this.rhythms = rhythms;
     this.beatFractions = []; // an array of arrays of FracSpan objects
     for (let i = 0; i < rhythms.length; i++) {
       const rhythm = rhythms[i];
-      // we can move on the the next beat if the rhythm doesn't contain "-"
-      // or if the rhythm is only one or two subbeats long.
-      /*
-      if (!rhythm.slice(1, rhythm.length).includes('-') || rhythm.length < 3) {
-        this.beatFractions.push([]);
-        continue;
-      }
-        */
       let fractions = [];
       const nchar = rhythm.length;
       let chordIndex = -1; // -1  means not in a chord
-      let f = new FracSpan(1, 1); // current beat fraction
+      let f = new FracSpan(1, 1, rhythm[0]); // current beat fraction
       for (let j = 0; j < nchar; j++) {
         switch (rhythm[j]) {
           case '(':
@@ -1515,6 +1506,7 @@ class RhythmMarkers {
           case '-':
             if (j == 0) {
               f.val = 1;
+              f.kind = '-';
             } else {
               f.val++;
             }
@@ -1525,11 +1517,12 @@ class RhythmMarkers {
               case -1:
                 if (j != 0) {
                   fractions.push(f);
-                  f = new FracSpan(1, 1);
+                  f = new FracSpan(1, 1, rhythm[j]);
                 }
                 break;
               case 0:
                 chordIndex++;
+                f.kind = '*'
                 break;
               default:
                 // ignore attacks in chords after the first  one.
@@ -1540,7 +1533,7 @@ class RhythmMarkers {
           case ';':
             console.log(fractions.length)
             fractions.push(new FracSpan(f, 1));
-            f = new FracSpan(1, 1);
+            f = new FracSpan(1, 1, ';');
             continue;
         }
       }
@@ -1573,7 +1566,17 @@ class RhythmMarkers {
       let height = 0;
       for (let fraction of fractions) {
         height = fraction.val * fh;
-        appendSVGLineChild(svg, x, y, x, y + height, ["rhythm-marker"]);
+        switch (fraction.kind) {
+          case '*':
+            appendSVGLineChild(svg, x, y, x, y + height, ["pitch-marker"]);
+            break;
+          case '-':
+            appendSVGLineChild(svg, x, y, x, y + height, ["hold-marker"]);
+            break;
+          case ';':
+            appendSVGLineChild(svg, x, y, x, y + height, ["rest-marker"]);
+            break;
+        }
         xb1 = x + width - 1;
         x += fraction.span * fontwidth
       }
