@@ -264,11 +264,15 @@ it how each beat is divided.
   starts with a partial measure.
 
 cue: durations (assuming 4/4 meter)
-music: K0 c - - - | d - d - | e e e e |
-perbar: whole_note half_notes quarters
+music: K0 c - - - | d - d - | e e e e | f ; g ; |
+perbar: whole_note half_notes quarters with_rests
 counter: 1
 
-cue: Note the dash (-) symbols above. They indicate when a note is sustained across the next beat.
+text: Note the hold (-) symbols above. They indicate when a note is sustained across
+the next beat.
+.
+Note also that rhythm markers for holds and rests are rendered in shades that match
+their symbols on the staff.
 
 cue: Evenly divided beats
 music: K0 ff ff ff ff | ggg ggg ggg ggg | aaaa aaaa aaaa aaaa |
