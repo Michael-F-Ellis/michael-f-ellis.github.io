@@ -1,28 +1,70 @@
-function initYouTubeAPI() {
-  let tag = document.createElement('script');
-  tag.src = "https://www.youtube.com/iframe_api";
-  tag.onload = () => {
-    console.log('YouTube IFrame API script loaded');
-  };
-  let firstScriptTag = document.getElementsByTagName('script')[0];
-  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-}
+/*
+*********************************************************************
+   Module globals
+*********************************************************************   
+*/
+const scoreMap = new Map();
+let isDirty = false; // global flag that is set when we edit a score and cleared when export the scores
 let player; //  module global player object
-// Minimal player initialization. This implementation avoids third-party cookie issues.
-// See https://stackoverflow.com/a/64444601/426853
-function onYouTubeIframeAPIReady() {
-  console.log('YouTube IFrame API ready');
-  player = new YT.Player('player', {
-    height: '0',
-    width: '0',
-    videoId: '',
-    host: 'https://www.youtube-nocookie.com',
-    playerVars: {
-      'playsinline': 1,
-      origin: window.location.host
-    }
-  });
+// This WeakMap holds window-level listeners for image resize events.
+// It's purpose is to ensure that listeners are garbage collected when the image
+// popup is destroyed.
+const imageResizeListeners = new WeakMap();
+// VOffsets is a top-level object used by the Pitch class when rendering
+// pitches. The offses are fractions of the font height.
+// where h is the font height.  Note that svg coordinates increase from
+// the top of the viewport, hence the reverse ordering for the 12 pitch
+// classes. The letter 'f' is empiricaly lowered .6 units to make it
+// appear a little lower than 'g', i.e. to compensate for the visual
+// effect of 'g's descender.
+
+// declare a singleton LineProblem to be used by all rendering operations
+// This is initialized after the lineProblem class is defined.
+let lineProblems;
+
+const vOffsets = {
+  "𝄪a": 1, "♮b": 1, "♭c": 13,   // B enharmonics (special case for C♭)
+  "♯a": 2, "♭b": 2, "𝄫c": 14,   // B-flat enharmonics (special case for C𝄫)
+  "𝄪g": 3, "♮a": 3, "𝄫b": 3,    // A enharmonics
+  "♯g": 4, "♭a": 4,              // A-flat enharmonics
+  "𝄪f": 5.6, "♮g": 5, "𝄫a": 5,    // G enharmonics
+  "𝄪e": 6, "♯f": 6.6, "♭g": 6,    // G-flat enharmonics
+  "♯e": 7, "♮f": 7.6, "𝄫g": 7,     // F enharmonics
+  "𝄪d": 8, "♮e": 8, "♭f": 8.6,     // E enharmonics
+  "♯d": 9, "♭e": 9, "𝄫f": 9.6,    // E-flat enharmonics
+  "𝄪c": 10, "♮d": 10, "𝄫e": 10, // D enharmonics
+  "𝄪b": -1, "♯c": 11, "♭d": 11, // D-flat enharmonics
+  "♯b": 0, "♮c": 12, "𝄫d": 12, // C enharmonics
 }
+
+// keyTable maps a key signature to a table of accidentals for each pitch class.
+// Key signatures are specified as a string containing a number of sharps or flats,
+// e.g. "0" for C major, "#1" for G major, "#2" for D major, etc. For flats, the key sig
+// looks like "&1", for F major, "&2" for B-flat major, etc.
+const keyTable = {
+  "0": { "c": "♮", "d": "♮", "e": "♮", "f": "♮", "g": "♮", "a": "♮", "b": "♮" },
+  "#1": { "c": "♮", "d": "♮", "e": "♮", "f": "♯", "g": "♮", "a": "♮", "b": "♮" },
+  "#2": { "c": "♯", "d": "♮", "e": "♮", "f": "♯", "g": "♮", "a": "♮", "b": "♮" },
+  "#3": { "c": "♯", "d": "♮", "e": "♮", "f": "♯", "g": "♯", "a": "♮", "b": "♮" },
+  "#4": { "c": "♯", "d": "♯", "e": "♮", "f": "♯", "g": "♯", "a": "♮", "b": "♮" },
+  "#5": { "c": "♯", "d": "♯", "e": "♮", "f": "♯", "g": "♯", "a": "♯", "b": "♮" },
+  "#6": { "c": "♯", "d": "♯", "e": "♯", "f": "♯", "g": "♯", "a": "♯", "b": "♮" },
+  "#7": { "c": "♯", "d": "♯", "e": "♯", "f": "♯", "g": "♯", "a": "♯", "b": "♯" },
+  "&1": { "c": "♮", "d": "♮", "e": "♮", "f": "♮", "g": "♮", "a": "♮", "b": "♭" },
+  "&2": { "c": "♮", "d": "♮", "e": "♭", "f": "♮", "g": "♮", "a": "♮", "b": "♭" },
+  "&3": { "c": "♮", "d": "♮", "e": "♭", "f": "♮", "g": "♮", "a": "♭", "b": "♭" },
+  "&4": { "c": "♮", "d": "♭", "e": "♭", "f": "♮", "g": "♮", "a": "♭", "b": "♭" },
+  "&5": { "c": "♮", "d": "♭", "e": "♭", "f": "♮", "g": "♭", "a": "♭", "b": "♭" },
+  "&6": { "c": "♭", "d": "♭", "e": "♭", "f": "♮", "g": "♭", "a": "♭", "b": "♭" },
+  "&7": { "c": "♭", "d": "♭", "e": "♭", "f": "♭", "g": "♭", "a": "♭", "b": "♭" },
+}
+// When transposing, we need to be able to look up the letter for a given key signature.
+const keyLetters = {
+  "0": "c", "#1": "g", "#2": "d", "#3": "a", "#4": "e", "#5": "b", "#6": "f#", "#7": "c#",
+  "&1": "f", "&2": "b", "&3": "e", "&4": "a", "&5": "d", "&6": "g", "&7": "c",
+}
+
+// Default parameters
 const defaultParameters = {
   // parameters control the behavior of the score editor and display.
   leftX: 16, // Pixel position of the left edge of the score.
@@ -30,12 +72,18 @@ const defaultParameters = {
   barlineRgx: /:?\|:?/, // regular expression to match barlines
   lyricRgx: /[\p{L}']/u, // regular expression to match lyric alpha characters and apostrophes
   "lyricFontWidth": 7, // includes space between letters
-  // Various font size parameters are are added to this object at runtime by 
-  // by the updateFontSizes() function in this module. These are needed by the functions
-  // that render the scores. If you need to change the font sizes, you should do so
-  // in the style tag in this in fqs.css".
+  // Various font size parameters are are added to this object at runtime by the
+  // updateFontSizes() function in this module. These are needed by the
+  // functions that render the scores. If you need to change the font sizes, you
+  // should do so in the style tag in this in fqs.css".
 };
 updateFontSizes();
+
+/*
+********************************************************************
+   Classes 
+*********************************************************************
+*/
 
 class Book {
   // A Book is a collection of Scores.
@@ -220,134 +268,126 @@ class Book {
   }
 }
 
+// Score represents a score div and its associated editable source text.  It
+// has a render method that renders the source text as FQS musical notation.
+class Score {
+  constructor(text, container) {
+    this.editMode = false;
+    this.outer = document.createElement('div');
+    this.outer.classList.add('score');
+    this.id = `score-${Math.random().toString(36).substring(2, 15)}`;
+    this.outer.setAttribute('id', this.id);
+    scoreMap.set(this.id, this);
+    // next comes a wrapper div that will contain the rendered
+    // and the editable source text.
+    this.wrapper = document.createElement('div');
+    this.wrapper.classList.add('score-wrapper');
+    this.wrapper.style.display = 'flex';
+    this.wrapper.style.width = '100%';
+    this.outer.appendChild(this.wrapper)
+    // the inner wrapper div is where the svg's that comprise each
+    // line of the rendered score will go
+    this.inner = document.createElement('div');
+    this.inner.classList.add('inner-wrapper');
+    this.wrapper.appendChild(this.inner);
+    // the source div will contain the editable <pre> element that 
+    // holds the source text
+    this.sourcediv = document.createElement('div');
+    this.sourcediv.classList.add('source-div');
+    this.wrapper.appendChild(this.sourcediv)
+    // the editable pre element.
+    this.source = document.createElement('pre');
+    this.source.classList.add('source');
+    this.source.setAttribute('contenteditable', 'plaintext-only');
+    this.source.textContent = text;
+    this.sourcediv.appendChild(this.source);
+    // a post-render callback, if needed, to update TOC, etc.
+    this.postRenderCallback = null;
+    // Add the score to the container
+    container.appendChild(this.outer);
 
-// updateFontSizes() updates the font sizes of the various elements of scores
-// that will be rendered as SVG objects. The font default sizes are specified
-// in fqs.css, but we support overriding them via the parameters object. If
-// the font sizes are not specified in the parameters object, we use the
-// default font sizes and update corresponding vars in defaultParameters.
-function updateFontSizes() {
-  // Update the font sizes if user has specified them.
-  // First, get a reference to the stylesheet,
-  const stylesheet = Array.from(document.styleSheets)
-    .find(sheet => sheet.href && sheet.href.includes('fqs.css'));
-
-  console.log("Stylesheets:", document.styleSheets);
-  console.log("Found stylesheet:", stylesheet);
-
-  if (!stylesheet) {
-    console.log("fqs.css stylesheet not found");
-    return;
+    this.source.addEventListener('input', () => {
+      this.render();
+    });
   }
 
-  const rules = stylesheet.cssRules || stylesheet.rules;
-  console.log("CSS rules:", rules);
-  // define a closure that will update the font size of a rule
-  // whose index is i if the font height, fh is specified in 
-  // or if not specified, assign a numeric value
-  // to the value in fh.
-  const update = (i, fh) => {
-    if (defaultParameters[fh]) {
-      const v = defaultParameters[fh];
-      rules[i].style.fontSize = v + 'px';
+  getText() {
+    return this.source.textContent;
+  }
+
+  getTitle() {
+    const text = this.getText();
+    // look for the first line that starts with a 'title:'
+    const titleLine = text.split('\n').find(line => line.startsWith('title:'));
+    if (titleLine) {
+      return titleLine.split(':')[1].trim();
+    }
+    throw new Error('No title found in score');
+  }
+
+  // showSourceEditor() makes the source editor visible.
+  // by changing the the display style and width of the source div
+  // and the width of the inner div.
+  showSourceEditor() {
+    this.sourcediv.style.display = 'block';
+    this.sourcediv.style.width = '50%';
+    this.inner.style.width = '50%';
+  }
+  // hideSourceEditor() makes the source editor invisible.
+  // by changing the the display style and width of the source div
+  // and the width of the inner div.
+  hideSourceEditor() {
+    this.sourcediv.style.display = 'none';
+    this.inner.style.width = '100%';
+  }
+  toggleEdit() {
+    this.editMode = !this.editMode;
+    this.forceEditMode(this.editMode);
+  }
+
+  forceEditMode(state) {
+    if (state) {
+      this.showSourceEditor();
     } else {
-      defaultParameters[fh] = +rules[i].style.fontSize.slice(0, -2);
+      this.hideSourceEditor();
     }
   }
-  // loop over the rules to update font sizes.
-  for (let i = 0; i < rules.length; i++) {
-    switch (rules[i].selectorText) {
-      case '.title':
-        update(i, "titleFontHeight")
-        break;
-      case '.text':
-        update(i, 'textFontHeight');
-        break;
-      case '.preface':
-        update(i, 'prefaceFontHeight');
-        break;
-      case '.postscript':
-        update(i, 'postscriptFontHeight');
-        break;
-      case '.chord':
-        update(i, 'chordFontHeight');
-        break;
-      case '.pernote':
-        update(i, 'pernoteFontHeight');
-        break;
-      case '.fingering':
-        update(i, 'fingerFontHeight');
-        break;
-      case '.lyric':
-        update(i, 'lyricFontHeight');
-        break;
-      case '.pitch':
-        update(i, 'pitchFontHeight');
-        break;
-      case '.cue':
-        update(i, 'cueFontHeight');
-        break;
-      case '.perbar':
-        update(i, 'perbarFontHeight');
-        break;
-      case '.perbeat':
-        update(i, 'perbeatFontHeight');
-        break;
-      case '.counter':
-        update(i, 'counterFontHeight');
-        break;
-      case '.rest':
-        update(i, 'restFontHeight');
-        break;
-      case '.perline':
-        update(i, 'perlineFontHeight');
-        break;
-      case '.lineproblem':
-        update(i, 'lineproblemFontHeight');
-        break;
+  // render() renders the score into the inner div.
+  render() {
+    // get the source text from the source pre element
+    const data = preprocessScore(this.source.textContent);
+    renderScore(this.inner, data);
+    const svgElements = this.inner.querySelectorAll('svg');
+    for (const svg of svgElements) {
+      // calculate rendered height and adjust the svg height and viewbox
+      let height = svg.getBBox().height + 30; // empirical
+      // svg.setAttribute('height', height);
+      let zoom = 100;
+      if (data.zoom) {
+        // if data.zoom can't be parsed, use 100% and add a message to the
+        // lineProblems object so that the error can be displayed in the
+        // SVG.
+        zoom = parseInt(data.zoom, 10);
+        if (isNaN(zoom)) {
+          lineProblems.add("Invalid zoom value: " + data.zoom);
+          zoom = 100;
+        }
+        // allow user to specify a zoom factor between 50 and 500%
+        zoom = Math.max(50, Math.min(500, parseInt(zoom,
+          10)));
+
+        const xpix = 720 * 100. / zoom;
+        svg.setAttribute('viewBox', `0 0 ${xpix} ${height}`);
+      }
+    }
+    // scoreToc(); // update the table of contents
+    isDirty = true // signal that the score has been edited
+    this.forceEditMode(this.editMode);
+    // if there is a postRenderCallback, call it
+    if (this.postRenderCallback) {
+      this.postRenderCallback();
     }
   }
-}
-
-
-const scoreMap = new Map();
-let isDirty = false; // global flag that is set when we edit a score and cleared when export the scores
-
-// appendSVGTextChild(svg, x, y, textContent, classList) adds a text element
-// to the svg element with the given x, y coordinates and textContent. The
-// classList argument is an array of class names to be added to the text
-// element. The text element is returned.
-function appendSVGTextChild(svg, x, y, textContent, classList) {
-  const textEl = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  textEl.setAttribute("x", x);
-  textEl.setAttribute("y", y);
-  textEl.textContent = textContent;
-  // Check if this is a chord pitch or the pencil icon.
-  if (classList.includes('chord-pitch')) {
-    // rotate 20 degrees counterclockwise
-    textEl.setAttribute("transform", `rotate(340, ${x}, ${y})`);
-  } else if (classList.includes('pencil-icon')) {
-    // rotate 90 degrees clockwise
-    textEl.setAttribute("transform", `rotate(90, ${x}, ${y})`);
-  }
-  if (classList) {
-    textEl.classList.add(...classList);
-  }
-  svg.appendChild(textEl);
-  return textEl;
-}
-
-function appendSVGLineChild(svg, x0, y0, x1, y1, classList) {
-  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-  line.setAttribute("x1", x0);
-  line.setAttribute("y1", y0);
-  line.setAttribute("x2", x1);
-  line.setAttribute("y2", y1);
-  if (classList) {
-    line.classList.add(...classList);
-  }
-  svg.appendChild(line);
-  return line;
 }
 
 
@@ -376,8 +416,9 @@ class LineProblem {
     return y
   });
 } // end of LineProblem class 
-// instantiate a singleton LineProblem to be used by all rendering operations
-const lineProblems = new LineProblem();
+
+// Init the module global
+lineProblems = new LineProblem();
 
 // The LyricLine class interprets the text of a lyric line and
 // and determines the location of beats, attacks and barlines.
@@ -578,54 +619,6 @@ class LyricLine {
 
 
 
-// VOffsets is a top-level object used by the Pitch class when rendering
-// pitches. The offsets are fractions of the font height.
-// where h is the font height.  Note that svg coordinates increase from
-// the top of the viewport, hence the reverse ordering for the 12 pitch
-// classes. The letter 'f' is empiricaly lowered .6 units to make it
-// appear a little lower than 'g', i.e. to compensate for the visual
-// effect of 'g's descender.
-const vOffsets = {
-  "𝄪a": 1, "♮b": 1, "♭c": 13,   // B enharmonics (special case for C♭)
-  "♯a": 2, "♭b": 2, "𝄫c": 14,   // B-flat enharmonics (special case for C𝄫)
-  "𝄪g": 3, "♮a": 3, "𝄫b": 3,    // A enharmonics
-  "♯g": 4, "♭a": 4,              // A-flat enharmonics
-  "𝄪f": 5.6, "♮g": 5, "𝄫a": 5,    // G enharmonics
-  "𝄪e": 6, "♯f": 6.6, "♭g": 6,    // G-flat enharmonics
-  "♯e": 7, "♮f": 7.6, "𝄫g": 7,     // F enharmonics
-  "𝄪d": 8, "♮e": 8, "♭f": 8.6,     // E enharmonics
-  "♯d": 9, "♭e": 9, "𝄫f": 9.6,    // E-flat enharmonics
-  "𝄪c": 10, "♮d": 10, "𝄫e": 10, // D enharmonics
-  "𝄪b": -1, "♯c": 11, "♭d": 11, // D-flat enharmonics
-  "♯b": 0, "♮c": 12, "𝄫d": 12, // C enharmonics
-}
-
-// keyTable maps a key signature to a table of accidentals for each pitch class.
-// Key signatures are specified as a string containing a number of sharps or flats,
-// e.g. "0" for C major, "#1" for G major, "#2" for D major, etc. For flats, the key sig
-// looks like "&1", for F major, "&2" for B-flat major, etc.
-const keyTable = {
-  "0": { "c": "♮", "d": "♮", "e": "♮", "f": "♮", "g": "♮", "a": "♮", "b": "♮" },
-  "#1": { "c": "♮", "d": "♮", "e": "♮", "f": "♯", "g": "♮", "a": "♮", "b": "♮" },
-  "#2": { "c": "♯", "d": "♮", "e": "♮", "f": "♯", "g": "♮", "a": "♮", "b": "♮" },
-  "#3": { "c": "♯", "d": "♮", "e": "♮", "f": "♯", "g": "♯", "a": "♮", "b": "♮" },
-  "#4": { "c": "♯", "d": "♯", "e": "♮", "f": "♯", "g": "♯", "a": "♮", "b": "♮" },
-  "#5": { "c": "♯", "d": "♯", "e": "♮", "f": "♯", "g": "♯", "a": "♯", "b": "♮" },
-  "#6": { "c": "♯", "d": "♯", "e": "♯", "f": "♯", "g": "♯", "a": "♯", "b": "♮" },
-  "#7": { "c": "♯", "d": "♯", "e": "♯", "f": "♯", "g": "♯", "a": "♯", "b": "♯" },
-  "&1": { "c": "♮", "d": "♮", "e": "♮", "f": "♮", "g": "♮", "a": "♮", "b": "♭" },
-  "&2": { "c": "♮", "d": "♮", "e": "♭", "f": "♮", "g": "♮", "a": "♮", "b": "♭" },
-  "&3": { "c": "♮", "d": "♮", "e": "♭", "f": "♮", "g": "♮", "a": "♭", "b": "♭" },
-  "&4": { "c": "♮", "d": "♭", "e": "♭", "f": "♮", "g": "♮", "a": "♭", "b": "♭" },
-  "&5": { "c": "♮", "d": "♭", "e": "♭", "f": "♮", "g": "♭", "a": "♭", "b": "♭" },
-  "&6": { "c": "♭", "d": "♭", "e": "♭", "f": "♮", "g": "♭", "a": "♭", "b": "♭" },
-  "&7": { "c": "♭", "d": "♭", "e": "♭", "f": "♭", "g": "♭", "a": "♭", "b": "♭" },
-}
-// When transposing, we need to be able to look up the letter for a given key signature.
-const keyLetters = {
-  "0": "c", "#1": "g", "#2": "d", "#3": "a", "#4": "e", "#5": "b", "#6": "f#", "#7": "c#",
-  "&1": "f", "&2": "b", "&3": "e", "&4": "a", "&5": "d", "&6": "g", "&7": "c",
-}
 // StringRing provide methods to treat the characters in a string as values
 // in a ring buffer. It provide methods to advance by n and to compute the
 // distance between two values. Its main use in this script is in
@@ -1644,10 +1637,6 @@ class Chord {
     }
   })
 }
-// This WeakMap holds window-level listeners for image resize events.
-// It's purpose is to ensure that listeners are garbage collected when the image
-// popup is destroyed.
-const imageResizeListeners = new WeakMap();
 
 // The ImageLine  class supports the 'image:' keyword.
 class ImageLine {
@@ -1740,6 +1729,11 @@ class ImageLine {
     });
   }
 }
+/*
+**************************************************************
+  Helper functions
+**************************************************************
+*/
 async function fetchWithTimeout(url, options = {}, timeout = 5000) {
   /*
   // Usage:
@@ -1761,6 +1755,133 @@ async function fetchWithTimeout(url, options = {}, timeout = 5000) {
     }
     throw error; // Re-throw other errors
   }
+}
+
+// updateFontSizes() updates the font sizes of the various elements of scores
+// that will be rendered as SVG objects. The font default sizes are specified
+// in fqs.css, but we support overriding them via the parameters object. If
+// the font sizes are not specified in the parameters object, we use the
+// default font sizes and update corresponding vars in defaultParameters.
+function updateFontSizes() {
+  // Update the font sizes if user has specified them.
+  // First, get a reference to the stylesheet,
+  const stylesheet = Array.from(document.styleSheets)
+    .find(sheet => sheet.href && sheet.href.includes('fqs.css'));
+
+  console.log("Stylesheets:", document.styleSheets);
+  console.log("Found stylesheet:", stylesheet);
+
+  if (!stylesheet) {
+    console.log("fqs.css stylesheet not found");
+    return;
+  }
+
+  const rules = stylesheet.cssRules || stylesheet.rules;
+  console.log("CSS rules:", rules);
+  // define a closure that will update the font size of a rule
+  // whose index is i if the font height, fh is specified in 
+  // or if not specified, assign a numeric value
+  // to the value in fh.
+  const update = (i, fh) => {
+    if (defaultParameters[fh]) {
+      const v = defaultParameters[fh];
+      rules[i].style.fontSize = v + 'px';
+    } else {
+      defaultParameters[fh] = +rules[i].style.fontSize.slice(0, -2);
+    }
+  }
+  // loop over the rules to update font sizes.
+  for (let i = 0; i < rules.length; i++) {
+    switch (rules[i].selectorText) {
+      case '.title':
+        update(i, "titleFontHeight")
+        break;
+      case '.text':
+        update(i, 'textFontHeight');
+        break;
+      case '.preface':
+        update(i, 'prefaceFontHeight');
+        break;
+      case '.postscript':
+        update(i, 'postscriptFontHeight');
+        break;
+      case '.chord':
+        update(i, 'chordFontHeight');
+        break;
+      case '.pernote':
+        update(i, 'pernoteFontHeight');
+        break;
+      case '.fingering':
+        update(i, 'fingerFontHeight');
+        break;
+      case '.lyric':
+        update(i, 'lyricFontHeight');
+        break;
+      case '.pitch':
+        update(i, 'pitchFontHeight');
+        break;
+      case '.cue':
+        update(i, 'cueFontHeight');
+        break;
+      case '.perbar':
+        update(i, 'perbarFontHeight');
+        break;
+      case '.perbeat':
+        update(i, 'perbeatFontHeight');
+        break;
+      case '.counter':
+        update(i, 'counterFontHeight');
+        break;
+      case '.rest':
+        update(i, 'restFontHeight');
+        break;
+      case '.perline':
+        update(i, 'perlineFontHeight');
+        break;
+      case '.lineproblem':
+        update(i, 'lineproblemFontHeight');
+        break;
+    }
+  }
+}
+
+
+
+// appendSVGTextChild(svg, x, y, textContent, classList) adds a text element
+// to the svg element with the given x, y coordinates and textContent. The
+// classList argument is an array of class names to be added to the text
+// element. The text element is returned.
+function appendSVGTextChild(svg, x, y, textContent, classList) {
+  const textEl = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  textEl.setAttribute("x", x);
+  textEl.setAttribute("y", y);
+  textEl.textContent = textContent;
+  // Check if this is a chord pitch or the pencil icon.
+  if (classList.includes('chord-pitch')) {
+    // rotate 20 degrees counterclockwise
+    textEl.setAttribute("transform", `rotate(340, ${x}, ${y})`);
+  } else if (classList.includes('pencil-icon')) {
+    // rotate 90 degrees clockwise
+    textEl.setAttribute("transform", `rotate(90, ${x}, ${y})`);
+  }
+  if (classList) {
+    textEl.classList.add(...classList);
+  }
+  svg.appendChild(textEl);
+  return textEl;
+}
+
+function appendSVGLineChild(svg, x0, y0, x1, y1, classList) {
+  const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+  line.setAttribute("x1", x0);
+  line.setAttribute("y1", y0);
+  line.setAttribute("x2", x1);
+  line.setAttribute("y2", y1);
+  if (classList) {
+    line.classList.add(...classList);
+  }
+  svg.appendChild(line);
+  return line;
 }
 
 // splitFirst splits a string on the supplied separator and returns
@@ -1963,6 +2084,61 @@ function renderMultiline(svg, x, y, text, fontHeight, className) {
 
   return y;
 }
+
+// YouTube IFrame API initialization. Call this function once the page loads.
+function initYouTubeAPI() {
+  let tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  tag.onload = () => {
+    console.log('YouTube IFrame API script loaded');
+  };
+  let firstScriptTag = document.getElementsByTagName('script')[0];
+  firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+}
+
+// Minimal player initialization. This implementation avoids third-party cookie issues.
+// See https://stackoverflow.com/a/64444601/426853
+function onYouTubeIframeAPIReady() {
+  console.log('YouTube IFrame API ready');
+  player = new YT.Player('player', {
+    height: '0',
+    width: '0',
+    videoId: '',
+    host: 'https://www.youtube-nocookie.com',
+    playerVars: {
+      'playsinline': 1,
+      origin: window.location.host
+    },
+    events: {
+      'onStateChange': onPlayerStateChange
+    }
+  });
+}
+
+// Handle player state changes
+function onPlayerStateChange(event) {
+  const speakerIcons = document.querySelectorAll('.speaker-icon');
+  const TIME_TOLERANCE = 0.5; // Half second tolerance
+
+  if (event.data === YT.PlayerState.PLAYING) {
+    const currentTime = player.getCurrentTime();
+    // Add active class to current speaker icon
+    speakerIcons.forEach(icon => {
+      const iconTime = parseFloat(icon.dataset.timestamp);
+      if (Math.abs(currentTime - iconTime) < TIME_TOLERANCE) {
+        icon.classList.add('speaker-icon-active');
+      }
+    });
+  } else if (event.data === YT.PlayerState.ENDED ||
+    event.data === YT.PlayerState.PAUSED ||
+    event.data === YT.PlayerState.STOPPED) {
+    // Remove active class from all speaker icons
+    speakerIcons.forEach(icon => {
+      icon.classList.remove('speaker-icon-active');
+    });
+  }
+}
+
 function playYouTubeAt(videoId, timeSeconds, rate = 1.0) {
   // Wait for player to be ready
   if (!player || !player.playVideo) {
@@ -2272,10 +2448,17 @@ function renderScore(wrapper, data) {
       svg.style.cursor = 'pointer';
       const speaker = appendSVGTextChild(svg, 0, 48, "🔊", ["speaker-icon"]);
 
+      // Add timestamp data attribute used by onPlayerStateChange()
+      speaker.dataset.timestamp = String(line.play);
+
       speaker.addEventListener('click', (event) => {
         if (event.detail === 1) { // Single click
           setTimeout(() => {
             if (!event.target.clickProcessed) {
+              // Remove active class from all icons first
+              document.querySelectorAll('.speaker-icon').forEach(icon => {
+                icon.classList.remove('speaker-icon-active');
+              });
               playYouTubeAt(data.youtubeId, line.play, line.playRate || 1.0);
             }
           }, 200); // Delay to allow for double click detection
@@ -2284,128 +2467,6 @@ function renderScore(wrapper, data) {
       });
     }
   });
-}
-
-// Score represents a score div and its associated editable source text.  It
-// has a render method that renders the source text as FQS musical notation.
-class Score {
-  constructor(text, container) {
-    this.editMode = false;
-    this.outer = document.createElement('div');
-    this.outer.classList.add('score');
-    this.id = `score-${Math.random().toString(36).substring(2, 15)}`;
-    this.outer.setAttribute('id', this.id);
-    scoreMap.set(this.id, this);
-    // next comes a wrapper div that will contain the rendered
-    // and the editable source text.
-    this.wrapper = document.createElement('div');
-    this.wrapper.classList.add('score-wrapper');
-    this.wrapper.style.display = 'flex';
-    this.wrapper.style.width = '100%';
-    this.outer.appendChild(this.wrapper)
-    // the inner wrapper div is where the svg's that comprise each
-    // line of the rendered score will go
-    this.inner = document.createElement('div');
-    this.inner.classList.add('inner-wrapper');
-    this.wrapper.appendChild(this.inner);
-    // the source div will contain the editable <pre> element that 
-    // holds the source text
-    this.sourcediv = document.createElement('div');
-    this.sourcediv.classList.add('source-div');
-    this.wrapper.appendChild(this.sourcediv)
-    // the editable pre element.
-    this.source = document.createElement('pre');
-    this.source.classList.add('source');
-    this.source.setAttribute('contenteditable', 'plaintext-only');
-    this.source.textContent = text;
-    this.sourcediv.appendChild(this.source);
-    // a post-render callback, if needed, to update TOC, etc.
-    this.postRenderCallback = null;
-    // Add the score to the container
-    container.appendChild(this.outer);
-
-    this.source.addEventListener('input', () => {
-      this.render();
-    });
-  }
-
-  getText() {
-    return this.source.textContent;
-  }
-
-  getTitle() {
-    const text = this.getText();
-    // look for the first line that starts with a 'title:'
-    const titleLine = text.split('\n').find(line => line.startsWith('title:'));
-    if (titleLine) {
-      return titleLine.split(':')[1].trim();
-    }
-    throw new Error('No title found in score');
-  }
-
-  // showSourceEditor() makes the source editor visible.
-  // by changing the the display style and width of the source div
-  // and the width of the inner div.
-  showSourceEditor() {
-    this.sourcediv.style.display = 'block';
-    this.sourcediv.style.width = '50%';
-    this.inner.style.width = '50%';
-  }
-  // hideSourceEditor() makes the source editor invisible.
-  // by changing the the display style and width of the source div
-  // and the width of the inner div.
-  hideSourceEditor() {
-    this.sourcediv.style.display = 'none';
-    this.inner.style.width = '100%';
-  }
-  toggleEdit() {
-    this.editMode = !this.editMode;
-    this.forceEditMode(this.editMode);
-  }
-
-  forceEditMode(state) {
-    if (state) {
-      this.showSourceEditor();
-    } else {
-      this.hideSourceEditor();
-    }
-  }
-  // render() renders the score into the inner div.
-  render() {
-    // get the source text from the source pre element
-    const data = preprocessScore(this.source.textContent);
-    renderScore(this.inner, data);
-    const svgElements = this.inner.querySelectorAll('svg');
-    for (const svg of svgElements) {
-      // calculate rendered height and adjust the svg height and viewbox
-      let height = svg.getBBox().height + 30; // empirical
-      // svg.setAttribute('height', height);
-      let zoom = 100;
-      if (data.zoom) {
-        // if data.zoom can't be parsed, use 100% and add a message to the
-        // lineProblems object so that the error can be displayed in the
-        // SVG.
-        zoom = parseInt(data.zoom, 10);
-        if (isNaN(zoom)) {
-          lineProblems.add("Invalid zoom value: " + data.zoom);
-          zoom = 100;
-        }
-        // allow user to specify a zoom factor between 50 and 500%
-        zoom = Math.max(50, Math.min(500, parseInt(zoom,
-          10)));
-
-        const xpix = 720 * 100. / zoom;
-        svg.setAttribute('viewBox', `0 0 ${xpix} ${height}`);
-      }
-    }
-    // scoreToc(); // update the table of contents
-    isDirty = true // signal that the score has been edited
-    this.forceEditMode(this.editMode);
-    // if there is a postRenderCallback, call it
-    if (this.postRenderCallback) {
-      this.postRenderCallback();
-    }
-  }
 }
 
 export { Book, Score, initYouTubeAPI, onYouTubeIframeAPIReady } 

@@ -29,7 +29,11 @@
 
   .speaker-icon {
     font-size: 12px;
-    fill: rgb(61, 7, 123);
+    opacity: 0.5;
+  }
+
+  .speaker-icon-active {
+    opacity: 1
   }
 
   .score-icon {
