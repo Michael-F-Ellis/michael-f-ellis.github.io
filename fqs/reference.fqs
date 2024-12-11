@@ -158,12 +158,29 @@ correspond to the lowest "G" in the range. For a guitar in standard tuning, that
 (low E string, 3rd fret). For a flute, G4, and so on. The point is that you know your
 instrument's limits and can interpret the octaves accordingly.
 
-text: But what if I need more than three octaves?
-A. You can extend the notation above and below the staff as shown
-below. You can also consider adding annotations like 8va and 8vb when
-needed.
+text: But what if I need more than three octaves? Or less?
+A. Use the "staff:" keyword in the title block.  See below.
+EndOfScore
+title: Huge staff
 
-music: K0 //g ^g ^g ^g ^g ^g ^g |
+zoom: 100
+
+staff: 8
+
+text: You may have as many octaves as needed. Here's an extreme example.
+
+cue: 7 octaves (full range of an 88 key piano)
+music: K0 abcd efg; | abcd efg; | abcd efg; | abcd efg; | abcd efg; | abcd efg; | abcd efg; | abc; ; |
+nomarkers:
+EndOfScore
+title: Small staff
+
+zoom: 100
+
+staff: 3
+
+cue: Two octave staff
+music: K0 /efga bcde | fgab cdef |
 nomarkers:
 EndOfScore
 title: Editing
@@ -212,7 +229,9 @@ zoom: 130
 text: Key signatures are not displayed in FQS. They are, however,
 required in the input notation. At least one is required at the beginning
 of the first measure in each line or music, but you may change them at
-the beginning of any measure.
+the beginning of any measure. The use of color notation makes key signatures
+unneeded, but you can easily add text annotations to indicate the intended
+key.
 
 music: K0 cdefgabc | K&3 /cdefgabc | K#4 /cdefgabc |
 perbar: C_major C_minor C♯_minor

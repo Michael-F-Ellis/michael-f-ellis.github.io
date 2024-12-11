@@ -548,11 +548,11 @@ class LyricLine {
           }
       }
     }
-    console.log("\ntext: " + this.text)
-    console.log("bars: " + this.bars)
-    console.log("beats: " + this.beats)
-    console.log("attacks: " + this.attacks)
-    console.log("rests: " + this.rests)
+    //console.log("\ntext: " + this.text)
+    //console.log("bars: " + this.bars)
+    //console.log("beats: " + this.beats)
+    //console.log("attacks: " + this.attacks)
+    //console.log("rests: " + this.rests)
   }
 
   extractRhythm = (function () {
@@ -894,8 +894,9 @@ class Pitch {
 // must handle octavation, key signatures, accidentals and alterations and
 // match each pitch to its corresponding attack location in the Lyric line.
 class PitchLine {
-  constructor(text) {
+  constructor(text, staffLines = 4) {
     this.centerOctave = 0;
+    this.staffLines = staffLines;
     this.text = text;
     // trim leading or trailing whitespace
     this.text = this.text.trim();
@@ -1167,12 +1168,19 @@ class PitchLine {
     const holds = lyricLine.holds;
     const bars = lyricLine.bars;
     // Draw the lines of the staff
-    const yline0 = y0 + 2 * fontheight;
-    const yline1 = yline0 - fontheight
-    const yline2 = yline1 - fontheight
-    const yline3 = yline2 - fontheight
+    const ylines = [];
+    for (let i = 0; i < this.staffLines; i++) {
+      if (i === 0) {
+        // ylines.push(y0 + 2 * fontheight);
+        ylines.push(y0);
+      } else {
+        ylines.push(ylines[i - 1] - fontheight);
+
+      }
+    }
+    const yline0 = ylines[0];
     const xend = x0 + fontwidth * (0.5 + bars[bars.length - 1]); // extend line to last barline
-    for (let y of [yline0, yline1, yline2, yline3]) {
+    for (let y of ylines) {
       let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
       line.setAttribute("x1", x0);
       line.setAttribute("y1", y);
@@ -1188,7 +1196,7 @@ class PitchLine {
       let line = document.createElementNS("http://www.w3.org/2000/svg", "line");
       let x = x0 + (xBar + 0.5) * fontwidth;
       line.setAttribute("x1", x);
-      line.setAttribute("y1", yline3);
+      line.setAttribute("y1", ylines[ylines.length - 1]);
       line.setAttribute("x2", x);
       line.setAttribute("y2", yline0);
       line.setAttribute("stroke", "lightgray");
@@ -1202,24 +1210,25 @@ class PitchLine {
     let i = 0;
     for (let pitch of this.pitches) {
       let x = x0;
-      let y = y0;
+      let y = y0 - 2 * fontheight;
       if (i < attacks.length) {
         x = x0 + attacks[i] * fontwidth;
         pitch.render(svg, x, y, fontheight);
       }
       i++;
     }
+    const ycenter = (yline0 + ylines[ylines.length - 1]) / 2;
     // Now render the rests
     for (let rest of rests) {
       let x = x0;
-      let y = yline1; // rests are rendered in the middle of the staff
+      let y = ycenter; // rests are rendered in the middle of the staff
       x = x0 + rest * fontwidth;
       appendSVGTextChild(svg, x, y, ";", ["rest", "yellowish"]);
     };
     // Now render the holds
     for (let hold of holds) {
       let x = x0;
-      let y = yline1; // holds are rendered in the middle of the staff
+      let y = ycenter; // holds are rendered in the middle of the staff
       x = x0 + hold * fontwidth;
       appendSVGTextChild(svg, x, y, '-', ["hold", "grey"]);
     }
@@ -1257,7 +1266,7 @@ class LineAnnotations {
     for (let i = 0; i < this.bars.length; i++) {
       let p = this.bars[i];
       if (p > pos) {
-        console.log(`next bar at ${p}`)
+        //console.log(`next bar at ${p}`)
         return p
       }
     }
@@ -1269,7 +1278,7 @@ class LineAnnotations {
     for (let i = 0; i < this.beats.length; i++) {
       let p = this.beats[i];
       if (p > pos) {
-        console.log(`next beat at ${p}`)
+        // console.log(`next beat at ${p}`)
         return p
       }
     }
@@ -1280,7 +1289,7 @@ class LineAnnotations {
     for (let i = 0; i < this.attacks.length; i++) {
       let p = this.attacks[i];
       if (p > pos) {
-        console.log(`next note at ${p}`)
+        // console.log(`next note at ${p}`)
         return p
       }
     }
@@ -1347,7 +1356,7 @@ class LineAnnotations {
           }
           break;
       }
-      console.log(token, pos);
+      // console.log(token, pos);
     });
   }
 }
@@ -1524,7 +1533,7 @@ class RhythmMarkers {
             }
             continue;
           case ';':
-            console.log(fractions.length)
+            // console.log(fractions.length)
             fractions.push(new FracSpan(f, 1));
             f = new FracSpan(1, 1, ';');
             continue;
@@ -1768,8 +1777,8 @@ function updateFontSizes() {
   const stylesheet = Array.from(document.styleSheets)
     .find(sheet => sheet.href && sheet.href.includes('fqs.css'));
 
-  console.log("Stylesheets:", document.styleSheets);
-  console.log("Found stylesheet:", stylesheet);
+  // console.log("Stylesheets:", document.styleSheets);
+  // console.log("Found stylesheet:", stylesheet);
 
   if (!stylesheet) {
     console.log("fqs.css stylesheet not found");
@@ -1777,7 +1786,7 @@ function updateFontSizes() {
   }
 
   const rules = stylesheet.cssRules || stylesheet.rules;
-  console.log("CSS rules:", rules);
+  // console.log("CSS rules:", rules);
   // define a closure that will update the font size of a rule
   // whose index is i if the font height, fh is specified in 
   // or if not specified, assign a numeric value
@@ -1981,13 +1990,8 @@ function preprocessScore(text) {
       blocks.splice(i, 1);
       continue;
     }
-    if (block.startsWith("preface:")) {
-      data.preface = block.slice(8);
-      blocks.splice(i, 1);
-      continue;
-    }
-    if (block.startsWith("postscript:")) {
-      data.postscript = block.slice(11).trim();
+    if (block.startsWith("staff:")) {
+      data.staff = block.slice(6).trim();
       blocks.splice(i, 1);
       continue;
     }
@@ -2303,6 +2307,11 @@ function renderScore(wrapper, data) {
         titleText += ` ${data.playRate}`;
       }
     }
+    if (data.staff) {
+      titleText += `\n\nstaff: ${data.staff}`;
+    } else {
+      data.staff = 4;
+    }
 
     titleEditor.textContent = titleText;
   }
@@ -2387,12 +2396,15 @@ function renderScore(wrapper, data) {
       }
     }
     // Render the pitches, if any
+    console.log(`${y} y before pitch line decision`)
     if (line.pitch && line.lyric) {
-      y += 1.5 * defaultParameters.lyricFontHeight;
+      y += data.staff * defaultParameters.lyricFontHeight;
+      console.log(`${y} y before pitch line render`)
       try {
-        const pitchLine = new PitchLine(line.pitch);
+        const pitchLine = new PitchLine(line.pitch, data.staff);
         pitchLine.render(svg, defaultParameters.leftX, y, defaultParameters, lyricline);
-        y += 2 * defaultParameters.lyricFontHeight;
+        // y += data.staff * defaultParameters.lyricFontHeight;
+        console.log(`${y} y after pitch line render`)
       } catch (e) {
         lineProblems.add("Pitch line error: " + e.message);
         //console.log(e);
