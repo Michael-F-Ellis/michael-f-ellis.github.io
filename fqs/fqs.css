@@ -107,6 +107,10 @@
     fill: rgb(216, 223, 12);
   }
 
+  .red {
+    fill: rgb(209, 34, 34);
+  }
+
   .lyric {
     font: 12px monospace;
   }
@@ -126,7 +130,8 @@
   }
 
   .fingering {
-    font: 4px monospace;
+    font: 6px monospace;
+    fill: rgb(2, 94, 2);
   }
 
   .perbar {

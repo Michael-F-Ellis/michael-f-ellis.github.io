@@ -270,6 +270,21 @@ class Book {
 
 // Score represents a score div and its associated editable source text.  It
 // has a render method that renders the source text as FQS musical notation.
+// The nested html structure of the rendered score is:
+//
+// container: (div supplied by the caller, may contain multiple scores)
+//     outer: (class score)
+//         controls: (optionally inserted by caller)
+//         wrapper: (class score-wrapper)
+//             inner: (class inner-wrapper)
+// .               svg: (portion of rendered score)
+//                 editor: (editable pre for portion of rendered score)
+// .               ... (multiple svg+editor elements)
+//             sourcediv:
+//                 source: (editable pre for entire score text)
+//
+//     ... (multiple score elements)
+
 class Score {
   constructor(text, container) {
     this.editMode = false;
@@ -432,7 +447,14 @@ class LyricLine {
     // trim leading or trailing whitespace
     // split the text on whitespace
     // join the text back together with single spaces
-    this.words = text.trim().split(/\s+/);
+    this.tuplets = text.trim().split(/\s+/).map(word => {
+      const tupletMatch = word.match(/^([2-9])(.+)$/);
+      return tupletMatch ? { text: tupletMatch[2], tupletSize: parseInt(tupletMatch[1]) } : { text: word, tupletSize: 1 };
+    });
+    // put the texts of the  tuplets into an array
+    this.words = this.tuplets.map(tuplet => {
+      return tuplet.text;
+    });
     this.text = this.words.join(" ");
     // Create an array of attack indices. An attack is an alpha character [a-zA-Z]
     // that is preceded by a any of the following:
@@ -548,9 +570,16 @@ class LyricLine {
           }
       }
     }
+    // Finallly, we  want to remove barlines from this.tuplets so that
+    // we can index tuplets the same as beats.
+    this.tuplets = this.tuplets.filter(tuplet => {
+      return !tuplet.text.includes("|");
+    });
     //console.log("\ntext: " + this.text)
     //console.log("bars: " + this.bars)
-    //console.log("beats: " + this.beats)
+    console.log("tuplets: " + this.tuplets)
+    console.log("beats: " + this.beats)
+    console.log("subBeats: " + this.subBeats)
     //console.log("attacks: " + this.attacks)
     //console.log("rests: " + this.rests)
   }
@@ -594,6 +623,64 @@ class LyricLine {
     return rhythm
   });
 
+  syllableSpans() {
+    if (!this.showLyric) {
+      return [];
+    }
+    const spans = [];
+    let inSyllable = false;
+    let inBeat = false;
+    let syllableLength = 0;
+    // loop over the text.
+    const lengths = [];
+    const pushSyllable = () => {
+      if (inSyllable) {
+        spans.push(syllableLength);
+      }
+      inSyllable = false;
+      syllableLength = 0;
+    }
+    for (let i = 0; i < this.text.length; i++) {
+      const c = this.text[i];
+      switch (c) {
+        case " ":
+          // a space terminates any current syllable and beat
+          pushSyllable();
+          inBeat = false;
+          break;
+        case "|":
+          // ignore barlines
+          inBeat = false;
+          inSyllable = false;
+          syllableLength = 0;
+          break;
+        case "-":
+        case "*":
+        case ";":
+          // a dash, asterisk or rest terminates any current syllable and
+          // creates a new syllable of length 1.
+          pushSyllable();
+          inSyllable = true;
+          syllableLength = 1
+          pushSyllable();
+          break;
+        case ".":
+          // a dot is a syllable separator. It terminates the current syllable.
+          // but does not start a new syllable.
+          syllableLength++;
+          pushSyllable();
+        default:
+          // A group of alphanumeric characters is a syllable.
+          if (inSyllable) {
+            syllableLength++;
+          } else {
+            inSyllable = true;
+            syllableLength = 1;
+          }
+      }
+    }
+    return spans;
+  }
 
   render = (function render(svg, x0, y0, fontwidth) {
     if (!this.showLyric) { return; } // Do not render lyric lines as part of music lines
@@ -873,6 +960,7 @@ class Pitch {
     this.octave = octave; // octave is an offset relative to a center octave whose value is 0
     this.accidentalClass = accidentalClass; // one of '', '𝄫', '♯', '𝄪' or ''
     this.classes = [accidentalClass, "pitch"];
+    this.isChordPitch = false; // initalized to false
   }
   // addClass() is used to add a class to the pitch. At present, this is used to add the
   // 'chord-pitch' class to the pitch when it is part of a chord.
@@ -881,12 +969,16 @@ class Pitch {
   }
   // render() is a closure that renders the pitch at the specified x, y coordinates.
   render = (function render(svg, x, y, fontheight) {
+    if (this.isChordPitch) {
+      this.classes.push("chord-pitch");
+    }
     // Draw the pitch at the specified x, y coordinates.
     // Adjust the y coordinate by the octave and vertical offset for this pitch
     y -= this.octave * fontheight;
     const gOffset = 7 // causes the pitch to be rendered as though each staff line is on g natural.
     y += (gOffset + vOffsets[this.accidentalClass + this.letter]) * (fontheight / 12);
     appendSVGTextChild(svg, x, y, this.letter, this.classes);
+    return y
   });
 }
 // The PitchLine class is used to render a single line of pitches from a
@@ -1149,7 +1241,8 @@ class PitchLine {
       accClass = this.alterations.get(letter, octave, accClass);
       let pitch = new Pitch(letter, octave, accClass);
       if (this.inChord > -1) {
-        pitch.addClass('chord-pitch');
+        pitch.isChordPitch = true;
+        // pitch.addClass('chord-pitch');
       }
       this.pitches.push(pitch);
       // console.log(letter, octave, accClass)
@@ -1208,12 +1301,15 @@ class PitchLine {
     // is not equal to the number of attack locations because we may
     // be updating the rendered pitches while the user is editing.
     let i = 0;
+    this.fingerPositions = [];
     for (let pitch of this.pitches) {
       let x = x0;
       let y = y0 - 2 * fontheight;
       if (i < attacks.length) {
         x = x0 + attacks[i] * fontwidth;
-        pitch.render(svg, x, y, fontheight);
+        const ypitch = pitch.render(svg, x, y, fontheight);
+        // save x,y positions for finger numbers
+        this.fingerPositions.push([x, ypitch - fontheight])
       }
       i++;
     }
@@ -1248,13 +1344,21 @@ class Cue {
 } // end Cue class
 
 class LineAnnotations {
-  constructor(lyricLine, y0, cssClasses) {
+  constructor(lyricLine, y0, cssClasses, fingerPositions = null) {
     this.lyricLine = lyricLine;
     this.y0 = y0;
     this.cssClasses = cssClasses;
     this.bars = lyricLine.bars;
     this.beats = lyricLine.beats;
     this.attacks = lyricLine.attacks;
+    this.fingerMap = new Map();
+    this.fingerPositions = fingerPositions;
+    if (fingerPositions) {
+      for (let finger of fingerPositions) {
+        this.fingerMap.set(finger[0], finger[1]); // x keys y value
+      }
+    }
+    this.isFingered = this.fingerMap.size > 0;
     // merge the bars and attacks array into one array by concatenating
     // the two arrays and sorting the result.
     this.positions = this.bars.concat(this.attacks).sort((a, b) => a - b);
@@ -1296,6 +1400,20 @@ class LineAnnotations {
     lineProblems.add("Already at or past last note position");
     return pos;
   }
+  nearestFingerY(x) {
+    // return the y coordinate of the nearest finger position
+    // to the given x coordinate.
+    let nearest = null;
+    let minDistance = Infinity;
+    for (let [x0, y0] of this.fingerPositions) {
+      let d = Math.abs(x0 - x);
+      if (d < minDistance) {
+        minDistance = d;
+        nearest = y0;
+      }
+    }
+    return nearest;
+  }
   render(svg, x0, text, step) {
     if (!['bar', 'beat', 'note'].includes(step)) {
       throw new Error(`Invalid step: ${step} : must be one of 'bar', 'beat', or 'note'`);
@@ -1333,7 +1451,11 @@ class LineAnnotations {
           let x = x0;
           x += pos * defaultParameters.lyricFontWidth;
           // Replace underscores with spaces in the rendered text
-          appendSVGTextChild(svg, x, this.y0, token.replace(/_/g, ' '), this.cssClasses);
+          let y = this.y0
+          if (this.isFingered) {
+            y = this.nearestFingerY(x)
+          }
+          appendSVGTextChild(svg, x, y, token.replace(/_/g, ' '), this.cssClasses);
           // Move to next step position if one is available
           switch (step) {
             case 'bar':
@@ -1395,30 +1517,39 @@ class PerNote {
 // except that it adds a small fudge to the x position to make the tiny font
 // align better with the pitch letters. 
 class Finger {
-  constructor(text) {
-    this.text = text;
+  constructor(lyricLine, pitchLine) {
+    this.lyricLine = lyricLine
+    this.positions = pitchLine.fingerPositions;
   }
-  render(svg, x0, y0, lyricLine) {
-    const annotations = new LineAnnotations(lyricLine, y0, ['fingering']);
-    // Add a fudge to x positions for appearance
-    const x = x0 + 0.1 * defaultParameters.lyricFontWidth
-    annotations.render(svg, x0, this.text, 'note');
+  render(svg, text) {
+    const annotations = new LineAnnotations(
+      this.lyricLine,
+      0, // not needed
+      ['fingering'],
+      this.positions);
+    annotations.render(svg, defaultParameters.leftX, text, 'note');
   }
 }
 
 // The Counter class is similar to the PerBeat class. It provides
 // an automated method for rendering beat numbers above the beats.
-// The constructor takes 4 arguments, 
+// The constructor takes 2 arguments:
 //    n, the first beat number (should be 1 unless we're starting with a partial measure)
-//    beats, an array of beat x positions,
-//    bars, an array of of bar x positions.
-// .  rhythm, an array of rhythm markup,  as created by LyricLine.extractRhythm()`
+//    lyricLine, an object containing beats and bars arrays for positioning
+//    markers, an array of RhythmMarkers used to compute the locations of tuplet beats
 class Counter {
-  constructor(n, beats, bars, rhythm, useSubbeats = false) {
+  constructor(n, lyricLine, markers) {
     this.n = n;
-    this.beats = beats;
-    this.bars = bars;
-    this.rhythm = rhythm;
+    this.beats = lyricLine.beats;
+    this.subBeats = lyricLine.subBeats;
+    this.bars = lyricLine.bars;
+    if (this.bars[0] == 0) {
+      this.bars.shift(); // drop the pseudo barline at 0
+    }
+    this.markers = markers;
+    this.tuplets = lyricLine.tuplets;
+    this.interpolateTuplets();
+
     // We need to generate a list of beat numbers that resets to 1
     // each time the beat position exceeds the next bar position.
     // The counting will begin with n unless n is <= 0, in which
@@ -1435,25 +1566,80 @@ class Counter {
         }
       }
       j++;
-      if (!useSubbeats) {
-        this.counts.push(count);
-      }
+      this.counts.push(count);
       count++;
     }
-    if (!useSubbeats) return;
-    // We need to add the subbeat numbers if we reach this point.
-    // append rhythm to count ( minus the first char of the rhythm)
-    const subbeats = this.rhythm[j].slice(1, this.rhythm[j].length)
-    //console.log(beat, this.bars[i], count, subbeats);
-    // if the first char of rhythm is a minus sign, we need to
-    // use a hyphen instead of a number
-    const c = this.rhythm[j][0] === '-' ? '-' : String(count);
-    this.counts.push(c + subbeats);
-    // bump the count and beat index
-    count++
-    j++;
+  }
+  reverseInterpolate(deltaPairs, targetY) {
+    // Convert delta pairs to cumulative coordinates
+    let points = [[0, 0]];
+    let sumX = 0, sumY = 0;
+
+    for (const [dx, dy] of deltaPairs) {
+      sumX += dx;
+      sumY += dy;
+      points.push([sumX, sumY]);
+    }
+
+    // Find interval containing targetY
+    for (let i = 0; i < points.length - 1; i++) {
+      const [x0, y0] = points[i];
+      const [x1, y1] = points[i + 1];
+
+      if (targetY >= y0 && targetY <= y1) {
+        // Linear interpolation within interval
+        const fraction = (targetY - y0) / (y1 - y0);
+        return x0 + fraction * (x1 - x0);
+      }
+    }
+
+    return null; // Target Y is outside the function's range
   }
 
+  getNEqualDivisions(deltaPairs, N) {
+    // Calculate total Y accumulation
+    const totalY = deltaPairs.reduce((sum, [_, dy]) => sum + dy, 0);
+
+    // Calculate Y increment for N divisions
+    const increment = totalY / N;
+
+    // Generate array of target Y values
+    const divisions = [];
+    for (let i = 1; i < N; i++) {
+      const targetY = i * increment;
+      const x = this.reverseInterpolate(deltaPairs, targetY);
+      divisions.push(x);
+    }
+
+    return divisions;
+  }
+
+  interpolateTuplets() {
+    const interpolatedBeats = [];
+
+    for (const [i, beat] of this.beats.entries()) {
+      interpolatedBeats.push(beat);
+
+      const fractions = this.markers.beatFractions[i];
+      // if (!fractions || fractions.length <= 1) continue;
+      if (!fractions) continue;
+
+      // Convert fractions to delta pairs
+      const deltaPairs = fractions.map(f => [f.span, f.val]);
+
+      // Calculate actual beat span from the sum of spans
+      const beatSpan = deltaPairs.reduce((sum, [dx, _]) => sum + dx, 0);
+
+      // Get N-1 interpolated positions for N-tuplet
+      const divisions = this.getNEqualDivisions(deltaPairs, this.tuplets[i].tupletSize);
+
+      // Map the normalized positions to actual beat positions
+      const positions = divisions.map(x => beat + x);
+      interpolatedBeats.push(...positions);
+    }
+
+    this.beats = interpolatedBeats;
+  }
   render = (function (svg, x0, y0, fontwidth) {
     // x0 is the x coordinate of the left edge of the line y0 is the
     // y coordinate of the baseline of the line. 
@@ -1486,12 +1672,13 @@ class RhythmMarkers {
   // proportional to the subbeats within the beat.  For example, "*-**" will be
   // represented numerically as [0.5, 0.25, 0.25] because the first attack is
   // sustained for 2 of the four subbeats. 
-  constructor(rhythms) {
+  constructor(lyricLine) {
+    this.lyricLine = lyricLine;
     // rhythm is an array of rhythm markup,  as created by LyricLine.extractRhythm()`
-    this.rhythms = rhythms;
+    this.rhythms = lyricLine.extractRhythm();
     this.beatFractions = []; // an array of arrays of FracSpan objects
-    for (let i = 0; i < rhythms.length; i++) {
-      const rhythm = rhythms[i];
+    for (let i = 0; i < this.rhythms.length; i++) {
+      const rhythm = this.rhythms[i];
       let fractions = [];
       const nchar = rhythm.length;
       let chordIndex = -1; // -1  means not in a chord
@@ -1548,6 +1735,23 @@ class RhythmMarkers {
       }
       this.beatFractions.push(fractions);
     }
+    // We may need to adjust the spans of the beat fractions that
+    // correspond lyric line syllables with length > 1.
+    const spans = this.lyricLine.syllableSpans();
+    console.log(`Syllable spans: ${spans}`)
+    if (spans.length > 0) {
+      let iSpan = 0;
+      for (let arr of this.beatFractions) {
+        for (let frac of arr) {
+          if (iSpan < spans.length) {
+            frac.span = spans[iSpan];
+            iSpan++;
+          } else {
+            console.log(`Warning: too many syllables in lyric line ${this.lyricLine.lyric}`);
+          }
+        }
+      }
+    }
   }
   render(svg, x0, y0, beats, fontwidth) {
     // x0 is the x coordinate of the left edge of the line 
@@ -1560,14 +1764,16 @@ class RhythmMarkers {
     // will fit within two fontwidths.
     let i = 0;
     const fh = defaultParameters.lyricFontHeight
-    const width = fontwidth / 4;
+    const width = fontwidth / 4; // marker width is 1/4 of font width
     for (let fractions of this.beatFractions) {
+      let nBeats = this.lyricLine.tuplets[i].tupletSize
       let x = x0 + beats[i] * fontwidth;
       let xb0 = x; let xb1 = x; // left and right ends of the beat
       let y = y0 - fh;
       let height = 0;
       for (let fraction of fractions) {
-        height = fraction.val * fh;
+        height = fraction.val * fh * nBeats;
+        height = Math.min(height, fh);
         switch (fraction.kind) {
           case '*':
             appendSVGLineChild(svg, x, y, x, y + height, ["pitch-marker"]);
@@ -1585,6 +1791,10 @@ class RhythmMarkers {
       // Now draw a thin connector line across the top of the rhythm markers
       // for the beat.
       appendSVGLineChild(svg, xb0, y, xb1, y, ["rhythm-connector"]);
+      if (nBeats > 1) {
+        // Draw the beat count just to left of the connector line
+        appendSVGTextChild(svg, xb0 - 6, y + 8, nBeats, ["pernote", "red"]);
+      }
       i++;
     }
   }
@@ -1908,26 +2118,31 @@ function splitFirst(str, separator) {
   return [str.slice(0, separatorIndex), str.slice(separatorIndex + separator.length)];
 }
 
-// musicToPitchLyric takes a music line (a string) and returns a pitch line  and a
-// lyric line as an object. For example, if the music line is `K#2 c; d -e f |` the
-// lyric line will be `*; * -* * |` and the pitch line will be 
-// `K#2 c d e f |`. 
+// musicToPitchLyric takes a music line (a string) and returns a pitch line  and
+// a lyric line as an object of the  form {lyric: string, pitch: string }
 //
-// The lyric line is constructed by identifying all key signature
-// and pitch tokens in the music and removing the key signatures and
-// replacing the pitch tokens with asterisks.
+// The lyric line is constructed by identifying all key signature and pitch
+// tokens in the music and replacing the pitch tokens with asterisks.
 //
 // The pitch line is constructed by removing all the hold or rest
-// characters, '-' and ';'the from music line. 
+// characters, '-' and ';'the from music line.
+//
+// For example, if the music line is `K#2 c; d -e f |` the lyric line
+// will be `*; * -* * |` and the pitch line will be `K#2 c d e f |`. 
 function musicToPitchLyric(musicLine) {
   let lyricLine = musicLine;
   let pitchLine = musicLine;
 
-  // Remove key signatures and replace pitch tokens with asterisks in the lyric line
-  lyricLine = lyricLine.replace(/K[#&]?\d/g, "").replace(/\^*\/*[#&%]*[a-g]/g, "*");
+  // Remove key signatures and replace pitch tokens with asterisks to create the
+  // lyric line.
+  lyricLine = lyricLine.replace(/K[#&]?\d/g, "")
+    .replace(/\^*\/*[#&%]*[a-g]/g, "*");
 
   // Remove hold and rest characters from the pitch line
   pitchLine = pitchLine.replace(/[-=;]/g, "");
+
+  // Now remove any numeric prefixes from tokens in the pitch line
+  pitchLine = pitchLine.replace(/\s[0-9]*/g, " ");
 
   return {
     lyric: lyricLine.trim(),
@@ -2208,7 +2423,7 @@ function reconstructSectionText(line) {
 // The renderScore function is used to render the score using the
 // members of the data object created by preprocessScore.
 //  - wrapper is a div element that will hold svg's we create
-//  - data is an object containing the score
+//  - data is an object containing the preprocessed score
 function renderScore(wrapper, data) {
   // The addEditor function is a closure that adds editing capabilities to a
   // section of the score. The svg argument is the svg element that will
@@ -2379,15 +2594,13 @@ function renderScore(wrapper, data) {
       const perbeat = new PerBeat(line.perbeat)
       perbeat.render(svg, defaultParameters.leftX, y, lyricline)
     }
-    // Render the fingerings, if any
-    if (line.finger && line.lyric) {
-      y += defaultParameters.fingerFontHeight * 1.5
-      const finger = new Finger(line.finger)
-      finger.render(svg, defaultParameters.leftX, y, lyricline)
+    // Generate rhythm markers. They're needed by Counter.
+    let rhythm = undefined;
+    if (lyricline) {
+      rhythm = new RhythmMarkers(lyricline);
     }
     // Render the rhythm markers unless nomarkers has been set.
     if (line.lyric && !line.nomarkers) {
-      const rhythm = new RhythmMarkers(lyricline.extractRhythm());
       // check that there is a least one non-empty rhythm marker before
       // rendering them. This saves vertical space when possible.
       if (rhythm.beatFractions.map(r => r.length > 0).reduce((a, b) => a || b, true)) {
@@ -2396,12 +2609,13 @@ function renderScore(wrapper, data) {
       }
     }
     // Render the pitches, if any
+    let pitchLine = undefined;
     console.log(`${y} y before pitch line decision`)
     if (line.pitch && line.lyric) {
       y += data.staff * defaultParameters.lyricFontHeight;
       console.log(`${y} y before pitch line render`)
       try {
-        const pitchLine = new PitchLine(line.pitch, data.staff);
+        pitchLine = new PitchLine(line.pitch, data.staff);
         pitchLine.render(svg, defaultParameters.leftX, y, defaultParameters, lyricline);
         // y += data.staff * defaultParameters.lyricFontHeight;
         console.log(`${y} y after pitch line render`)
@@ -2410,11 +2624,15 @@ function renderScore(wrapper, data) {
         //console.log(e);
       }
     }
+    // Render the fingerings, if any
+    if (line.finger && line.lyric) {
+      const finger = new Finger(lyricline, pitchLine)
+      finger.render(svg, line.finger)
+    }
     if (line.perbar && line.lyric) {
       y += defaultParameters.perbarFontHeight;
       const perbar = new PerBar(line.perbar);
       perbar.render(svg, defaultParameters.leftX, y, lyricline);
-
     }
     // Render the lyric
     if (line.showLyric) {
@@ -2443,11 +2661,7 @@ function renderScore(wrapper, data) {
           lineProblems.add(`Invalid counter value: ${line.counter}`);
         }
       }
-      let bars = lyricline.bars;
-      if (bars[0] == 0) {
-        bars = bars.slice(1); // ignore the pseudo barline at 0
-      }
-      const counter = new Counter(npartial, lyricline.beats, bars, lyricline.extractRhythm());
+      const counter = new Counter(npartial, lyricline, rhythm);;
       counter.render(svg, defaultParameters.leftX, y, defaultParameters.lyricFontWidth)
       // y += bookParameters.counterFontHeight / 3;
     }

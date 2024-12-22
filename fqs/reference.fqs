@@ -88,8 +88,8 @@ counter: 1
 nomarkers:
 
 text: Here's a more complex one: the first eight bars of the Sarabande from J. S. Bach's
-third Cello Suite. You can click on either line to hear an excerpt from a performance
-by Yo-Yo Ma. 
+third Cello Suite. You can click the speaker icon on either line to hear an excerpt from
+a performance by Yo-Yo Ma. 
 .
 Click again to stop - unless you just want to bliss out on the remainder of
 the suite!
@@ -305,17 +305,54 @@ title: Uneven rhythms
 
 zoom: 130
 
-cue: Uneven beat divisions
-music: ^gg g--g gg-- g;-g | aaa a-aa aa-a aaa- |
-counter: 1
-
-text: When a beat is unevenly divided, the vertical length of each heavy line
+text: When a beat is unevenly divided, the vertical length of each rhythm marker
 segment is proportional the fraction of the beat alloted to the pitch 
 (or rest or sustain) below it.
 
-cue: Ties and triplets
-music: | b-b -b- c-c -c- | bbb ccc |
+cue: Uneven beat divisions 3:1, 1:3, 7:1
+music: ^g--g gg-- g------g |
+counter: 1
+
+
+
+
+EndOfScore
+title: Ties
+
+zoom: 150
+
+text: Notes that persist across beats are indicated by a '-' at the start of the following beat.
+
+cue: Ties
+music: | ab  -b - -c |
 perbar: _ 2/2
+counter: 1
+EndOfScore
+title: Tuplets
+
+zoom: 130
+
+text: Although it's possible to indicate tuplets that span one or more beats using
+only hold symbols, FQS offers a neater alternative. You may precede a group
+of notes with an integer number to indicate that it spans two or more beats.
+.
+In the example below:
+  c occupies beat 1,
+  def is a triplet that divides beat 2 into three notes
+  gab is a triplet that spans 2 beats.
+.
+Notice that the spanning tuplet has a red 2 in front of its rhythm marker and
+the markers are twice as long as the markers for beat 2.
+
+music: K0 c def 2gab |
+counter: 1
+
+text: You can use tuplet notation to clarify (or obscure!) the intended rhythm.
+Choose wisely.
+
+cue: Same rhythm written 4 different ways
+music: K0 | c de fg ab | /c 3defgab | 4/c-defgab | /c-de fgab |
+perbar: 4/4 | | 2/2
 counter: 1
 EndOfScore
 title: Chords
