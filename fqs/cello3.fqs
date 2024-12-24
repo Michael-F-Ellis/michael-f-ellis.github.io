@@ -4,6 +4,8 @@ zoom: 130
 
 youtube: icx52BLixaw
 
+staff: 3
+
 cue: 77
 music: K0 (/c^g^e^c) (/g^d^c) b | (//c^g^e^c) -/e^cd c/e^cd | (//c^g^e^&b) -/e^bc b/e^bc | (//c^g^fa) -fef afef |
 counter: 1
@@ -40,99 +42,128 @@ zoom: 150
 
 youtube: icx52BLixaw
 
-text: Look for open string opportunities
+staff: 3
+
+cue: Note: Markers omitted on lines with uniform rhythm.
 
 cue: A section (play twice)
-finger: _ _ _ _ _ _ _ _1 25 _ _ _ _ 47 _ 0 0 2 _ _ 47
-music: K0 ;^c | cgecge | c^^cdcbc | dbgdbg | f^^dcbag |
+music: K0 ;^c | 3cgecge | 3c^^cdcbc | 3dbgdbg | 3f^^dcbag |
+counter: 3
 play: 8:10 1
 image: https://michael-f-ellis.github.io/fqs/Courante_A.png 0.5
 
 cue: 5
-finger: _ _ _ 0 2 _ _ 0 2 1
-music: K0 ^cbagfe | fd/g^agf | edcbcg | /c --^cd e#f |
+music: K0 3^cbagfe | 3fd/g^agf | 3edcbcg | /c --^cd e#f |
 counter: 1
 play: 8:15 1
 
 cue: 9
-music: K0 bdgabc | #g^d/e^dcb | cba#gae | cdecag |
+music: K0 3bdgabc | 3#g^d/e^dcb | 3cba#gae | 3cdecag |
+counter: 1
 play: 8:19 1
+nomarkers:
 
 cue: 13
-music: K0 /#fade#fg | a#fd^cba | bag#fgd | bcdbg#f |
+music: K0 3/#fade#fg | 3a#fd^cba | 3bag#fgd | 3bcdbg#f |
+counter: 1
 play: 8:24 1
+nomarkers:
 
 cue: 17
-music: K0 /e^gag#fg | /cdcbag | #f^abaga | /cedcba |
+music: K0 3/e^gag#fg | 3/cdcbag | 3#f^abaga | 3/cedcba |
+counter: 1
 play: 8:29 1
+nomarkers:
 
 cue: 21
-music: K0 g^bcb/e^b | /a^cdc/#f^c | /b^dedcb | agfefd |
+music: K0 3g^bcb/e^b | 3/a^cdc/#f^c | 3/b^dedcb | 3agfefd |
+counter: 1
 play: 8:33 1
+nomarkers:
 
 cue: 25
-music: K0 /c^fedec | bcde#fg | /ade#fga | /g^e#fgab |
+music: K0 3/c^fedec | 3bcde#fg | 3/ade#fga | 3/g^e#fgab |
+counter: 1
 play: 8:37 1
+nomarkers:
 
 cue: 29
-music: K0 /d^^cac/#f^c | /d^cac/#f^c | /d^&bgb#fb | /d^&bgb#fb |
+music: K0 3/d^^cac/#f^c | 3/d^cac/#f^c | 3/d^&bgb#fb | 3/d^&bgb#fb |
+counter: 1
 play: 8:41 1
+nomarkers:
 
 cue: 33
-music: K0 &eaga#fa | &eaga#fa | ca#fda#f | d -^d #fa |
+music: K0 3&eaga#fa | 3&eaga#fa | 3ca#fda#f | d -^d #fa |
+counter: 1
 play: 8:45 1
 
 cue: 37
-music: K0 ^bcdabg | abcga#f | gdeca^#f | /g - -; :|
+music: K0 3^bcdabg | 3abcga#f | 3gdeca^#f | /g - -; :|
+counter: 1
 play: 8:50 1
 
 cue: 41 Section B play twice
-music: K0 ;^d | dbgdbd | fdbabg | cfedeg | cdebca |
+music: K0 ;^d | 3dbgdbd | 3fdbabg | 3cfedeg | 3cdebca |
+counter: 3
 play: 8:55 1
 image: https://michael-f-ellis.github.io/fqs/Courante_b.png 0.5
 
 cue: 45
-music: K0 fgaefd | b^abcdb | #g#fgabg | e^b#ge^e/d |
+music: K0 3fgaefd | 3b^abcdb | 3#g#fgabg | 3e^b#ge^e/d |
+counter: 1
 play: 8:59 1
+nomarkers:
 
 cue: 49
-music: K0 c^aecb^g | /a^fcag^e | /f^dafe^c | /d^^cbcd/#g |
+music: K0 3c^aecb^g | 3/a^fcag^e | 3/f^dafe^c | 3/d^^cbcd/#g |
+counter: 1
 play: 9:04 1
+nomarkers:
 
 cue: 53
-finger: 28 39 _ _ _ _ 47 _ _ _ _ _ _ 12
-music: K0 /c^^edcba | e^dbca#g | aedcde | /a -^ab cbca |
+music: K0 3/c^^edcba | 3e^dbca#g | 3aedcde | /a --^ab cbca |
+counter: 1
 play: 9:08 1
 
 cue: 57
-music: K0 ^geceg&b | //e^^dc&bag | afefcf | /ac/f^aga |
+music: K0 3^geceg&b | 3//e^^dc&bag | 3afefcf | 3/ac/f^aga |
+counter: 1
 play: 9:13 1
+nomarkers:
 
 cue: 61
-music: K0 ^&bagfeg | /#ce/g&bag | fefgaf | dfadef |
+music: K0 3^&bagfeg | 3/#ce/g&bag | 3fefgaf | 3dfadef |
+counter: 1
 play: 9:17 1
+nomarkers:
 
 cue: 65
-music: K0 #g^fedcb | acfafd | b^agfed | ceacaf |
+music: K0 3#g^fedcb | 3acfafd | 3b^agfed | 3ceacaf |
+counter: 1
 play: 9:23 1
+nomarkers:
 
 cue: 69
-finger: 0 _ _ _ _ _ 1 0 4 3 _ 17 28 39 _ _ _ _ 39 _ _ 0 0 1
-music: K0 d^cbagf | egceca | f^edcba | bdbgdb |
+music: K0 3d^cbagf | 3egceca | 3f^edcba | 3bdbgdb |
+counter: 1
 play: 9:27 1
+nomarkers:
 
 cue: 73
-finger: 2 3 _ _ _ _ _ _ _ _ _ _ 3
-music: K0 g^fdf/b^f | /g^fdf/b^f | /g^&ecebe | /g^&ecebe |
+music: K0 3g^fdf/b^f | 3/g^fdf/b^f | 3/g^&ecebe | 3/g^&ecebe |
+counter: 1
 play: 9:32 1
+nomarkers:
 
 cue: 77
-music: K0 &adcdbd | &adcdbd | f/gbdfb | d 2-cba |
+music: K0 3&adcdbd | 3&adcdbd | 3f/gbdfb | d 2-cba |
+counter: 1
 play: 9:36 1
 
 cue: 81
-finger: 0 _ _ 4
-music: K0 ^gfegfd | edcedb | c^gafd^b | /cg^e^c - -; |
+music: K0 3^gfegfd | 3edcedb | 3c^gafd^b | /cg^e^c - -; |
+counter: 1
 play: 9:41 1
 EndOfScore
 title: Cello Suite III - Sarabande
@@ -184,6 +215,8 @@ title: Cello Suite III - Bourree I
 zoom: 130
 
 youtube: icx52BLixaw
+
+staff: 3
 
 text: ~80 BPM
 
@@ -244,9 +277,11 @@ zoom: 130
 
 youtube: icx52BLixaw
 
+staff: 3
+
 text: ~ 4. = 80 BPM
 
 cue: 101
 music: K0 ceg-a- | /dfa-b- | /egca&bg | afdfed | gdbagf | egc/ed^b | ceg | (//c^g^e^c) |
-play: 21:08
+play: 21:08 1
 EndOfScore
