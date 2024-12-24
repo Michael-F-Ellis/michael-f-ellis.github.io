@@ -11,9 +11,9 @@ play: 3:02 1
 
 cue: 81
 music: K0 (/c^&ad^b) -(/e^c)(/d^b)(/e^c) (/d^b)(/e^c)(/d^b)(/e^c) | (/d^b) - - | c-ba gfed cgeg | (/c^g^e^c) ; ; |
+pernote: tr.
 counter: 1
 play: 3:15 1
-pernote: tr.
 EndOfScore
 title: Cello Suite III - Allemande
 
@@ -21,13 +21,16 @@ zoom: 130
 
 youtube: icx52BLixaw
 
+staff: 3
+
 cue: 21
-music: K0 g^fe/c f^-agf-fe d-^cbc-ba g-fed-^b- | c=-/a^&bag fef-a-e- f-%bab-fe f-^cbc-/fe |
+music: K0 2g^fe/c 2f^-agf-fe | 2d-^cbc-ba 2g-fed-^b- | 2c---/a^&bag 2fef-a-e- | 2f-%bab-fe 2f-^cbc-/fe |
 counter: 1
 play: 7:04 1
+image: https://michael-f-ellis.github.io/fqs/Allemande_B.png 0.5
 
 cue: 23
-music: K0 f-^dcd-/f-  edcde-g- c-bag-f- ecgb | /c-^^cbc-gf g-ede-c- (/c^g^e^c)--; |
+music: K0 2f-^dcd-/f-  2edcde-g- | 2c-bag-f- 2ecgb | 2/c-^^cbc-gf 2g-ede-c- | 2(/c^g^e^c)-- ; |
 counter: 1
 play: 7:15 1
 EndOfScore
@@ -35,19 +38,19 @@ title: Cello Suite III - Courante
 
 zoom: 150
 
-
 youtube: icx52BLixaw
 
 text: Look for open string opportunities
 
 cue: A section (play twice)
 finger: _ _ _ _ _ _ _ _1 25 _ _ _ _ 47 _ 0 0 2 _ _ 47
-music: K0 ;^c | cgecge | ^c^cdcbc | dbgdbg | f^^dcbag |
+music: K0 ;^c | cgecge | c^^cdcbc | dbgdbg | f^^dcbag |
 play: 8:10 1
+image: https://michael-f-ellis.github.io/fqs/Courante_A.png 0.5
 
 cue: 5
 finger: _ _ _ 0 2 _ _ 0 2 1
-music: K0 ^cbagfe | fd/g^agf | edcbcg | ^c --cd e#f |
+music: K0 ^cbagfe | fd/g^agf | edcbcg | /c --^cd e#f |
 counter: 1
 play: 8:15 1
 
@@ -64,19 +67,19 @@ music: K0 /e^gag#fg | /cdcbag | #f^abaga | /cedcba |
 play: 8:29 1
 
 cue: 21
-music: K0 g^bcb/e^b | /a^cdc/#f^c | /b^dedcb | ag#fefd |
+music: K0 g^bcb/e^b | /a^cdc/#f^c | /b^dedcb | agfefd |
 play: 8:33 1
 
 cue: 25
-music: K0 cfedec | bcde#fg | /ade#fga | /g^e#fgab |
+music: K0 /c^fedec | bcde#fg | /ade#fga | /g^e#fgab |
 play: 8:37 1
 
 cue: 29
-music: K0 d^cac/#f^c | /d^cac/#f^c | /d^&bgb#fb | /d^&bgb#fb |
+music: K0 /d^^cac/#f^c | /d^cac/#f^c | /d^&bgb#fb | /d^&bgb#fb |
 play: 8:41 1
 
 cue: 33
-music: K0 &eaga#fa | &eaga#fa | ca#fda#f | ^d -d #fa |
+music: K0 &eaga#fa | &eaga#fa | ca#fda#f | d -^d #fa |
 play: 8:45 1
 
 cue: 37
@@ -86,18 +89,19 @@ play: 8:50 1
 cue: 41 Section B play twice
 music: K0 ;^d | dbgdbd | fdbabg | cfedeg | cdebca |
 play: 8:55 1
+image: https://michael-f-ellis.github.io/fqs/Courante_b.png 0.5
 
 cue: 45
 music: K0 fgaefd | b^abcdb | #g#fgabg | e^b#ge^e/d |
 play: 8:59 1
 
 cue: 49
-music: K0 c^aecb^g | /a^fcag^e | /f^dafe^c | d^cbcd/#g |
+music: K0 c^aecb^g | /a^fcag^e | /f^dafe^c | /d^^cbcd/#g |
 play: 9:04 1
 
 cue: 53
 finger: 28 39 _ _ _ _ 47 _ _ _ _ _ _ 12
-music: K0 c^edcba | e^dbca#g | aedcde | /a -^ab cbca |
+music: K0 /c^^edcba | e^dbca#g | aedcde | /a -^ab cbca |
 play: 9:08 1
 
 cue: 57
@@ -105,7 +109,7 @@ music: K0 ^geceg&b | //e^^dc&bag | afefcf | /ac/f^aga |
 play: 9:13 1
 
 cue: 61
-music: K0 ^&bagfeg | /#ce/g&bag | fefgaf | ^d/fadef |
+music: K0 ^&bagfeg | /#ce/g&bag | fefgaf | dfadef |
 play: 9:17 1
 
 cue: 65
@@ -123,8 +127,7 @@ music: K0 g^fdf/b^f | /g^fdf/b^f | /g^&ecebe | /g^&ecebe |
 play: 9:32 1
 
 cue: 77
-finger: 4 _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 1 2 -2 2
-music: K0 &adcdbd | &adcdbd | f/gbdfb | d--cba |
+music: K0 &adcdbd | &adcdbd | f/gbdfb | d 2-cba |
 play: 9:36 1
 
 cue: 81
@@ -138,41 +141,43 @@ zoom: 120
 
 youtube: icx52BLixaw
 
+staff: 3
+
 cue: Largo (mm=48)
 
 cue: A section (player begins at repeat)
 music: K0 (/c^g^e^c) (/d^c)--a b | (//c^g^e^&b) (fb)--g a | (/bd)-ef (cg^f)--d ef | cbca bd /gf |
 counter: 1
-play: 11:18
+play: 11:18 1
 
 cue: 5
 music: K0 (/e^c^g) (/a^g)--e #fdfa | (//d^a^#f^c)--a (/g^d^c)--a cbag | (/#c^ga)-&bc (/d^b)-ac &e/#f | g (/g^g) - |
 counter: 1
-play: 11:38
+play: 11:38 1
 
 cue: 9 B section (repeated)
+perbeat: _ _ _ _ _ _ _ _ _ _ _ _tr.
 music: K0 (g^d^b)-fe (/g^fb)--/e dcba  | (#g^d^b)-fe (/g^fb)--/e dcdb | ce#gb a-----bc /d^b | a#f a#g#fe d-#cd |
 counter: 1
-play: 11:53
-perbeat: _ _ _ _ _ _ _ _ _ _ _ _tr.
+play: 11:53 1
 
 cue: 13
+finger: _ _ IX
 music: K0 #c^a ^e-gf ge | #c&b  --ag feg/#c | d^f /g^e /abd#c | d (//d^a^f^d) - |
 counter: 1
-play: 12:18
-finger: _ _ IX
+play: 12:18 1
 
 cue: 17
+finger: II _ _ _ _ _ _ _ _ _ _ _ _ 0 VII _ _ _ _ _ _ _ _ _ _ _ _ II
 music: K0 (/c^a^#f)-----ga gfef gefa | (/a^#f^c)-----de dcbc dbce | d/b  c^a (/d^b)c | (/g^d^c)b ab g/a |
 counter: 1
-play: 12:36
-finger: II _ _ _ _ _ _ _ _ _ _ _ _ 0 VII _ _ _ _ _ _ _ _ _ _ _ _ II
+play: 12:36 1
 
 cue: 21
+finger: I _ _ _ _ _ _ _ II _ _ _ _ _ _ _ _ _ _ _ _ I _ _ _ _ II
 music: K0 &b-ef (/a^g)feg f/%b | c-#fg (/b^a)gfa g^d/g%f | ec /f^d /g-cb | c (/c^g^e^c) - |
 counter: 1
-play: 12:52
-finger: I _ _ _ _ _ _ _ II _ _ _ _ _ _ _ _ _ _ _ _ I _ _ _ _ II
+play: 12:52 1
 EndOfScore
 title: Cello Suite III - Bourree I
 
@@ -197,6 +202,8 @@ title: Cello Suite III - Bourree II
 zoom: 150
 
 youtube: icx52BLixaw
+
+staff: 3
 
 cue: A section
 finger: V | _ IV | _ _ _ _ _ I | _ _ _ _ 0 V
