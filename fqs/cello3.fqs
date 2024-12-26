@@ -25,6 +25,28 @@ youtube: icx52BLixaw
 
 staff: 3
 
+cue: (measures split for easier counting)
+
+cue: 13 B Section
+music: K0 2;^de#f | 2g-#fed-c- 2b-dcb-a- | 2g-dcb-a- 2g^bcd | 2edcbc-a- 2f-def-b- | 2#g#fed 2cbcde-c- |
+counter: 4
+play: 6:25 1
+
+cue: 15
+music: K0 2/face 2dadef-d- | 2#gd/e^^b 2cbabc-a- | 2fedef-d- 2ba#gab-d- | 2/e-----^e#f 2#gabcd-b- |
+counter: 1
+play: 6:35 1
+
+cue: 17
+music: K0 2^cba#ga-/c- 2d^b/e#g | 2(/a^ea)-----cd 2e-/abc-/ef | 2g-&bab-/c- 2/e^^bag | 2a-fef-a- 2/#cdefg-/a- |
+counter: 1
+play: 6:45 1
+
+cue: 19
+music: K0 2/d-^def-fg 2a-bcd-c- | 2bf/g^fb-f- 2egabc-/e- | 2d^cb/g 2cefga-/c- | 2b^ag/e 2acdef-/a- |
+counter: 1
+play: 6:55 1
+
 cue: 21
 music: K0 2g^fe/c 2f^-agf-fe | 2d-^cbc-ba 2g-fed-^b- | 2c---/a^&bag 2fef-a-e- | 2f-%bab-fe 2f-^cbc-/fe |
 counter: 1
@@ -162,7 +184,7 @@ counter: 1
 play: 9:36 1
 
 cue: 81
-music: K0 3^gfegfd | 3edcedb | 3c^gafd^b | /cg^e^c - -; |
+music: K0 3^gfegfd | 3edcedb | 3c^gafd^b | //c^g^e^c - -; |
 counter: 1
 play: 9:41 1
 EndOfScore
