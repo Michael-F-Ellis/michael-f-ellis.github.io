@@ -451,6 +451,16 @@ class LyricLine {
       const tupletMatch = word.match(/^([2-9])(.+)$/);
       return tupletMatch ? { text: tupletMatch[2], tupletSize: parseInt(tupletMatch[1]) } : { text: word, tupletSize: 1 };
     });
+    // Underscores, (one or more) may appear only at the end of tuplet text. Add
+    // a LineProblem message if an underscore is found elsewhere in the text,
+    // i.e. 'foo_' and 'foo__' are valid but '_foo' and 'foo_bar' are not.
+    this.tuplets.forEach(tuplet => {
+      const underscoreMatch = tuplet.text.match(/^[^_]*_+$/)
+      if (tuplet.text.includes('_') && !underscoreMatch) {
+        lineProblems.add(`Invalid underscore position in "${tuplet.text}"`)
+      }
+    })
+
     // put the texts of the  tuplets into an array
     this.words = this.tuplets.map(tuplet => {
       return tuplet.text;
@@ -483,6 +493,10 @@ class LyricLine {
     let chordIndex = 0;
     // Call this closure to detect a beat and push its position
     const detectAndPushBeat = (i, pos) => {
+      // Skip beat detection for underscore positions
+      if (this.text[i] === '_') {
+        return false;
+      }
       if (i == 0 || (this.text[i - 1] == " ")) {
         this.beats.push(pos);
         this.subBeats.push(pos);
@@ -505,6 +519,10 @@ class LyricLine {
     for (let i = 0; i < this.text.length; i++) {
       const c = this.text[i];
       switch (c) {
+        case "_":
+          // Underscore advances position but is not an attack
+          // pos++;
+          continue;
         case " ":
           // Spaces advance pos only if show is true.
           if (true || show) {
@@ -561,7 +579,7 @@ class LyricLine {
               this.attacks.push(pos);
               detectAndPushBeat(i, pos);
             } else { // we are showing the lyric
-              if (i == 0 || (this.text[i - 1].match(/[\(\s\-.;\*]/))) {
+              if (i == 0 || (this.text[i - 1].match(/[\(\s\-.;_\*]/))) {
                 this.attacks.push(pos);
                 detectAndPushBeat(i, pos);
               }
@@ -620,6 +638,7 @@ class LyricLine {
         rhythm.push(beatWord);
       }));
     }));
+    console.log("rhythm: " + rhythm)
     return rhythm
   });
 
@@ -690,6 +709,10 @@ class LyricLine {
     let x = x0;
     for (let i = 0; i < this.text.length; i++) {
       let char = this.text[i];
+      // omit underscores
+      if (char == '_') {
+        continue;
+      }
       let klass = ["lyric"];
       // Emphasize beats, by greying every char that isn't either a barline
       // or the start of beat.
@@ -1067,6 +1090,10 @@ class PitchLine {
     this.inChord = -1;
     this.alterations = new Alterations("0"); // default key is C major
     for (let i = 0; i < this.tokens.length; i++) {
+      // Skip position calculation for underscore tokens
+      if (this.tokens[i] === '_') {
+        continue;
+      }
       // Handle key designator of the form "K(0|[#&]?[1-7])".
       if (this.tokens[i].match(/K/)) {
         this.alterations = new Alterations(this.tokens[i].slice(1));
@@ -1679,12 +1706,16 @@ class RhythmMarkers {
     this.beatFractions = []; // an array of arrays of FracSpan objects
     for (let i = 0; i < this.rhythms.length; i++) {
       const rhythm = this.rhythms[i];
-      let fractions = [];
+      const baseFraction = this.computeBaseFraction(rhythm);
+      console.log(`baseFraction: ${baseFraction}`);
+      // strip underscores from rhythm
+      const rhythmNoUnderscores = rhythm.replace(/_/g, '');
+      const fractions = [];
       const nchar = rhythm.length;
       let chordIndex = -1; // -1  means not in a chord
-      let f = new FracSpan(1, 1, rhythm[0]); // current beat fraction
+      let f = null; // current beat fraction
       for (let j = 0; j < nchar; j++) {
-        switch (rhythm[j]) {
+        switch (rhythmNoUnderscores[j]) {
           case '(':
             chordIndex = 0;
             continue;
@@ -1694,8 +1725,7 @@ class RhythmMarkers {
             continue;
           case '-':
             if (j == 0) {
-              f.val = 1;
-              f.kind = '-';
+              f = new FracSpan(baseFraction, 1, '-');
             } else {
               f.val++;
             }
@@ -1704,14 +1734,14 @@ class RhythmMarkers {
           case ';':
             switch (chordIndex) {
               case -1:
-                if (j != 0) {
+                if (f) {
                   fractions.push(f);
-                  f = new FracSpan(1, 1, rhythm[j]);
                 }
+                f = new FracSpan(baseFraction, 1, rhythm[j]);
                 break;
               case 0:
+                f = new FracSpan(baseFraction, 1, rhythm[j]);
                 chordIndex++;
-                f.kind = '*'
                 break;
               default:
                 // ignore attacks in chords after the first  one.
@@ -1719,20 +1749,21 @@ class RhythmMarkers {
                 break
             }
             continue;
-          case ';':
-            // console.log(fractions.length)
-            fractions.push(new FracSpan(f, 1));
-            f = new FracSpan(1, 1, ';');
-            continue;
         }
       }
       // push the last fraction
       fractions.push(f);
+      for (let fraction of fractions) {
+        console.log(fraction);
+      }
       // divide each fraction by the sum of fractions
-      const sum = fractions.reduce((a, b) => a + b.val, 0);
+
+      //const sum = fractions.reduce((a, b) => a + b.val, 0);
+      const sum = fractions.reduce((a, b) => a + b.val / baseFraction, 0);
       for (let j = 0; j < fractions.length; j++) {
         fractions[j].val = fractions[j].val / sum;
       }
+
       this.beatFractions.push(fractions);
     }
     // We may need to adjust the spans of the beat fractions that
@@ -1752,6 +1783,30 @@ class RhythmMarkers {
         }
       }
     }
+  }
+  computeBaseFraction(rhythm) {
+    // Count effective positions, treating chords as single positions
+    let activePositions = 0;
+    let underscores = 0;
+    let inChord = false;
+    for (let j = 0; j < rhythm.length; j++) {
+      if (rhythm[j] === '(') {
+        inChord = true;
+        activePositions++;
+      } else if (rhythm[j] === ')') {
+        inChord = false;
+      } else if (rhythm[j] === '_') {
+        underscores++;
+      } else if (!inChord && rhythm[j] !== '_') {
+        activePositions++;
+      }
+    }
+    if (activePositions === 0) {
+      console.log(`Warning: rhythm ${rhythm} has no active positions`);
+      lineProblems.add(`Invalid rhythm ${rhythm}`);
+      return null;
+    }
+    return activePositions / (underscores + activePositions)
   }
   render(svg, x0, y0, beats, fontwidth) {
     // x0 is the x coordinate of the left edge of the line 
@@ -2138,8 +2193,8 @@ function musicToPitchLyric(musicLine) {
   lyricLine = lyricLine.replace(/K[#&]?\d/g, "")
     .replace(/\^*\/*[#&%]*[a-g]/g, "*");
 
-  // Remove hold and rest characters from the pitch line
-  pitchLine = pitchLine.replace(/[-=;]/g, "");
+  // Remove hold, rest and underscore characters from the pitch line
+  pitchLine = pitchLine.replace(/[-=;_]/g, "");
 
   // Now remove any numeric prefixes from tokens in the pitch line
   pitchLine = pitchLine.replace(/\s[0-9]*/g, " ");

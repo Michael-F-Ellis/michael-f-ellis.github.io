@@ -161,6 +161,20 @@ instrument's limits and can interpret the octaves accordingly.
 text: But what if I need more than three octaves? Or less?
 A. Use the "staff:" keyword in the title block.  See below.
 EndOfScore
+title: Smaller staffs
+
+zoom: 100
+
+staff: 3
+
+text: The staff: keyword takes a single number as an argument that specifies how
+many octave lines to draw.  In this score, a value of 3 creates a 2 octave staff
+sutable for many instrumental or vocal compositions.
+
+cue: Two octave staff (suitable for many scores)
+music: K0 /efga bcde | fgab cdef |
+nomarkers:
+EndOfScore
 title: Huge staff
 
 zoom: 100
@@ -171,16 +185,6 @@ text: You may have as many octaves as needed. Here's an extreme example.
 
 cue: 7 octaves (full range of an 88 key piano)
 music: K0 abcd efg; | abcd efg; | abcd efg; | abcd efg; | abcd efg; | abcd efg; | abcd efg; | abc; ; |
-nomarkers:
-EndOfScore
-title: Small staff
-
-zoom: 100
-
-staff: 3
-
-cue: Two octave staff
-music: K0 /efga bcde | fgab cdef |
 nomarkers:
 EndOfScore
 title: Editing
@@ -373,6 +377,54 @@ counter: 1
 
 text: See the Bach Cello example in the YouTube section for more examples
 of mixing chords with linear melody.
+EndOfScore
+title: Partial Beats
+
+zoom: 120
+
+text: Partial beats are created by appending one or more with underscores, _ , to
+a beat or beat tuplet.
+
+text: Underscores reduce the beat duration. This is useful for:
+. 
+  • Pickup measures at the start of a piece
+  • Turnarounds where a measure is split between the end and beginning of a repeated section
+  • Uneven beat groupings in compound meters
+
+cue: Pickup measure and turnaround example
+music: K0 ^f_ ed | cb ag fe fg | ab cd e_ |
+counter: 3
+
+text: Note how the rhythm markers adjust their heights to show the relative durations.
+Without the underscores, the pickup and turnaround durations would have been
+incorrect, as in the following example.
+
+cue: Pickup measure and turnaround example without underscores
+music: K0 ^f ed | cb ag fe fg | ab cd e |
+counter: 3
+
+text: Underscores also work in lyrics.
+
+cue: Pickup and turnaround with lyrics
+pitch: K0 ^f ed | cb ag fe fg | ab cd e |
+lyric: then_ it.goes | down* ** *.and turns.a  | round* ** *_ |
+counter: 3
+
+text: Uneven compound meters often use partial beats. Below, the underscore
+helps create the 3+3+3+2 grouping pattern typical of 11/8 time.
+
+cue: Uneven groupings (11/8 time)
+music: K0 abc abc abc ac_ | abc abc abc ac_ |
+perbar: 11/8
+counter: 1
+
+text: Rules for using underscores
+  * Underscores can appear at the end of any beat
+  * Underscores cannot appear at the beginning or within a beat
+  * Chords in partial beats work normally, e.g. "(ceg)_"
+  * Underscores affect the entire beat:
+       • "a_" is half the duration of "a"
+       • "abc__" is 3/5 the duration of "abc"
 EndOfScore
 title: YouTube Audio Playback
 
@@ -579,6 +631,7 @@ defined keywords are:
 .
   title:
   text:
+  staff:
   cue:
   chord:
   counter:
@@ -594,7 +647,7 @@ defined keywords are:
   zoom:
 . 
 Some keywords are standalone. They must be separated by blank lines from each other.
-These include title, text, youtube, and zoom. Cue may also stand alone.
+These include title, text, staff, youtube, and zoom. Cue may also stand alone.
 .
 Text is the only multiline, standalone keyword, i.e. you may follow the first line
 with an arbitrary number of text lines before terminating with a blank line.
@@ -636,14 +689,15 @@ zoom: 130
 
 text: FQS defines rhythm using the following characters for the 'music:'
 and 'lyric:' keywords:
-   Barline: ( | ) separates measures.
-   Whitespace: separates beats.
-   Attack: ( * ) indicates the start of a note 
-   Sustain: ( - ) continues the note from the prior attack.'
-   Rest: ( ; ) semicolon indicates a rest.
+   • Barline: ( | ) separates measures.
+   • Whitespace: separates beats.
+   • Attack: ( * ) indicates the start of a note 
+   • Sustain: ( - ) continues the note from the prior attack.'
+   • Rest: ( ; ) semicolon indicates a rest.
+   • Underscore: ( _ ) creates a partial beat
 For the 'lyric:' keyword only:
-   Syllable: A group of contiguous letter indicates an attack.
-   Period: A period ( . ) separates syllables that fall in the same beat.
+   • Syllable: A group of contiguous letter indicates an attack.
+   • Period: A period ( . ) separates syllables that fall in the same beat.
 
 text: Pitch lines contain pitches, key signatures and barlines.
 .
