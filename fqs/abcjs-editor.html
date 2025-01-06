@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" href="favicon.ico" type="image/x-icon" />
+	<link rel="stylesheet" href="fqs.css" />
+	<title>Basic Editor</title>
+	<script src="./abcjs-basic.js" type="text/javascript"></script>
+	<style>
+		#fqs-score {
+			margin-top: 20px;
+			padding: 10px;
+			border: 1px solid #ccc;
+			min-height: 100px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="player"></div>
+	<h2>Comparing conventional notation to FQS notation.</h2>
+	<p>This page uses the Paul Rosen's <b>abcjs-editor</b> demo to render conventional notation of Cooley's reel from an
+		ABC source text. Beneath the conventional notation, I've written and rendered the same tune in FQS
+		so you can compare the two notations.</p>
+	<header>
+		<img width=50% src="https://paulrosen.github.io/abcjs/img/abcjs_comp_extended_08.svg" t="abcjs logo">
+		<h1>abcjs editor</h1>
+	</header>
+	<div class="container">
+		<textarea id="abc" cols="80" rows="12" spellcheck="false">
+X: 1
+T: Cooley's
+M: 4/4
+L: 1/8
+R: reel
+K: Emin
+|:D2|EB{c}BA B2 EB|~B2 AB dBAG|FDAD BDAD|FDAD dAFD|
+EBBA B2 EB|B2 AB defg|afe^c dBAF|DEFD E2:|
+|:gf|eB B2 efge|eB B2 gedB|A2 FA DAFA|A2 FA defg|
+eB B2 eBgB|eB B2 defg|afe^c dBAF|DEFD E2:|
+        </textarea>
+		<div id="warnings"></div>
+		<hr>
+		<div id="paper"></div>
+		<hr>
+		<h3>FQS Notation</h3>
+		<p>
+			For more information FQS, click the button labled "Load FQS Reference" at
+			the bottom of this page.
+		</p>
+		<div id="fqs-score"></div>
+		<button onclick="loadFQSReference()">Load FQS Reference</button>
+	</div>
+	<script type="text/javascript">
+		function loadFQSReference() {
+			const referenceUrl = "https://michael-f-ellis.github.io/fqs/reference.fqs";
+			fetch(referenceUrl)
+				.then(response => response.text())
+				.then(text => {
+					window.book.importFromText(text);
+				})
+				.catch(error => {
+					console.error('Error fetching reference.fqs:', error);
+					alert('Failed to fetch reference.fqs. Please check the URL and try again.');
+				});
+		}
+	</script>
+	<div id="score-toc" class="score-toc"></div>
+	<script type="module">
+		import { Book, Score, initYouTubeAPI, onYouTubeIframeAPIReady } from './fqs.js';
+		window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+		initYouTubeAPI();
+		const book = new Book("fqs-score");
+		window.book = book;
+	</script>
+	<script type="text/javascript">
+		window.onload = function () {
+			// Initialize ABC editor
+			new ABCJS.Editor("abc", {
+				canvas_id: "paper",
+				warnings_id: "warnings",
+				abcjsParams: {}
+			});
+
+			// Initialize FQS score with minimal content
+			const initialFQS = `title: Cooley's
+
+zoom: 140
+
+youtube: UNokOSPkrs8
+
+staff: 3
+
+music: K#1 d | 2e^bba b /e^b | b ab 2dbag | 2fd^a/d 2^b/d^a/d | 2fd^a/d 2^dafd |
+counter: 4
+play: 0:01 1
+nomarkers:
+
+music: K#1 2e^bba b /e^b | b ab 2defg | 2afe#c 2dbaf | 2defd e |
+counter: 1
+play: 0:04 1
+nomarkers:
+
+
+music: K#1 ^^gf | eb b 2efge | eb b 2^gedb | a fa 2/d^afa | a fa 2defg |
+counter: 4
+play: 0:20 1
+nomarkers:
+
+
+music: K#1 ^eb b 2eb^g/b | eb b 2defg | 2afe#c 2dbaf | 2defd e |
+counter: 1
+play: 0:24 1
+nomarkers:
+
+cue: Credit: audio by PeakFiddler: https://youtu.be/UNokOSPkrs8?si=YNEaT3FBicTxShRk
+`
+			window.book.addScore(initialFQS, null);
+			window.book.enforceControlsVisibility();
+		}
+	</script>
+</body>
+
+</html>

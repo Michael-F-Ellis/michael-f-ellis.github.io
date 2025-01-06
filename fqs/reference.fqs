@@ -98,13 +98,13 @@ Also notice the icon that looks like a treble clef on a conventional score.  Cli
 it will bring up an image of the score I used to transcribe this example. To close the
 image, click the 'x' in the upper right corner.
 
-music: K0 (/c^g^e^c) (/d^c)--a b | (//c^g^e^&b) (fb)--g a | (/bd)-ef (/c^g^f)--d ef | cbca bd /gf |
+music: K0 (/cgec) (/dc)--a b | (//cge&b) (fb)--g a | (/bd)-ef (/cgf)--d ef | cbca bd /gf |
 counter: 1
 play: 11:18 1
 image: https://michael-f-ellis.github.io/fqs/sarabande.png 0.5
 
 cue: 5
-music: K0 (/e^c^g) (/a^g)--e #fdfa | (//d^a^#f^c)--a (/g^d^c)--a cbag | (/#c^ga)-&bc (/d^b)-ac &e/#f | g (/g^g) - |
+music: K0 (/ecg) (/ag)--e #fdfa | (//da#fc)--a (/gdc)--a cbag | (/#cga)-&bc (/db)-ac &e/#f | g (/gg) - |
 counter: 1
 play: 11:38 1
 
@@ -363,8 +363,17 @@ title: Chords
 
 zoom: 100
 
-cue: To notate a chord, enclose 2 or more pitches in parentheses.
-music: K#2 (dfa) (/bdf) (egb) (/ace) | (d^a^f^c) (//b^f^d^a) (/e^b^g^d) (//a^e^c^g) | /dfa /bdf egb /ace | d^a^f^c //b^f^d^a /e^b^g^d //a^e^c^g |
+text: To notate a chord, enclose 2 or more pitches in parentheses.
+.
+FQS alters the rules for octave placement in the body of a chord. Each
+pitch in the body of a chord is assumed to be the next higher pitch from
+the previous. This is done as a convenience, so that you can write
+(cgec) instead of (c^g^e^c) for a chord in open voicing.
+.
+The normal rules for octave placement apply to the first note of a
+chord and to the first note after a chord ends.
+
+music: K#2 (dfa) (/bdf) (egb) (/ace) | (dafc) (//bfda) (/ebgd) (//aecg) | /dfa /bdf egb /ace | d^a^f^c //b^f^d^a /e^b^g^d //a^e^c^g |
 perbar: These_are_chords _ These_are_arpeggios
 counter: 1
 
@@ -372,7 +381,7 @@ text: Chords are rendered in a smaller, back-slanted font. Rhythmically, chords 
 as single attacks.
 
 cue: The chord in beat two is 3/4 of a beat long.
-music: K0 (/c^g^e^c) (/d^c)--a b |
+music: K0 (/cgec) (/dc)--a b |
 counter: 1
 
 text: See the Bach Cello example in the YouTube section for more examples
@@ -468,12 +477,12 @@ to start playback at that line.
 Note: The groups of back-slanted notes are FQS's way of indicating chords.
 
 cue: A section (player begins at repeat)
-music: K0 (/c^g^e^c) (/d^c)--a b | (//c^g^e^&b) (fb)--g a | (/bd)-ef (/c^g^f)--d ef | cbca bd /gf |
+music: K0 (/cgec) (/dc)--a b | (//cge&b) (fb)--g a | (/bd)-ef (/cgf)--d ef | cbca bd /gf |
 counter: 1
 play: 11:18 1
 
 cue: 5
-music: K0 (/e^c^g) (/a^g)--e #fdfa | (//d^a^#f^c)--a (/g^d^c)--a cbag | (/#c^ga)-&bc (/d^b)-ac &e/#f | g (/g^g) - |
+music: K0 (/ecg) (/ag)--e #fdfa | (//da#fc)--a (/gdc)--a cbag | (/#cga)-&bc (/db)-ac &e/#f | g (/g^g) - |
 counter: 1
 play: 11:38 1
 
@@ -487,7 +496,7 @@ tutorials such as this reference. It can also be useful while transcribing from 
 conventional score to be able to see a few lines while you work or to consult the
 original while rehearsing.
 
-music: K0 (/c^g^e^c) (/d^c)--a b | (//c^g^e^&b) (fb)--g a | (/bd)-ef (/c^g^f)--d ef | cbca bd /gf |
+music: K0 (/cgec) (/dc)--a b | (//cge&b) (fb)--g a | (/bd)-ef (/cgf)--d ef | cbca bd /gf |
 counter: 1
 image: https://michael-f-ellis.github.io/fqs/sarabande.png 0.5
 

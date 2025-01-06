@@ -1088,6 +1088,7 @@ class PitchLine {
     // 'h', '###f', '#&g', '^/a'
     this.pitches = [];
     this.inChord = -1;
+    this.chordIndex = 0;
     this.alterations = new Alterations("0"); // default key is C major
     for (let i = 0; i < this.tokens.length; i++) {
       // Skip position calculation for underscore tokens
@@ -1102,6 +1103,7 @@ class PitchLine {
       // If the pitch token begins with a ')', we're ending a chord.
       if (this.tokens[i].match(/\)/)) {
         this.inChord = -1;
+        this.chordIndex = 0;
         // remove the ')' from the token
         this.tokens[i] = this.tokens[i].slice(1);
 
@@ -1168,14 +1170,22 @@ class PitchLine {
       // above the previous pitch in the same octave. If the difference is positive
       // and greater than 3, the current pitch is below the previous pitch in the next octave down.
       let octave = prevOctave;
-      if (diff > 0 && diff > 3) {
-        // the current pitch is below the previous pitch in the next octave down
-        // so decrement the octave
-        octave--;
-      } else if (diff < 0 && diff < -3) {
-        // the current pitch is above the previous pitch in the previous octave up
-        // so increment the octave
-        octave++;
+      if (this.chordIndex <= 0) {
+        if (diff > 0 && diff > 3) {
+          // the current pitch is below the previous pitch in the next octave down
+          // so decrement the octave (unless we're in a chord)
+          octave--;
+        } else if (diff < 0 && diff < -3) {
+          // the current pitch is above the previous pitch in the previous octave up
+          // so increment the octave
+          octave++;
+        }
+      } else {
+        // Chords are by default in ascending order. If the diff is non-negative
+        // stay in the same octave. Otherwise, increment the octave.
+        if (diff <= 0) {
+          octave++
+        }
       }
       // Now we must account for octave marks, if any.	
       let kind = "";
@@ -1269,6 +1279,7 @@ class PitchLine {
       let pitch = new Pitch(letter, octave, accClass);
       if (this.inChord > -1) {
         pitch.isChordPitch = true;
+        this.chordIndex++
         // pitch.addClass('chord-pitch');
       }
       this.pitches.push(pitch);
