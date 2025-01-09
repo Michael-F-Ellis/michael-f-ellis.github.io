@@ -7,12 +7,12 @@ youtube: icx52BLixaw
 staff: 3
 
 cue: 77
-music: K0 (/c^g^e^c) (/g^d^c) b | (//c^g^e^c) -/e^cd c/e^cd | (//c^g^e^&b) -/e^bc b/e^bc | (//c^g^fa) -fef afef |
+music: K0 (/cgec) (/gdc) b | (//cgec) -/e^cd c/e^cd | (//cge&b) -/e^bc b/e^bc | (//cgfa) -fef afef |
 counter: 1
 play: 3:02 1
 
 cue: 81
-music: K0 (/c^&ad^b) -(/e^c)(/d^b)(/e^c) (/d^b)(/e^c)(/d^b)(/e^c) | (/d^b) - - | c-ba gfed cgeg | (/c^g^e^c) ; ; |
+music: K0 (/c&adb) -(/ec)(/db)(/ec) (/db)(/ec)(/db)(/ec) | (/db) - - | c-ba gfed cgeg | (/cgec) ; ; |
 pernote: tr.
 counter: 1
 play: 3:15 1
@@ -38,7 +38,7 @@ counter: 1
 play: 6:35 1
 
 cue: 17
-music: K0 2^cba#ga-/c- 2d^b/e#g | 2(/a^ea)-----cd 2e-/abc-/ef | 2g-&bab-/c- 2/e^^bag | 2a-fef-a- 2/#cdefg-/a- |
+music: K0 2^cba#ga-/c- 2d^b/e#g | 2(/aea)-----cd 2e-/abc-/ef | 2g-&bab-/c- 2/e^^bag | 2a-fef-a- 2/#cdefg-/a- |
 counter: 1
 play: 6:45 1
 
@@ -54,7 +54,7 @@ play: 7:04 1
 image: https://michael-f-ellis.github.io/fqs/Allemande_B.png 0.5
 
 cue: 23
-music: K0 2f-^dcd-/f-  2edcde-g- | 2c-bag-f- 2ecgb | 2/c-^^cbc-gf 2g-ede-c- | 2(/c^g^e^c)-- ; |
+music: K0 2f-^dcd-/f-  2edcde-g- | 2c-bag-f- 2ecgb | 2/c-^^cbc-gf 2g-ede-c- | 2(/cgec)-- ; |
 counter: 1
 play: 7:15 1
 EndOfScore
@@ -184,7 +184,7 @@ counter: 1
 play: 9:36 1
 
 cue: 81
-music: K0 3^gfegfd | 3edcedb | 3c^gafd^b | //c^g^e^c - -; |
+music: K0 3^gfegfd | 3edcedb | 3c^gafd^b | (//cgec) - -; |
 counter: 1
 play: 9:41 1
 EndOfScore
@@ -199,36 +199,36 @@ staff: 3
 cue: Largo (mm=48)
 
 cue: A section (player begins at repeat)
-music: K0 (/c^g^e^c) (/d^c)--a b | (//c^g^e^&b) (fb)--g a | (/bd)-ef (cg^f)--d ef | cbca bd /gf |
+music: K0 (/cgec) (/dc)--a b | (//cge&b) (fb)--g a | (/bd)-ef (cgf)--d ef | cbca bd /gf |
 counter: 1
 play: 11:18 1
 
 cue: 5
-music: K0 (/e^c^g) (/a^g)--e #fdfa | (//d^a^#f^c)--a (/g^d^c)--a cbag | (/#c^ga)-&bc (/d^b)-ac &e/#f | g (/g^g) - |
+music: K0 (/ecg) (/ag)--e #fdfa | (//da#fc)--a (/gdc)--a cbag | (/#cga)-&bc (/db)-ac &e/#f | g (/gg) - |
 counter: 1
 play: 11:38 1
 
 cue: 9 B section (repeated)
 perbeat: _ _ _ _ _ _ _ _ _ _ _ _tr.
-music: K0 (g^d^b)-fe (/g^fb)--/e dcba  | (#g^d^b)-fe (/g^fb)--/e dcdb | ce#gb a-----bc /d^b | a#f a#g#fe d-#cd |
+music: K0 (gdb)-fe (/gfb)--/e dcba  | (#gdb)-fe (/gfb)--/e dcdb | ce#gb a-----bc /d^b | a#f a#g#fe d-#cd |
 counter: 1
 play: 11:53 1
 
 cue: 13
 finger: _ _ IX
-music: K0 #c^a ^e-gf ge | #c&b  --ag feg/#c | d^f /g^e /abd#c | d (//d^a^f^d) - |
+music: K0 #c^a ^e-gf ge | #c&b  --ag feg/#c | d^f /g^e /abd#c | d (//dafd) - |
 counter: 1
 play: 12:18 1
 
 cue: 17
 finger: II _ _ _ _ _ _ _ _ _ _ _ _ 0 VII _ _ _ _ _ _ _ _ _ _ _ _ II
-music: K0 (/c^a^#f)-----ga gfef gefa | (/a^#f^c)-----de dcbc dbce | d/b  c^a (/d^b)c | (/g^d^c)b ab g/a |
+music: K0 (/ca#f)-----ga gfef gefa | (/a#fc)-----de dcbc dbce | d/b  c^a (/db)c | (/gdc)b ab g/a |
 counter: 1
 play: 12:36 1
 
 cue: 21
 finger: I _ _ _ _ _ _ _ II _ _ _ _ _ _ _ _ _ _ _ _ I _ _ _ _ II
-music: K0 &b-ef (/a^g)feg f/%b | c-#fg (/b^a)gfa g^d/g%f | ec /f^d /g-cb | c (/c^g^e^c) - |
+music: K0 &b-ef (/ag)feg f/%b | c-#fg (/ba)gfa g^d/g%f | ec /f^d /g-cb | c (/cgec) - |
 counter: 1
 play: 12:52 1
 EndOfScore
@@ -248,7 +248,7 @@ counter: 1
 play: 17:59 1
 
 cue: 25
-music: K0 defc bef/a | g^ef/f egbd | g-ec gb | (/c^c) -; |
+music: K0 defc bef/a | g^ef/f egbd | g-ec gb | (/cc) -; |
 counter: 1
 play: 18:09 1
 EndOfScore
@@ -289,7 +289,7 @@ counter: 1
 play: 16:47 1
 
 cue: 21
-music: K&2 edfe gf&ag | /g%a%bc defd | fedc edc%b | (/c^c) -; |
+music: K&2 edfe gf&ag | /g%a%bc defd | fedc edc%b | (/cc) -; |
 counter: 1
 play: 16:54 1
 EndOfScore
@@ -304,6 +304,6 @@ staff: 3
 text: ~ 4. = 80 BPM
 
 cue: 101
-music: K0 ceg-a- | /dfa-b- | /egca&bg | afdfed | gdbagf | egc/ed^b | ceg | (//c^g^e^c) |
+music: K0 ceg-a- | /dfa-b- | /egca&bg | afdfed | gdbagf | egc/ed^b | ceg | (//cgec) |
 play: 21:08 1
 EndOfScore
