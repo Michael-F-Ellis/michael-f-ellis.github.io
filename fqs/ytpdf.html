@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>YouTube PDF Viewer</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+	<script type="module" src="ytpdf.js"></script>
+</head>
+
+<body>
+	<div id="toolbar">
+		<input type="file" id="file-input" accept="application/pdf" />
+	</div>
+	<div id="pdf-container">
+		<canvas id="pdf-render"></canvas>
+	</div>
+</body>
+
+</html>

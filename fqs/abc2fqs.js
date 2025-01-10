@@ -1,4 +1,4 @@
-class ABCNote {
+class ABCPitch {
 	constructor(abcNote) {
 		const match = abcNote.match(/([_^=]*)([A-Ga-g])([,']*)(\d*)/);
 		if (!match) throw new Error(`Invalid ABC pitch: ${abcNote}`);
@@ -124,7 +124,6 @@ class Converter {
 				if (!group) continue;
 
 				let currentABCGroup = [];
-				let currentDuration = 0;
 
 				// Process each note in the group
 				const notes = group.match(/[\^=_]*[A-Ga-g][,']*[0-9]*/g);
@@ -139,7 +138,7 @@ class Converter {
 				let groupUnitNotes = 0;
 				// Update note processing in Converter class
 				for (const note of notes) {
-					const pitch = new ABCNote(note);
+					const pitch = new ABCPitch(note);
 					groupUnitNotes += pitch.units;
 					currentABCGroup.push(pitch);
 				}
@@ -199,13 +198,6 @@ class Converter {
 		return unitDenom / (meterDenom * unitNum)
 	}
 
-	formatNoteGroup(notes) {
-		// Only add tuple number for multiple notes
-		if (notes.length > 1) {
-			return `2${notes.join('')}`;
-		}
-		return notes[0];
-	}
 
 
 	convertNote(note, keyInfo) {
@@ -233,17 +225,16 @@ class Converter {
 		return (numerator * unitLength[1]) / (denominator * unitLength[0]);
 	}
 
-	formatNoteGroup(notes) {
-		// Add beat number based on meter
-		const beatNumber = this.getNotesPerGroup() === 4 ? '2' : '1';
-		return beatNumber + notes.join('');
-	}
-
 	processLyrics(line) {
 		// Convert ABC lyrics to FQS syllable line format
 		return line.substring(2).trim();
 	}
 
+	/**
+  * Combines all the components of the FQS output into a single string.
+  * @param {string[]} musicLines - An array of music lines in FQS format.
+  * @returns {string} The complete FQS output, including the title, composer, music lines, and lyrics (if any).
+  */
 	buildFQSOutput(musicLines) {
 		// Combine all components into FQS format
 		let output = [];
@@ -254,7 +245,7 @@ class Converter {
 			output.push('');
 			output.push(...this.lyrics);
 		}
-		return output.join('\n');
+		return output.join('\n\n');
 	}
 
 	isMusic(line) {
@@ -273,6 +264,12 @@ class Converter {
 		return line;
 
 	}
+	/**
+  * Applies the key signature to a given note.
+  * @param {string} note - The note to apply the key signature to.
+  * @param {number} keyNumber - The key number, where positive values represent sharps and negative values represent flats.
+  * @returns {string} The note with the key signature applied.
+  */
 	applyKeySignature(note, keyNumber) {
 		// Standard order of sharps: F C G D A E B
 		const sharps = ['f', 'c', 'g', 'd', 'a', 'e', 'b'];
@@ -297,6 +294,12 @@ class Converter {
 		return note;
 	}
 
+	/**
+  * Applies any explicit accidentals to the given note.
+  * @param {string} note - The note to apply the accidentals to.
+  * @param {Object[]} accidentals - An array of accidental objects, each with a `note` and `type` property.
+  * @returns {string} The note with any explicit accidentals applied.
+  */
 	applyExplicitAccidentals(note, accidentals) {
 		const basePitch = note.charAt(0);
 		const octaveMarkers = note.substring(1);
@@ -395,6 +398,52 @@ class KeyParser {
 		return `K${fqsKey}`;
 	}
 }
+class Fraction {
+	constructor(numerator, denominator = 1) {
+		if (typeof numerator === 'string') {
+			// Handle "3/2" format
+			const [num, den] = numerator.split('/').map(Number);
+			this.numerator = num;
+			this.denominator = den || 1;
+		} else if (Array.isArray(numerator)) {
+			// Handle [3,2] format
+			this.numerator = numerator[0];
+			this.denominator = numerator[1];
+		} else {
+			// Handle (3,2) format
+			this.numerator = numerator;
+			this.denominator = denominator;
+		}
+	}
+
+	add(other) {
+		const fraction2 = other instanceof Fraction ? other : new Fraction(other);
+		const newNumerator = this.numerator * fraction2.denominator +
+			fraction2.numerator * this.denominator;
+		const newDenominator = this.denominator * fraction2.denominator;
+		return new Fraction(this.reduce(newNumerator, newDenominator));
+	}
+
+	multiply(other) {
+		const fraction2 = other instanceof Fraction ? other : new Fraction(other);
+		const newNumerator = this.numerator * fraction2.numerator;
+		const newDenominator = this.denominator * fraction2.denominator;
+		return new Fraction(this.reduce(newNumerator, newDenominator));
+	}
+
+	reduce(numerator, denominator) {
+		const gcd = this.getGCD(Math.abs(numerator), Math.abs(denominator));
+		return [numerator / gcd, denominator / gcd];
+	}
+
+	getGCD(a, b) {
+		return b === 0 ? a : this.getGCD(b, a % b);
+	}
+
+	toString() {
+		return `${this.numerator}/${this.denominator}`;
+	}
+}
 
 function ABCInterval(prior, successor) {
 	const PITCH_VALUES = {
@@ -430,7 +479,7 @@ function ABCInterval(prior, successor) {
 }
 function FQSOctaveMarks(prior, successor) {
 	// Handle first note of line
-	if (!prior) prior = new ABCNote('C');
+	if (!prior) prior = new ABCPitch('C');
 
 	const interval = ABCInterval(prior, successor);
 

@@ -48,6 +48,7 @@ T:C Major Scale
 K:C
 CDEF GABc`,
 		expected: `title: C Major Scale
+
 music: K0 2cdef 2gabc |`
 	},
 	{
@@ -62,6 +63,7 @@ L:1/16
 K:C
 CDEF GABc`,
 		expected: `title: C Major Scale
+
 music: K0 cdef gabc |`
 	},
 	{
@@ -73,6 +75,7 @@ T:C Minor Scale
 K:Cmin
 CDEF GABc`,
 		expected: `title: C Minor Scale
+
 music: K&3 2cdef 2gabc |`
 	},
 	{
@@ -84,6 +87,7 @@ T:C Mixolydian Scale
 K:C Mixolydian
 CDEF GABc`,
 		expected: `title: C Mixolydian Scale
+
 music: K&1 2cdef 2gabc |`
 	},
 	{
@@ -95,6 +99,7 @@ T:C Major Scale
 K:C
 CDEF GABc|CDEF GABc`,
 		expected: `title: C Major Scale
+
 music: K0 2cdef 2gabc | 2/cdef 2gabc |`
 	},
 	{
@@ -106,6 +111,7 @@ T:C Major Scale
 K:C
 CDE^F G=ABc|_CDEF __GABc`,
 		expected: `title: C Major Scale
+
 music: K0 2cde#f 2g%abc | 2/&cdef 2&&gabc |`
 	},
 	{
@@ -121,6 +127,7 @@ R: reel
 K:Emin
 |:D2|EB{c}BA B2 EB|~B2 AB dBAG|FDAD BDAD|FDAD dAFD|`,
 		expected: `title: Cooley's
+
 music: K#1 d | 2e^bba b /e^b | b ab 2dbag | 2fd^a/d 2^b/d^a/d | 2fd^a/d 2^dafd |`
 	},
 ];
