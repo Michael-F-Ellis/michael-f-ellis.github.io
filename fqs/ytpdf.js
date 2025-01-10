@@ -8,6 +8,7 @@ class YTPDFViewer {
 		this.pdfDoc = null;
 		this.pageNum = 1;
 		this.videoIds = new Map(); // Store video IDs by page number
+		this.pageLabels = new Map(); // Store labels by page number
 		this.canvas = document.getElementById('pdf-render');
 		this.ctx = this.canvas.getContext('2d');
 
@@ -40,6 +41,25 @@ class YTPDFViewer {
 		this.pdfFileHandle = null;
 	}
 
+	addSaveLoadControls() {
+		const saveButton = document.createElement('button');
+		saveButton.textContent = 'Save Annotations';
+		saveButton.onclick = () => this.saveAnnotations();
+
+		const loadInput = document.createElement('input');
+		loadInput.type = 'file';
+		loadInput.accept = '.json';
+		loadInput.style.display = 'none';
+		loadInput.onchange = (e) => this.loadAnnotations(e.target.files[0]);
+
+		const loadButton = document.createElement('button');
+		loadButton.textContent = 'Load Annotations';
+		loadButton.onclick = () => loadInput.click();
+
+		document.getElementById('toolbar').appendChild(loadButton);
+		document.getElementById('toolbar').appendChild(saveButton);
+		document.getElementById('toolbar').appendChild(loadInput);
+	}
 	addNavigationControls() {
 		const controls = document.createElement('div');
 		controls.innerHTML = `
@@ -52,6 +72,17 @@ class YTPDFViewer {
 		// Add event listeners
 		document.getElementById('prev').onclick = () => this.prevPage();
 		document.getElementById('next').onclick = () => this.nextPage();
+
+		const gotoButton = document.createElement('button');
+		gotoButton.textContent = 'Go To...';
+		gotoButton.onclick = () => this.showTOC();
+
+		const tocDiv = document.createElement('div');
+		tocDiv.id = 'toc';
+		tocDiv.style.display = 'none';
+
+		document.getElementById('toolbar').appendChild(gotoButton);
+		document.getElementById('toolbar').appendChild(tocDiv);
 	}
 
 	addVideoControls() {
@@ -91,7 +122,9 @@ class YTPDFViewer {
 	async saveAnnotations() {
 		const data = {
 			videoIds: Array.from(this.videoIds.entries()),
-			markers: Array.from(this.markers.entries())
+			markers: Array.from(this.markers.entries()),
+			pages: Array.from(this.pageLabels.entries())
+
 		};
 
 		// Construct default filename from PDF name
@@ -120,14 +153,69 @@ class YTPDFViewer {
 			}
 		}
 	}
-	promptForVideoId() {
-		const currentId = this.videoIds.get(this.pageNum) || '';
-		const videoId = prompt('Enter YouTube video ID for page ' + this.pageNum, currentId);
 
-		if (videoId) {
-			this.videoIds.set(this.pageNum, videoId);
-			this.updateVideoInfo();
-		}
+	promptForVideoId() {
+		const defaultLabel = `Page ${this.pageNum}`;
+		const currentLabel = this.pageLabels.get(this.pageNum) || defaultLabel;
+		const currentId = this.videoIds.get(this.pageNum) ||
+			(this.pageNum > 1 ? this.videoIds.get(this.pageNum - 1) : '');
+
+		// Create custom dialog
+		const dialog = document.createElement('div');
+		dialog.className = 'modal-dialog';
+		dialog.innerHTML = `
+        <div class="dialog">
+            <label>Page Label:<br>
+                <input type="text" id="page-label" value="${currentLabel}">
+            </label><br>
+            <label>Video ID:<br>
+                <input type="text" id="video-id" value="${currentId}">
+            </label><br>
+            <button id="save">Save</button>
+            <button id="cancel">Cancel</button>
+        </div>
+    `;
+
+		// Style the modal overlay
+		dialog.style.position = 'fixed';
+		dialog.style.top = '0';
+		dialog.style.left = '0';
+		dialog.style.width = '100%';
+		dialog.style.height = '100%';
+		dialog.style.backgroundColor = 'rgba(0,0,0,0.5)';
+		dialog.style.display = 'flex';
+		dialog.style.alignItems = 'center';
+		dialog.style.justifyContent = 'center';
+
+		// Style the dialog box
+		const dialogBox = dialog.querySelector('.dialog');
+		dialogBox.style.backgroundColor = 'white';
+		dialogBox.style.padding = '20px';
+		dialogBox.style.borderRadius = '5px';
+
+		const cleanup = () => {
+			if (dialog.parentNode) {
+				document.body.removeChild(dialog);
+			}
+		};
+
+		// Handle dialog actions
+		dialog.querySelector('#save').onclick = () => {
+			const label = dialog.querySelector('#page-label').value;
+			const videoId = dialog.querySelector('#video-id').value;
+
+			if (videoId) {
+				this.videoIds.set(this.pageNum, videoId);
+				this.pageLabels.set(this.pageNum, label);
+				this.updateVideoInfo();
+			}
+			cleanup();
+		};
+
+		dialog.querySelector('#cancel').onclick = cleanup;
+
+		// Add dialog to DOM
+		document.body.appendChild(dialog);
 	}
 
 	updateVideoInfo() {
@@ -183,6 +271,15 @@ class YTPDFViewer {
 			this.svg.innerHTML = '';
 		}
 
+		// Load the correct video for this page if needed
+		/*
+		const videoId = this.videoIds.get(this.pageNum);
+		if (videoId && this.player &&
+			this.player.getVideoData().video_id !== videoId) {
+			this.player.loadVideoById(videoId);
+		}
+			*/
+
 		// Redraw markers for current page
 		const pageMarkers = this.markers.get(this.pageNum) || [];
 		pageMarkers.forEach(marker => {
@@ -234,7 +331,20 @@ class YTPDFViewer {
 			setTimeout(() => this.playYouTubeAt(videoId, timeSeconds, rate), 100);
 			return;
 		}
+		// Add error handling
+		const onError = (event) => {
+			const errors = {
+				2: 'Invalid video ID or embedding disabled',
+				5: 'HTML5 player error',
+				100: 'Video not found',
+				101: 'Embedding not allowed',
+				150: 'Embedding not allowed'
+			};
+			const message = errors[event.data] || 'Unknown playback error';
+			alert(`Cannot play video: ${message}`);
+		};
 
+		this.player.addEventListener('onError', onError);
 		if (this.player.getPlayerState() === YT.PlayerState.PLAYING) {
 			this.player.pauseVideo();
 			return;
@@ -326,30 +436,40 @@ class YTPDFViewer {
 			const data = JSON.parse(e.target.result);
 			this.videoIds = new Map(data.videoIds);
 			this.markers = new Map(data.markers);
+			this.pageLabels = new Map(data.pages || []);
 			// Refresh current page display
 			this.renderPage(this.pageNum);
 		};
 		reader.readAsText(file);
 	}
+	showTOC() {
+		const tocDiv = document.getElementById('toc');
+		if (tocDiv.style.display === 'none') {
+			const toc = document.createElement('ul');
 
-	addSaveLoadControls() {
-		const saveButton = document.createElement('button');
-		saveButton.textContent = 'Save Annotations';
-		saveButton.onclick = () => this.saveAnnotations();
+			// Create sorted entries from pageLabels
+			Array.from(this.pageLabels.entries())
+				.sort((a, b) => a[0] - b[0])
+				.forEach(([pageNum, label]) => {
+					const li = document.createElement('li');
+					const link = document.createElement('a');
+					link.href = '#';
+					link.textContent = label;
+					link.onclick = (e) => {
+						e.preventDefault();
+						this.renderPage(pageNum);
+						tocDiv.style.display = 'none';
+					};
+					li.appendChild(link);
+					toc.appendChild(li);
+				});
 
-		const loadInput = document.createElement('input');
-		loadInput.type = 'file';
-		loadInput.accept = '.json';
-		loadInput.style.display = 'none';
-		loadInput.onchange = (e) => this.loadAnnotations(e.target.files[0]);
-
-		const loadButton = document.createElement('button');
-		loadButton.textContent = 'Load Annotations';
-		loadButton.onclick = () => loadInput.click();
-
-		document.getElementById('toolbar').appendChild(loadButton);
-		document.getElementById('toolbar').appendChild(saveButton);
-		document.getElementById('toolbar').appendChild(loadInput);
+			tocDiv.innerHTML = '';
+			tocDiv.appendChild(toc);
+			tocDiv.style.display = 'block';
+		} else {
+			tocDiv.style.display = 'none';
+		}
 	}
 }
 
