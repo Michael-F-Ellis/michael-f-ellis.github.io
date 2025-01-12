@@ -327,7 +327,42 @@ class YTPDFViewer {
 			}
 		}, 100);
 	}
-
+	/*
+		async saveAnnotations() {
+			const data = {
+				videoIds: Array.from(this.videoIds.entries()),
+				markers: Array.from(this.markers.entries()),
+				pages: Array.from(this.pageLabels.entries()),
+				notes: Array.from(this.notes.entries())
+			};
+	
+			// Construct default filename from PDF name
+			const baseName = this.originalFileName.replace('.pdf', '');
+			const suggestedName = `${baseName}-annotations.json`;
+	
+			try {
+				// Show native file save dialog
+				const handle = await window.showSaveFilePicker({
+					suggestedName: suggestedName,
+					types: [{
+						description: 'JSON Files',
+						accept: { 'application/json': ['.json'] },
+					}],
+					// Start in same directory as PDF if we have it
+					startIn: this.pdfFileHandle?.directory
+				});
+	
+				// Write the file
+				const writable = await handle.createWritable();
+				await writable.write(JSON.stringify(data));
+				await writable.close();
+			} catch (err) {
+				if (err.name !== 'AbortError') {
+					console.error('Failed to save:', err);
+				}
+			}
+		}
+			*/
 	async saveAnnotations() {
 		const data = {
 			videoIds: Array.from(this.videoIds.entries()),
@@ -341,21 +376,31 @@ class YTPDFViewer {
 		const suggestedName = `${baseName}-annotations.json`;
 
 		try {
-			// Show native file save dialog
-			const handle = await window.showSaveFilePicker({
-				suggestedName: suggestedName,
-				types: [{
-					description: 'JSON Files',
-					accept: { 'application/json': ['.json'] },
-				}],
-				// Start in same directory as PDF if we have it
-				startIn: this.pdfFileHandle?.directory
-			});
-
-			// Write the file
-			const writable = await handle.createWritable();
-			await writable.write(JSON.stringify(data));
-			await writable.close();
+			// Try native file picker first
+			if (window.showSaveFilePicker) {
+				const handle = await window.showSaveFilePicker({
+					suggestedName: suggestedName,
+					types: [{
+						description: 'JSON Files',
+						accept: { 'application/json': ['.json'] },
+					}],
+					startIn: this.pdfFileHandle?.directory
+				});
+				const writable = await handle.createWritable();
+				await writable.write(JSON.stringify(data));
+				await writable.close();
+			} else {
+				// Fallback for mobile/unsupported browsers
+				const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = suggestedName;
+				document.body.appendChild(a);
+				a.click();
+				URL.revokeObjectURL(url);
+				document.body.removeChild(a);
+			}
 		} catch (err) {
 			if (err.name !== 'AbortError') {
 				console.error('Failed to save:', err);
