@@ -17,3 +17,31 @@
 </body>
 
 </html>
+
+<style>
+	#mode-toolbar {
+		display: flex;
+		gap: 8px;
+		padding: 8px;
+	}
+
+	#mode-toolbar button {
+		font-size: 24px;
+		padding: 8px;
+		border-radius: 4px;
+		cursor: pointer;
+	}
+
+	#mode-toolbar button.active {
+		background: #e0e0e0;
+	}
+
+	/* Mode-specific cursors */
+	.mode-editing {
+		cursor: url(pencil.cur), auto;
+	}
+
+	.mode-marking {
+		cursor: crosshair;
+	}
+</style>
