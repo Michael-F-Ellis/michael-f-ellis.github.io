@@ -25,15 +25,7 @@ class YTPDFViewer {
 		};
 		this.currentMarkType = this.markTypes.MARKER;
 
-		// Add drag handling properties
-		this.dragState = {
-			isDragging: false,
-			element: null,
-			startX: 0,
-			startY: 0,
-			longPressTimer: null
-		};
-		this.LONG_PRESS_DURATION = 500; // ms before drag starts
+		this.LONG_PRESS_DURATION = 500; // ms 
 
 		// Add mode toolbar
 		this.addModeControls();
@@ -43,6 +35,16 @@ class YTPDFViewer {
 
 		// Add page navigation controls
 		this.addNavigationControls();
+
+		// Support keyboard and swipe navigation
+		document.addEventListener('keydown', this.handleKeyPress.bind(this));
+		// Add mode-aware touch handling
+		this.touchStartX = null;
+		this.touchStartY = null;
+		this.touchStartTime = null;
+		this.canvas.addEventListener('touchstart', this.handleTouchStart.bind(this));
+		this.canvas.addEventListener('touchend', this.handleTouchEnd.bind(this));
+
 
 		// Set up file input handler
 		document.getElementById('file-input')
@@ -228,38 +230,7 @@ class YTPDFViewer {
 		// Enable audio playback
 		this.audioEnabled = true;
 	}
-	/*
-	enableEditing() {
-		this.editingEnabled = true;
-		// bail out if this.svg is not defined
-		if (!this.svg) return;
 
-		// Add drag event listeners to SVG container
-		this.svg.addEventListener('mousedown', this.handleDragStart.bind(this));
-		this.svg.addEventListener('mousemove', this.handleDragMove.bind(this));
-		this.svg.addEventListener('mouseup', this.handleDragEnd.bind(this));
-
-		// Touch events
-		this.svg.addEventListener('touchstart', this.handleDragStart.bind(this));
-		this.svg.addEventListener('touchmove', this.handleDragMove.bind(this));
-		this.svg.addEventListener('touchend', this.handleDragEnd.bind(this));
-	}
-
-	disableEditing() {
-		this.editingEnabled = false;
-		// bail out if this.svg is not defined
-		if (!this.svg) return;
-
-		// Remove drag event listeners
-		this.svg.removeEventListener('mousedown', this.handleDragStart.bind(this));
-		this.svg.removeEventListener('mousemove', this.handleDragMove.bind(this));
-		this.svg.removeEventListener('mouseup', this.handleDragEnd.bind(this));
-
-		this.svg.removeEventListener('touchstart', this.handleDragStart.bind(this));
-		this.svg.removeEventListener('touchmove', this.handleDragMove.bind(this));
-		this.svg.removeEventListener('touchend', this.handleDragEnd.bind(this));
-	}
-		*/
 	enableEditing() {
 		this.editingEnabled = true;
 		if (!this.svg) return;
@@ -314,6 +285,7 @@ class YTPDFViewer {
 					const newY = matrix.f;
 
 					if (selectedElement.classList.contains('speaker-icon')) {
+						const id = selectedElement.getAttribute('data-marker-id');
 						this.updateMarkerPosition(newX, newY);
 					} else if (selectedElement.classList.contains('note-icon')) {
 						this.updateNotePosition(newX, newY);
@@ -392,42 +364,6 @@ class YTPDFViewer {
 			}
 		}, 100);
 	}
-	/*
-		async saveAnnotations() {
-			const data = {
-				videoIds: Array.from(this.videoIds.entries()),
-				markers: Array.from(this.markers.entries()),
-				pages: Array.from(this.pageLabels.entries()),
-				notes: Array.from(this.notes.entries())
-			};
-	
-			// Construct default filename from PDF name
-			const baseName = this.originalFileName.replace('.pdf', '');
-			const suggestedName = `${baseName}-annotations.json`;
-	
-			try {
-				// Show native file save dialog
-				const handle = await window.showSaveFilePicker({
-					suggestedName: suggestedName,
-					types: [{
-						description: 'JSON Files',
-						accept: { 'application/json': ['.json'] },
-					}],
-					// Start in same directory as PDF if we have it
-					startIn: this.pdfFileHandle?.directory
-				});
-	
-				// Write the file
-				const writable = await handle.createWritable();
-				await writable.write(JSON.stringify(data));
-				await writable.close();
-			} catch (err) {
-				if (err.name !== 'AbortError') {
-					console.error('Failed to save:', err);
-				}
-			}
-		}
-			*/
 	async saveAnnotations() {
 		const data = {
 			videoIds: Array.from(this.videoIds.entries()),
@@ -617,13 +553,13 @@ class YTPDFViewer {
 		// Redraw markers for current page
 		const pageMarkers = this.markers.get(this.pageNum) || [];
 		pageMarkers.forEach(marker => {
-			this.drawMarker(marker.x, marker.y);
+			this.drawMarker(marker);
 		});
 
 		// Redraw the notes for the current page
 		const pageNotes = this.notes.get(this.pageNum) || [];
 		pageNotes.forEach(note => {
-			this.drawNote(note.x, note.y, note.text);
+			this.drawNote(note);
 		});
 	}
 
@@ -712,6 +648,67 @@ class YTPDFViewer {
 		}
 	}
 
+	handleKeyPress(event) {
+		switch (event.key) {
+			case 'ArrowRight':
+			case 'PageDown':
+				this.nextPage();
+				break;
+			case 'ArrowLeft':
+			case 'PageUp':
+				this.prevPage();
+				break;
+			case 'Home':
+				this.renderPage(1);
+				break;
+			case 'End':
+				this.renderPage(this.pdfDoc.numPages);
+				break;
+		}
+	}
+	// Touch handlers for navigation on  mobile devices
+	handleTouchStart(event) {
+		// Skip touch handling if in editing mode
+		if (this.currentMode === this.modes.EDITING) {
+			return;
+		}
+
+		this.touchStartX = event.touches[0].clientX;
+		this.touchStartY = event.touches[0].clientY;
+		this.touchStartTime = Date.now();
+	}
+	handleTouchEnd(event) {
+		// Skip touch handling if in editing mode
+		if (this.currentMode === this.modes.EDITING || !this.touchStartX) {
+			return;
+		}
+
+		const touchEndX = event.changedTouches[0].clientX;
+		const touchEndY = event.changedTouches[0].clientY;
+		const touchEndTime = Date.now();
+
+		// Calculate swipe metrics
+		const swipeDistance = touchEndX - this.touchStartX;
+		const verticalDistance = Math.abs(touchEndY - this.touchStartY);
+		const swipeTime = touchEndTime - this.touchStartTime;
+
+		// Validate swipe:
+		// 1. Must be primarily horizontal (vertical movement < 50px)
+		// 2. Must be longer than 50px horizontally
+		// 3. Must complete within 300ms
+		if (verticalDistance < 50 && Math.abs(swipeDistance) > 50 && swipeTime < 300) {
+			if (swipeDistance > 0) {
+				this.prevPage();
+			} else {
+				this.nextPage();
+			}
+		}
+
+		// Reset touch tracking
+		this.touchStartX = null;
+		this.touchStartY = null;
+		this.touchStartTime = null;
+	}
 	// Dispatch click events to appropriate handlers
 	handleCanvasClick(event) {
 		// Check mode before handling click
@@ -750,7 +747,7 @@ class YTPDFViewer {
 		);
 
 		if (marker) {
-			this.showMarkerDialog(marker.x, marker.y, marker);
+			this.showMarkerDialog(marker);
 			return;
 		}
 
@@ -768,6 +765,7 @@ class YTPDFViewer {
 		// No marker found near click
 		alert('Please click an existing marker or note to edit it');
 	}
+
 	handleNewMarker(event) {
 		const videoId = this.videoIds.get(this.pageNum);
 		if (!videoId) {
@@ -775,16 +773,24 @@ class YTPDFViewer {
 			return;
 		}
 
-		// Get click coordinates relative to canvas
 		const rect = this.canvas.getBoundingClientRect();
 		const x = event.clientX - rect.left;
 		const y = event.clientY - rect.top;
 
-		// Show dialog for timestamp and rate input
-		this.showMarkerDialog(x, y);
-	}
+		// Add unique ID when creating marker
+		const markerId = Math.floor(Math.random() * 1000000);
 
-	showMarkerDialog(x, y, existingMarker = null) {
+		// Create marker object, but don't add to markers list yet.
+		// We need to wait for user to confirm.
+		const marker = { id: markerId, x, y, time: 0, rate: 1.0 };
+
+		// Show dialog
+		this.showMarkerDialog(marker);
+	}
+	showMarkerDialog(marker) {
+		// Check if marker already exists
+		const existingMarker = this.markers.get(this.pageNum)?.find(m => m.id === marker.id);
+
 		const dialog = document.createElement('div');
 		dialog.className = 'modal-dialog';
 		dialog.innerHTML = `
@@ -819,16 +825,18 @@ class YTPDFViewer {
 
 			if (existingMarker) {
 				// Update existing marker
-				existingMarker.time = time;
-				existingMarker.rate = rate;
+				existingMarker.time = marker.time;
+				existingMarker.rate = marker.rate;
 			} else {
+				marker.time = time;
+				marker.rate = rate;
 				// Store new marker
 				if (!this.markers.has(this.pageNum)) {
 					this.markers.set(this.pageNum, []);
 				}
-				this.markers.get(this.pageNum).push({ x, y, time, rate });
+				this.markers.get(this.pageNum).push(marker);
 				// Draw new marker
-				this.drawMarker(x, y);
+				this.drawMarker(marker);
 			}
 			cleanup();
 		};
@@ -851,13 +859,14 @@ class YTPDFViewer {
 		document.body.appendChild(dialog);
 	}
 
-	drawMarker(x, y) {
+	drawMarker(marker) {
 		// Create SVG overlay if it doesn't exist
 		this.ensureSVG();
 
 		const speaker = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-		speaker.setAttribute('x', x);
-		speaker.setAttribute('y', y);
+		speaker.setAttribute('x', marker.x);
+		speaker.setAttribute('y', marker.y);
+		speaker.setAttribute('data-marker-id', marker.id);
 		speaker.setAttribute('class', 'speaker-icon');
 		speaker.textContent = '🔊';
 		speaker.style.cursor = 'pointer';
@@ -866,10 +875,8 @@ class YTPDFViewer {
 
 		speaker.onclick = () => {
 			if (this.currentMode === this.modes.EDITING) {
-				const marker = this.markers.get(this.pageNum).find(m => m.x === x && m.y === y);
-				this.showMarkerDialog(x, y, marker);
+				this.showMarkerDialog(marker);
 			} else {
-				const marker = this.markers.get(this.pageNum).find(m => m.x === x && m.y === y);
 				this.playYouTubeAt(this.videoIds.get(this.pageNum), marker.time, marker.rate);
 			}
 		};
@@ -888,31 +895,23 @@ class YTPDFViewer {
 			this.notes.set(this.pageNum, []);
 		}
 
+		const id = Math.floor(Math.random() * 1000000)
 		// Create note object
-		const note = {
-			x,
-			y,
-			text: '',
-		};
-
-		// Add to notes collection
-		this.notes.get(this.pageNum).push(note);
-
-		// Draw the note icon
-		this.drawNote(x, y);
+		const note = { id: id, x, y, text: '' };
 
 		// Show dialog to edit note text
 		this.showNoteDialog(note);
 	}
 
 	showNoteDialog(note) {
-		// Create custom dialog
+		// Check if note already exists
+		const existingNote = this.notes.get(this.pageNum)?.find(n => n.id === note.id);
 		const dialog = document.createElement('div');
 		dialog.className = 'modal-dialog';
 		dialog.innerHTML = `
     <div class="dialog">
-      <h3>Edit Note</h3>
-      <textarea id="note-text" rows="4" cols="40">${note.text || ''}</textarea>
+      <h3>${existingNote ? 'Edit' : 'Add'} Note</h3>
+      <textarea id="note-text" rows="4" cols="40">${existingNote?.text || ''}</textarea>
       <div class="button-row">
         <button id="save">Save</button>
         <button id="delete">Delete</button>
@@ -931,21 +930,31 @@ class YTPDFViewer {
 
 		// Handle dialog actions
 		dialog.querySelector('#save').onclick = () => {
-			note.text = dialog.querySelector('#note-text').value;
-			cleanup();
-			this.renderPage(this.pageNum); // Refresh display
-		};
-
-		dialog.querySelector('#delete').onclick = () => {
-			const notes = this.notes.get(this.pageNum);
-			const index = notes.findIndex(n => n === note);
-			if (index > -1) {
-				notes.splice(index, 1);
+			const text = dialog.querySelector('#note-text').value;
+			if (existingNote) {
+				// Update existing note
+				existingNote.text = text;
+			} else {
+				note.text = text;
+				// Store new note
+				this.notes.get(this.pageNum).push(note);
+				// Draw new note
+				this.drawNote(note);
 			}
 			cleanup();
-			this.renderPage(this.pageNum); // Refresh display
 		};
 
+		if (existingNote) {
+			dialog.querySelector('#delete').onclick = () => {
+				const notes = this.notes.get(this.pageNum);
+				const index = notes.findIndex(n => n === note);
+				if (index > -1) {
+					notes.splice(index, 1);
+				}
+				cleanup();
+				this.renderPage(this.pageNum); // Refresh display
+			};
+		}
 		dialog.querySelector('#cancel').onclick = cleanup;
 
 		// Add dialog to DOM
@@ -954,28 +963,26 @@ class YTPDFViewer {
 		// Focus the textarea
 		dialog.querySelector('#note-text').focus();
 	}
-	drawNote(x, y) {
+
+	drawNote(note) {
 		// Create SVG overlay if it doesn't exist
 		this.ensureSVG();
 
-		const note = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-		note.setAttribute('x', x);
-		note.setAttribute('y', y);
-		note.setAttribute('class', 'note-icon');
-		note.textContent = '⚠️';  // Unicode caution/warning symbol
-		note.style.cursor = 'pointer';
+		const icon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+		icon.setAttribute('x', note.x);
+		icon.setAttribute('y', note.y);
+		icon.setAttribute('data-note-id', note.id);
+		icon.setAttribute('class', 'note-icon');
+		icon.textContent = '⚠️';  // Unicode caution/warning symbol
+		icon.style.cursor = 'pointer';
 		// Enable pointer events just for the note icon
-		note.style.pointerEvents = 'auto';
+		icon.style.pointerEvents = 'auto';
 
-		note.onclick = () => {
-			const notes = this.notes.get(this.pageNum) || [];
-			const note = notes.find(n => n.x === x && n.y === y);
-			if (note) {
-				this.showNoteDialog(note);
-			}
+		icon.onclick = () => {
+			this.showNoteDialog(note);
 		};
 
-		this.svg.appendChild(note);
+		this.svg.appendChild(icon);
 	}
 	ensureSVG() {
 		// Create SVG overlay if it doesn't exist
@@ -992,100 +999,26 @@ class YTPDFViewer {
 		}
 	}
 
-	handleDragStart(e) {
-		if (!this.editingEnabled || this.currentMode !== this.modes.EDITING) return;
 
-		const target = e.target;
-		if (!target.classList.contains('speaker-icon') && !target.classList.contains('note-icon')) return;
-
-		// Prevent immediate drag, wait for long press
-		this.dragState.longPressTimer = setTimeout(() => {
-			const point = e.touches ? e.touches[0] : e;
-			this.dragState.isDragging = true;
-			this.dragState.element = target;
-
-			// Store the original element position
-			this.dragState.originalX = parseFloat(target.getAttribute('x'));
-			this.dragState.originalY = parseFloat(target.getAttribute('y'));
-			// Store the initial drag position
-			this.dragState.startX = point.clientX - target.getAttribute('x');
-			this.dragState.startY = point.clientY - target.getAttribute('y');
-
-			// Visual feedback
-			target.style.opacity = '0.5';
-		}, this.LONG_PRESS_DURATION);
-	}
-
-	handleDragMove(e) {
-		if (!this.dragState.isDragging) return;
-		e.preventDefault();
-
-		const point = e.touches ? e.touches[0] : e;
-		const newX = point.clientX - this.dragState.startX;
-		const newY = point.clientY - this.dragState.startY;
-
-		// Update element position
-		this.dragState.element.setAttribute('x', newX);
-		this.dragState.element.setAttribute('y', newY);
-	}
-
-	handleDragEnd(e) {
-		if (this.dragState.longPressTimer) {
-			clearTimeout(this.dragState.longPressTimer);
-		}
-
-		if (!this.dragState.isDragging) return;
-
-		const element = this.dragState.element;
-		element.style.opacity = '1.0';
-
-		// Update marker or note position in data structure
-		const newX = parseFloat(element.getAttribute('x'));
-		const newY = parseFloat(element.getAttribute('y'));
-
-		if (element.classList.contains('speaker-icon')) {
-			this.updateMarkerPosition(newX, newY);
-		} else if (element.classList.contains('note-icon')) {
-			this.updateNotePosition(newX, newY);
-		}
-
-		// Reset drag state
-		this.dragState = {
-			isDragging: false,
-			element: null,
-			startX: 0,
-			startY: 0,
-			longPressTimer: null
-		};
-	}
-
-	updateMarkerPosition(newX, newY) {
+	updateMarkerPosition(id, newX, newY) {
 		const markers = this.markers.get(this.pageNum);
-		const markerIndex = markers.findIndex(m =>
-			Math.abs(m.x - this.dragState.originalX) < 1 &&
-			Math.abs(m.y - this.dragState.originalY) < 1
-		);
+
+		const markerIndex = markers.findIndex(m => m.id === id);
 
 		if (markerIndex !== -1) {
-			// Remove the old marker data
+			// Update marker position while preserving other properties
 			const marker = markers[markerIndex];
-			markers.splice(markerIndex, 1);
-			// Add the marker at the new position
-			markers.push({
+			markers[markerIndex] = {
+				...marker,
 				x: newX,
-				y: newY,
-				time: marker.time,
-				rate: marker.rate
-			});
+				y: newY
+			};
 		}
 	}
-	updateNotePosition(newX, newY) {
+	updateNotePosition(id, newX, newY) {
 		const notes = this.notes.get(this.pageNum);
-		// Find the note using the original drag start position
-		const noteIndex = notes.findIndex(n =>
-			Math.abs(n.x - this.dragState.originalX) < 1 &&
-			Math.abs(n.y - this.dragState.originalY) < 1
-		);
+		// Find the note using the id
+		const noteIndex = notes.findIndex(n => n.id === id);
 
 		if (noteIndex !== -1) {
 			// Update the note's stored coordinates
