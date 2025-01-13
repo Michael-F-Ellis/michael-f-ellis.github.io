@@ -230,30 +230,6 @@ class YTPDFViewer {
 	}
 	/*
 	enableEditing() {
-		// Set editing state flag
-		this.editingEnabled = true;
-
-		// Make annotation icons clickable
-		const annotationIcons = document.querySelectorAll('.annotation-icon');
-		annotationIcons.forEach(icon => {
-			icon.style.pointerEvents = 'auto';
-			icon.style.cursor = 'pointer';
-		});
-	}
-
-	disableEditing() {
-		// Clear editing state flag
-		this.editingEnabled = false;
-
-		// Make annotation icons non-interactive
-		const annotationIcons = document.querySelectorAll('.annotation-icon');
-		annotationIcons.forEach(icon => {
-			icon.style.pointerEvents = 'none';
-			icon.style.cursor = 'default';
-		});
-	}
-		*/
-	enableEditing() {
 		this.editingEnabled = true;
 		// bail out if this.svg is not defined
 		if (!this.svg) return;
@@ -282,6 +258,95 @@ class YTPDFViewer {
 		this.svg.removeEventListener('touchstart', this.handleDragStart.bind(this));
 		this.svg.removeEventListener('touchmove', this.handleDragMove.bind(this));
 		this.svg.removeEventListener('touchend', this.handleDragEnd.bind(this));
+	}
+		*/
+	enableEditing() {
+		this.editingEnabled = true;
+		if (!this.svg) return;
+
+		// Add single function to handle all dragging
+		const makeDraggable = (evt) => {
+			let selectedElement = null;
+			let offset = null;
+			let transform = null;
+
+			const getMousePosition = (evt) => {
+				const CTM = this.svg.getScreenCTM();
+				if (evt.touches) evt = evt.touches[0];
+				return {
+					x: (evt.clientX - CTM.e) / CTM.a,
+					y: (evt.clientY - CTM.f) / CTM.d
+				};
+			};
+
+			const startDrag = (evt) => {
+				if (evt.target.classList.contains('speaker-icon') ||
+					evt.target.classList.contains('note-icon')) {
+					selectedElement = evt.target;
+					offset = getMousePosition(evt);
+
+					// Get initial transform
+					const transforms = selectedElement.transform.baseVal;
+					if (transforms.length === 0) {
+						const translate = this.svg.createSVGTransform();
+						translate.setTranslate(0, 0);
+						selectedElement.transform.baseVal.insertItemBefore(translate, 0);
+					}
+					transform = transforms.getItem(0);
+					offset.x -= transform.matrix.e;
+					offset.y -= transform.matrix.f;
+				}
+			};
+
+			const drag = (evt) => {
+				if (selectedElement) {
+					evt.preventDefault();
+					const coord = getMousePosition(evt);
+					transform.setTranslate(coord.x - offset.x, coord.y - offset.y);
+				}
+			};
+
+			const endDrag = () => {
+				if (selectedElement) {
+					// Update data structures with new position
+					const matrix = selectedElement.getCTM();
+					const newX = matrix.e;
+					const newY = matrix.f;
+
+					if (selectedElement.classList.contains('speaker-icon')) {
+						this.updateMarkerPosition(newX, newY);
+					} else if (selectedElement.classList.contains('note-icon')) {
+						this.updateNotePosition(newX, newY);
+					}
+					selectedElement = null;
+				}
+			};
+
+			// Add all event listeners
+			this.svg.addEventListener('mousedown', startDrag);
+			this.svg.addEventListener('mousemove', drag);
+			this.svg.addEventListener('mouseup', endDrag);
+			this.svg.addEventListener('mouseleave', endDrag);
+			this.svg.addEventListener('touchstart', startDrag);
+			this.svg.addEventListener('touchmove', drag);
+			this.svg.addEventListener('touchend', endDrag);
+			this.svg.addEventListener('touchleave', endDrag);
+			this.svg.addEventListener('touchcancel', endDrag);
+		};
+
+		// Initialize dragging
+		makeDraggable();
+	}
+	disableEditing() {
+		this.editingEnabled = false;
+		if (!this.svg) return;
+
+		// Remove all drag-related event listeners
+		const events = ['mousedown', 'mousemove', 'mouseup', 'mouseleave',
+			'touchstart', 'touchmove', 'touchend', 'touchleave', 'touchcancel'];
+		events.forEach(event => {
+			this.svg.removeEventListener(event, () => { });
+		});
 	}
 	setCursor(cursorStyle) {
 		// Use text cursor for editing mode instead of custom pencil
@@ -938,6 +1003,11 @@ class YTPDFViewer {
 			const point = e.touches ? e.touches[0] : e;
 			this.dragState.isDragging = true;
 			this.dragState.element = target;
+
+			// Store the original element position
+			this.dragState.originalX = parseFloat(target.getAttribute('x'));
+			this.dragState.originalY = parseFloat(target.getAttribute('y'));
+			// Store the initial drag position
 			this.dragState.startX = point.clientX - target.getAttribute('x');
 			this.dragState.startY = point.clientY - target.getAttribute('y');
 
@@ -991,25 +1061,36 @@ class YTPDFViewer {
 
 	updateMarkerPosition(newX, newY) {
 		const markers = this.markers.get(this.pageNum);
-		const marker = markers.find(m =>
-			m.x === parseFloat(this.dragState.element.getAttribute('x')) &&
-			m.y === parseFloat(this.dragState.element.getAttribute('y'))
+		const markerIndex = markers.findIndex(m =>
+			Math.abs(m.x - this.dragState.originalX) < 1 &&
+			Math.abs(m.y - this.dragState.originalY) < 1
 		);
-		if (marker) {
-			marker.x = newX;
-			marker.y = newY;
+
+		if (markerIndex !== -1) {
+			// Remove the old marker data
+			const marker = markers[markerIndex];
+			markers.splice(markerIndex, 1);
+			// Add the marker at the new position
+			markers.push({
+				x: newX,
+				y: newY,
+				time: marker.time,
+				rate: marker.rate
+			});
 		}
 	}
-
 	updateNotePosition(newX, newY) {
 		const notes = this.notes.get(this.pageNum);
-		const note = notes.find(n =>
-			n.x === parseFloat(this.dragState.element.getAttribute('x')) &&
-			n.y === parseFloat(this.dragState.element.getAttribute('y'))
+		// Find the note using the original drag start position
+		const noteIndex = notes.findIndex(n =>
+			Math.abs(n.x - this.dragState.originalX) < 1 &&
+			Math.abs(n.y - this.dragState.originalY) < 1
 		);
-		if (note) {
-			note.x = newX;
-			note.y = newY;
+
+		if (noteIndex !== -1) {
+			// Update the note's stored coordinates
+			notes[noteIndex].x = newX;
+			notes[noteIndex].y = newY;
 		}
 	}
 	loadAnnotations(file) {
