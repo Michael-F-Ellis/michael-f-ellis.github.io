@@ -72,6 +72,13 @@ class YTPDFViewer {
 
 		// Add property to store original file handle
 		this.pdfFileHandle = null;
+
+		// Add resize event listener
+		window.addEventListener('resize', this.handleResize.bind(this));
+
+		// Add current page render task tracking so we can cancel it if the user
+		// changes pages rapidly. (see renderPage())
+		this.currentRenderTask = null;
 	}
 	addModeControls() {
 		const modeBar = document.createElement('div');
@@ -527,42 +534,127 @@ class YTPDFViewer {
 			console.error('Error loading PDF:', error);
 		}
 	}
+	/*
+		async renderPage(num) {
+			this.pageNum = num;
+			const page = await this.pdfDoc.getPage(num);
+			const viewport = page.getViewport({ scale: 1.0 });
+			this.canvas.height = viewport.height;
+			this.canvas.width = viewport.width;
+	
+			// Remove old SVG entirely and create fresh one
+			if (this.svg) {
+				this.svg.remove();
+				this.svg = null;
+			}
+	
+			const renderContext = {
+				canvasContext: this.ctx,
+				viewport: viewport
+			};
+			await page.render(renderContext);
+	
+			// Update page number display
+			document.getElementById('page-num').textContent = num;
+	
+			// Redraw markers for current page
+			const pageMarkers = this.markers.get(this.pageNum) || [];
+			pageMarkers.forEach(marker => {
+				this.drawMarker(marker);
+			});
+	
+			// Redraw the notes for the current page
+			const pageNotes = this.notes.get(this.pageNum) || [];
+			pageNotes.forEach(note => {
+				this.drawNote(note);
+			});
+		}
+	*/
+	handleResize() {
+		if (this.pdfDoc) {
+			this.renderPage(this.pageNum);
+		}
+	}
 
 	async renderPage(num) {
+		/*
+		This implementation works by:
+
+		Tracking the current render task in a class property
+		Cancelling any existing render before starting a new one
+		Using PDF.js's built-in cancellation mechanism
+		Only updating page info and annotations after successful render
+		Properly handling cancelled render exceptions
+		Cleaning up the render task reference in all cases
+
+		The key benefit is that rapid page changes will now cleanly cancel
+		previous renders instead of trying to use the canvas simultaneously,
+		preventing the PDF.js error while maintaining smooth navigation.
+		*/
+
+		// Cancel any existing render operation
+		if (this.currentRenderTask) {
+			this.currentRenderTask.cancel();
+			this.currentRenderTask = null;
+		}
+
 		this.pageNum = num;
 		const page = await this.pdfDoc.getPage(num);
-		const viewport = page.getViewport({ scale: 1.0 });
-		this.canvas.height = viewport.height;
-		this.canvas.width = viewport.width;
 
-		// Remove old SVG entirely and create fresh one
-		if (this.svg) {
-			this.svg.remove();
-			this.svg = null;
-		}
+		const windowWidth = window.innerWidth;
+		const originalViewport = page.getViewport({ scale: 1.0 });
+		const widthScale = windowWidth / originalViewport.width;
+		const viewport = page.getViewport({ scale: widthScale });
+
+		this.canvas.width = windowWidth;
+		this.canvas.height = viewport.height;
 
 		const renderContext = {
 			canvasContext: this.ctx,
 			viewport: viewport
 		};
-		await page.render(renderContext);
 
-		// Update page number display
-		document.getElementById('page-num').textContent = num;
+		// Store the render task so it can be cancelled if needed
+		this.currentRenderTask = page.render(renderContext);
 
-		// Redraw markers for current page
-		const pageMarkers = this.markers.get(this.pageNum) || [];
-		pageMarkers.forEach(marker => {
-			this.drawMarker(marker);
-		});
+		try {
+			await this.currentRenderTask.promise;
 
-		// Redraw the notes for the current page
-		const pageNotes = this.notes.get(this.pageNum) || [];
-		pageNotes.forEach(note => {
-			this.drawNote(note);
-		});
+			// Update page number and redraw annotations only after successful render
+			document.getElementById('page-num').textContent = num;
+
+			if (this.svg) {
+				this.svg.remove();
+				this.svg = null;
+			}
+
+			// Redraw annotations with correct scaling
+			const pageMarkers = this.markers.get(this.pageNum) || [];
+			pageMarkers.forEach(marker => {
+				this.drawMarker({
+					...marker,
+					x: marker.x * widthScale,
+					y: marker.y * widthScale
+				});
+			});
+
+			const pageNotes = this.notes.get(this.pageNum) || [];
+			pageNotes.forEach(note => {
+				this.drawNote({
+					...note,
+					x: note.x * widthScale,
+					y: note.y * widthScale
+				});
+			});
+		} catch (error) {
+			// Ignore cancelled render errors
+			if (error.name !== 'RenderingCancelledException') {
+				throw error;
+			}
+		} finally {
+			this.currentRenderTask = null;
+		}
 	}
-
 	prevPage() {
 		if (this.pageNum <= 1) return;
 		this.pageNum--;
