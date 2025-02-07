@@ -7,7 +7,7 @@
 </head>
 
 <body>
-<p>Version: v1.2.0 Build: main-b30bf3c</p>
+<p>Version: v1.3.0 Build: main-9c48cbf</p>
 	<div id="player"></div>
 	<div style="margin-left: 5%; margin-right: 5%;">
 		<h1>FQS Notation Demo</h1>
@@ -22,6 +22,9 @@
 		<button onclick="toggleEditControls()">Toggle edit controls</button> <em>Show or hide the edit buttons for all
 			scores.</em><br>
 		<button onclick="printScores()">Print</button> <em>Print all scores without buttons, icons, or editors</em><br>
+		<button id="github-connect">Connect GitHub</button>
+		<button id="github-save">Save to GitHub</button>
+		<div id="score-browser"></div>
 
 		<script>
 			function addNewScore() {
@@ -43,8 +46,6 @@
 				window.book.controlsVisible = !window.book.controlsVisible;
 				window.book.enforceControlsVisibility();
 			}
-			// importFromFile prompts the user to select an fqs file and imports the
-			// scores in the file.
 			function importFromFile() {
 				const file = document.createElement('input');
 				file.setAttribute('type', 'file');
@@ -78,62 +79,99 @@
 				}
 				return false;
 			}
-			function exportScores() {
-				const text = window.book.exportToText();
-				const blob = new Blob([text], { type: 'text/plain' });
-				const url = URL.createObjectURL(blob);
-				const a = document.createElement('a');
-				a.href = url;
-				a.download = 'scores.fqs';
-				a.click();
-				URL.revokeObjectURL(url);
-			}
-			function toggleEditControls() {
-				window.book.controlsVisible = !window.book.controlsVisible;
-				window.book.enforceControlsVisibility();
-			}
 			function printScores() {
-				// Hide controls
 				window.book.controlsVisible = false;
 				window.book.enforceControlsVisibility();
 
-				// Close any open editors and hide icons
 				const scores = window.book.getScores();
 				scores.forEach(score => {
 					score.editMode = false;
 					score.hideSourceEditor();
-					// find the section editor divs and hide them
 					const sectionEditors = document.querySelectorAll('.section-editor-div');
 					sectionEditors.forEach(editor => editor.style.display = 'none');
 				});
 
-				// Hide pencil and speaker icons
 				const icons = document.querySelectorAll('.pencil-icon, .speaker-icon');
 				icons.forEach(icon => icon.style.display = 'none');
 
-				// Print
 				window.print();
 
-				// Restore controls visibility
 				window.book.controlsVisible = true;
 				window.book.enforceControlsVisibility();
 
-				// Restore icons
 				icons.forEach(icon => icon.style.display = 'block');
 			}
+			// Connect button handler
+			document.getElementById('github-connect').onclick = () => {
+				document.body.appendChild(createGitHubDialog());
+				document.querySelector('dialog').showModal();
+			};
+
+			// File selection handler
+			document.getElementById('score-browser').addEventListener('fileSelect', async (e) => {
+				try {
+					const { content } = await storage.getFile(e.detail.path);
+					book.importFromText(content);
+				} catch (err) {
+					console.error('Failed to load score:', err);
+				}
+			});
+			// Save to GitHub handler
+			document.getElementById('github-save').onclick = async () => {
+				if (!storage) {
+					alert("Please connect to GitHub first");
+					return;
+				}
+				const path = prompt("Enter save path (user/repo/path/file.txt):");
+				if (path) {
+					const content = book.exportToText();
+					await storage.uploadFile(content, path);
+				}
+			};
 		</script>
 	</div>
 	<div id="score-toc" class="score-toc"></div>
 	<div id="book-container">
 		<script type="module">
-			import { Book, Score, initYouTubeAPI, onYouTubeIframeAPIReady } from './fqs.js';
-			// Make onYouTubeIframeAPIReady globally available
-			window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+			import { Book } from './fqs.js';
+			import { GitHubStorage } from './src/classes/github.js';
+			import { RepoNavigator } from './src/classes/repo_navigator.js';
+			import { GitHubCredentials, createGitHubDialog } from './src/classes/credential_store.js';
 
-			initYouTubeAPI()
-
+			// Make book available globally
 			const book = new Book("book-container");
-			window.book = book; // make book available outside this script
+			window.book = book;
+
+			// Storage state management
+			let storage = null;
+			let navigator = null;
+
+			// Add click handlers using the imported functions
+			document.getElementById('github-connect').onclick = () => {
+				document.body.appendChild(createGitHubDialog());
+				document.querySelector('dialog').showModal();
+			};
+
+			// Make connectToRepo available globally for dialog
+			window.connectToRepo = async (repoPath) => {
+				const pat = GitHubCredentials.getCredentials(repoPath);
+				if (pat) {
+					storage = new GitHubStorage(pat);
+					navigator = new RepoNavigator(storage, 'score-browser');
+
+					// Add file selection handler here where storage is in scope
+					document.getElementById('score-browser').addEventListener('fileSelect', async (e) => {
+						try {
+							const { content } = await storage.getFile(e.detail.path);
+							book.importFromText(content);
+						} catch (err) {
+							console.error('Failed to load score:', err);
+						}
+					});
+
+					await navigator.navigate(repoPath);
+				}
+			};
 		</script>
 </body>
 

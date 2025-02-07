@@ -219,3 +219,37 @@
     display: block !important;
     width: 100% !important;
   }
+
+  .interval {
+    font: 6px monospace;
+  }
+
+  /* Using existing colors from pitch alterations */
+  .minor-interval,
+  .diminished-interval {
+    /* matches ♭ class */
+    fill: rgb(152, 140, 254);
+  }
+
+  .double-diminished-interval {
+    /* matches 𝄫 class */
+    fill: rgb(4, 182, 4);
+    font-style: italic;
+  }
+
+  .augmented-interval {
+    /* matches ♯ class */
+    fill: red;
+  }
+
+  .double-augmented-interval {
+    /* matches 𝄪 class */
+    fill: orange;
+    font-style: italic;
+  }
+
+  /* Perfect and major intervals use default black */
+  .perfect-interval,
+  .major-interval {
+    fill: black;
+  }

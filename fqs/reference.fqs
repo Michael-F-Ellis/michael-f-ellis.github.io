@@ -83,7 +83,7 @@ music: K#4 bb | c b e | d - bb | c b ^f | e - bb |
 counter: 3
 nomarkers:
 
-music: K#4 ^b g e | d c ^aa | g e f | e - ; |
+music: K#4 ^b g e | d c ^aa | g e f | e - - |
 counter: 1
 nomarkers:
 
@@ -630,6 +630,40 @@ perbar: 3/4_Brightly
 lyric: birth day dear | NAME * Hap.py | birth day to | you - - |
 pernote: mf cresc. _ _ _ ff
 counter: 1
+EndOfScore
+title: Intervals
+
+zoom: 130
+
+intervals:
+
+text: Include the `intervals:` keyword in the title block to tell FQS to compute and
+and display the musical interval number between pitches.
+
+
+music: K#4 ^b g e | d c ^aa | g e f | e - ; |
+nomarkers:
+
+text: The interval numbers are colored using the same scheme as for pitch names.
+- Perfect (1,4,5) and major imperfect (3,6,7) interval numbers are black.
+- Diminished perfect and minor imperfect intervals are blue.
+- Augmented intervals (perfect and imperfect) are red
+
+music: K0 c ^g /b ^f #g /c |
+nomarkers:
+
+text: Double augmented and double diminished are colored orange and green
+respectively.
+
+music: K0 &c ^#g &c |
+nomarkers:
+ 24
+
+text: Compound intervals are support up to a 24th
+
+
+music: K0 c ^d /c ^^a  //c ^^^g |
+nomarkers:
 EndOfScore
 title: Notation Language Overview
 

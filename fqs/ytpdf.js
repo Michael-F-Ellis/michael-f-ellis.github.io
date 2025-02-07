@@ -1,3 +1,6 @@
+// Import the CoordinateManager class
+import { CoordinateManager } from './src/coordinate_manager.js';
+
 // Get reference to the PDF.js library 
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
 
@@ -10,6 +13,7 @@ class YTPDFViewer {
 		this.videoIds = new Map(); // Store video IDs by page number
 		this.pageLabels = new Map(); // Store labels by page number
 		this.canvas = document.getElementById('pdf-render');
+		this.coordinateManager = new CoordinateManager(this.canvas);
 		this.ctx = this.canvas.getContext('2d');
 		this.modes = {
 			PERFORMANCE: 'performance',
@@ -79,6 +83,9 @@ class YTPDFViewer {
 		// Add current page render task tracking so we can cancel it if the user
 		// changes pages rapidly. (see renderPage())
 		this.currentRenderTask = null;
+
+		// Add variable to track drag state
+		this.isDragging = false;
 	}
 	addModeControls() {
 		const modeBar = document.createElement('div');
@@ -237,16 +244,14 @@ class YTPDFViewer {
 		// Enable audio playback
 		this.audioEnabled = true;
 	}
-
 	enableEditing() {
 		this.editingEnabled = true;
 		if (!this.svg) return;
 
-		// Add single function to handle all dragging
-		const makeDraggable = (evt) => {
+		const makeDraggable = () => {
 			let selectedElement = null;
-			let offset = null;
-			let transform = null;
+			let startX, startY;
+			this.isDragging = false;
 
 			const getMousePosition = (evt) => {
 				const CTM = this.svg.getScreenCTM();
@@ -261,47 +266,60 @@ class YTPDFViewer {
 				if (evt.target.classList.contains('speaker-icon') ||
 					evt.target.classList.contains('note-icon')) {
 					selectedElement = evt.target;
-					offset = getMousePosition(evt);
-
-					// Get initial transform
-					const transforms = selectedElement.transform.baseVal;
-					if (transforms.length === 0) {
-						const translate = this.svg.createSVGTransform();
-						translate.setTranslate(0, 0);
-						selectedElement.transform.baseVal.insertItemBefore(translate, 0);
-					}
-					transform = transforms.getItem(0);
-					offset.x -= transform.matrix.e;
-					offset.y -= transform.matrix.f;
+					const pos = getMousePosition(evt);
+					startX = pos.x;
+					startY = pos.y;
+					this.isDragging = false;
 				}
 			};
 
 			const drag = (evt) => {
 				if (selectedElement) {
 					evt.preventDefault();
-					const coord = getMousePosition(evt);
-					transform.setTranslate(coord.x - offset.x, coord.y - offset.y);
+					this.isDragging = true;
+					const pos = getMousePosition(evt);
+					const dx = pos.x - startX;
+					const dy = pos.y - startY;
+
+					const currentX = parseFloat(selectedElement.getAttribute('x'));
+					const currentY = parseFloat(selectedElement.getAttribute('y'));
+					selectedElement.setAttribute('x', currentX + dx);
+					selectedElement.setAttribute('y', currentY + dy);
+
+					startX = pos.x;
+					startY = pos.y;
 				}
 			};
 
-			const endDrag = () => {
+			const endDrag = (evt) => {
 				if (selectedElement) {
-					// Update data structures with new position
-					const matrix = selectedElement.getCTM();
-					const newX = matrix.e;
-					const newY = matrix.f;
+					if (this.isDragging) {
+						evt.stopPropagation();  // Stop event from bubbling
+						evt.preventDefault();    // Prevent default click behavior
 
-					if (selectedElement.classList.contains('speaker-icon')) {
-						const id = selectedElement.getAttribute('data-marker-id');
-						this.updateMarkerPosition(newX, newY);
-					} else if (selectedElement.classList.contains('note-icon')) {
-						this.updateNotePosition(newX, newY);
+						const x = parseFloat(selectedElement.getAttribute('x'));
+						const y = parseFloat(selectedElement.getAttribute('y'));
+						const normalized = this.coordinateManager.toNormalized(x, y);
+
+						if (selectedElement.classList.contains('speaker-icon')) {
+							const id = parseInt(selectedElement.getAttribute('data-marker-id'));
+							this.updateMarkerPosition(id, normalized.x, normalized.y);
+						} else if (selectedElement.classList.contains('note-icon')) {
+							const id = parseInt(selectedElement.getAttribute('data-note-id'));
+							this.updateNotePosition(id, normalized.x, normalized.y);
+						}
 					}
 					selectedElement = null;
 				}
+				if (this.isDragging) {
+					// Keep isDragging true for a short period to prevent click
+					setTimeout(() => {
+						this.isDragging = false;
+					}, 100);
+				}
+				return false;
 			};
 
-			// Add all event listeners
 			this.svg.addEventListener('mousedown', startDrag);
 			this.svg.addEventListener('mousemove', drag);
 			this.svg.addEventListener('mouseup', endDrag);
@@ -313,7 +331,6 @@ class YTPDFViewer {
 			this.svg.addEventListener('touchcancel', endDrag);
 		};
 
-		// Initialize dragging
 		makeDraggable();
 	}
 	disableEditing() {
@@ -527,6 +544,9 @@ class YTPDFViewer {
 	async loadPDF(pdfData) {
 		try {
 			this.pdfDoc = await pdfjsLib.getDocument({ data: pdfData }).promise;
+			const page = await this.pdfDoc.getPage(1);
+			const viewport = page.getViewport({ scale: 1.0 });
+			this.originalPageWidth = viewport.width; // needed for scaling icon coords on resize
 			// Update page count display
 			document.getElementById('page-count').textContent = this.pdfDoc.numPages;
 			this.renderPage(this.pageNum);
@@ -534,44 +554,11 @@ class YTPDFViewer {
 			console.error('Error loading PDF:', error);
 		}
 	}
-	/*
-		async renderPage(num) {
-			this.pageNum = num;
-			const page = await this.pdfDoc.getPage(num);
-			const viewport = page.getViewport({ scale: 1.0 });
-			this.canvas.height = viewport.height;
-			this.canvas.width = viewport.width;
-	
-			// Remove old SVG entirely and create fresh one
-			if (this.svg) {
-				this.svg.remove();
-				this.svg = null;
-			}
-	
-			const renderContext = {
-				canvasContext: this.ctx,
-				viewport: viewport
-			};
-			await page.render(renderContext);
-	
-			// Update page number display
-			document.getElementById('page-num').textContent = num;
-	
-			// Redraw markers for current page
-			const pageMarkers = this.markers.get(this.pageNum) || [];
-			pageMarkers.forEach(marker => {
-				this.drawMarker(marker);
-			});
-	
-			// Redraw the notes for the current page
-			const pageNotes = this.notes.get(this.pageNum) || [];
-			pageNotes.forEach(note => {
-				this.drawNote(note);
-			});
-		}
-	*/
+
 	handleResize() {
 		if (this.pdfDoc) {
+			const windowWidth = window.innerWidth;
+			this.coordinateManager.resizeCanvas(windowWidth, this.canvas.height);
 			this.renderPage(this.pageNum);
 		}
 	}
@@ -633,8 +620,8 @@ class YTPDFViewer {
 			pageMarkers.forEach(marker => {
 				this.drawMarker({
 					...marker,
-					x: marker.x * widthScale,
-					y: marker.y * widthScale
+					x: marker.x,
+					y: marker.y
 				});
 			});
 
@@ -642,10 +629,15 @@ class YTPDFViewer {
 			pageNotes.forEach(note => {
 				this.drawNote({
 					...note,
-					x: note.x * widthScale,
-					y: note.y * widthScale
+					x: note.x,
+					y: note.y
 				});
 			});
+			// Re-enable editing if we're in edit mode
+			if (this.currentMode === this.modes.EDITING) {
+				this.enableEditing();
+			}
+
 		} catch (error) {
 			// Ignore cancelled render errors
 			if (error.name !== 'RenderingCancelledException') {
@@ -854,8 +846,6 @@ class YTPDFViewer {
 			return;
 		}
 
-		// No marker found near click
-		alert('Please click an existing marker or note to edit it');
 	}
 
 	handleNewMarker(event) {
@@ -866,15 +856,18 @@ class YTPDFViewer {
 		}
 
 		const rect = this.canvas.getBoundingClientRect();
-		const x = event.clientX - rect.left;
-		const y = event.clientY - rect.top;
+		const screenX = event.clientX - rect.left;
+		const screenY = event.clientY - rect.top;
+
+		// Convert to normalized coordinates
+		const normalized = this.coordinateManager.toNormalized(screenX, screenY);
 
 		// Add unique ID when creating marker
 		const markerId = Math.floor(Math.random() * 1000000);
 
 		// Create marker object, but don't add to markers list yet.
 		// We need to wait for user to confirm.
-		const marker = { id: markerId, x, y, time: 0, rate: 1.0 };
+		const marker = { id: markerId, x: normalized.x, y: normalized.y, time: 0, rate: 1.0 };
 
 		// Show dialog
 		this.showMarkerDialog(marker);
@@ -917,8 +910,9 @@ class YTPDFViewer {
 
 			if (existingMarker) {
 				// Update existing marker
-				existingMarker.time = marker.time;
-				existingMarker.rate = marker.rate;
+				existingMarker.time = time;
+				existingMarker.rate = rate;
+				this.drawMarker(existingMarker);
 			} else {
 				marker.time = time;
 				marker.rate = rate;
@@ -955,9 +949,12 @@ class YTPDFViewer {
 		// Create SVG overlay if it doesn't exist
 		this.ensureSVG();
 
+		// Convert normalized coordinates back to screen coordinates
+		const screen = this.coordinateManager.toScreen(marker.x, marker.y);
+
 		const speaker = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-		speaker.setAttribute('x', marker.x);
-		speaker.setAttribute('y', marker.y);
+		speaker.setAttribute('x', screen.x);
+		speaker.setAttribute('y', screen.y);
 		speaker.setAttribute('data-marker-id', marker.id);
 		speaker.setAttribute('class', 'speaker-icon');
 		speaker.textContent = '🔊';
@@ -966,9 +963,9 @@ class YTPDFViewer {
 		speaker.style.pointerEvents = 'auto';
 
 		speaker.onclick = () => {
-			if (this.currentMode === this.modes.EDITING) {
+			if (!this.isDragging && this.currentMode === this.modes.EDITING) {
 				this.showMarkerDialog(marker);
-			} else {
+			} else if (!this.isDragging) {
 				this.playYouTubeAt(this.videoIds.get(this.pageNum), marker.time, marker.rate);
 			}
 		};
@@ -977,24 +974,29 @@ class YTPDFViewer {
 	}
 
 	handleNewNote(event) {
-		// Get click coordinates relative to canvas
 		const rect = this.canvas.getBoundingClientRect();
-		const x = event.clientX - rect.left;
-		const y = event.clientY - rect.top;
+		const screenX = event.clientX - rect.left;
+		const screenY = event.clientY - rect.top;
+
+		// Convert to normalized coordinates
+		const normalized = this.coordinateManager.toNormalized(screenX, screenY);
+		const id = Math.floor(Math.random() * 1000000);
 
 		// Initialize notes map for this page if needed
 		if (!this.notes.has(this.pageNum)) {
 			this.notes.set(this.pageNum, []);
 		}
 
-		const id = Math.floor(Math.random() * 1000000)
-		// Create note object
-		const note = { id: id, x, y, text: '' };
+		// Create note object with normalized coordinates
+		const note = {
+			id: id,
+			x: normalized.x,
+			y: normalized.y,
+			text: ''
+		};
 
-		// Show dialog to edit note text
 		this.showNoteDialog(note);
 	}
-
 	showNoteDialog(note) {
 		// Check if note already exists
 		const existingNote = this.notes.get(this.pageNum)?.find(n => n.id === note.id);
@@ -1026,6 +1028,16 @@ class YTPDFViewer {
 			if (existingNote) {
 				// Update existing note
 				existingNote.text = text;
+				// Find and update the displayed note icon
+				const noteIcon = this.svg.querySelector(`text[data-note-id="${note.id}"]`);
+				if (noteIcon) {
+					if (text.trim().length > 0) {
+						noteIcon.textContent = text.trim().slice(0, 5);
+						noteIcon.style.fill = 'red';
+					} else {
+						noteIcon.textContent = '⚠️';
+					}
+				}
 			} else {
 				note.text = text;
 				// Store new note
@@ -1035,11 +1047,10 @@ class YTPDFViewer {
 			}
 			cleanup();
 		};
-
 		if (existingNote) {
 			dialog.querySelector('#delete').onclick = () => {
 				const notes = this.notes.get(this.pageNum);
-				const index = notes.findIndex(n => n === note);
+				const index = notes.findIndex(n => n.id === note.id);
 				if (index > -1) {
 					notes.splice(index, 1);
 				}
@@ -1057,21 +1068,31 @@ class YTPDFViewer {
 	}
 
 	drawNote(note) {
-		// Create SVG overlay if it doesn't exist
 		this.ensureSVG();
 
+		// Convert normalized coordinates to screen coordinates
+		const screen = this.coordinateManager.toScreen(note.x, note.y);
+
 		const icon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-		icon.setAttribute('x', note.x);
-		icon.setAttribute('y', note.y);
+		icon.setAttribute('x', screen.x);
+		icon.setAttribute('y', screen.y);
 		icon.setAttribute('data-note-id', note.id);
 		icon.setAttribute('class', 'note-icon');
-		icon.textContent = '⚠️';  // Unicode caution/warning symbol
+
+		if (note.text) {
+			icon.textContent = note.text.trim().slice(0, 5);
+			icon.style.fill = 'red';
+		} else {
+			icon.textContent = '⚠️';
+		}
+
 		icon.style.cursor = 'pointer';
-		// Enable pointer events just for the note icon
 		icon.style.pointerEvents = 'auto';
 
 		icon.onclick = () => {
-			this.showNoteDialog(note);
+			if (!this.isDragging) {
+				this.showNoteDialog(note);
+			}
 		};
 
 		this.svg.appendChild(icon);
@@ -1091,31 +1112,25 @@ class YTPDFViewer {
 		}
 	}
 
-
-	updateMarkerPosition(id, newX, newY) {
+	updateMarkerPosition(id, x, y) {
 		const markers = this.markers.get(this.pageNum);
-
 		const markerIndex = markers.findIndex(m => m.id === id);
 
 		if (markerIndex !== -1) {
-			// Update marker position while preserving other properties
-			const marker = markers[markerIndex];
-			markers[markerIndex] = {
-				...marker,
-				x: newX,
-				y: newY
-			};
+			// Update marker with new normalized coordinates
+			markers[markerIndex].x = x;
+			markers[markerIndex].y = y;
 		}
 	}
-	updateNotePosition(id, newX, newY) {
+
+	updateNotePosition(id, x, y) {
 		const notes = this.notes.get(this.pageNum);
-		// Find the note using the id
 		const noteIndex = notes.findIndex(n => n.id === id);
 
 		if (noteIndex !== -1) {
-			// Update the note's stored coordinates
-			notes[noteIndex].x = newX;
-			notes[noteIndex].y = newY;
+			// Update note with new normalized coordinates
+			notes[noteIndex].x = x;
+			notes[noteIndex].y = y;
 		}
 	}
 	loadAnnotations(file) {
