@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+	<title>TPL - Timed Practice Log</title>
+	<link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+	<div class="container">
+		<header>
+			<h1>TPL</h1>
+			<div class="cumulative-time">
+				<span id="total-hours">0</span> hours total
+			</div>
+		</header>
+
+		<main>
+			<section class="timer-container">
+				<div class="timer" id="timer">00:00:00</div>
+				<div class="controls">
+					<button id="start-btn" class="btn">Start</button>
+					<button id="pause-btn" class="btn" disabled>Pause</button>
+					<button id="end-btn" class="btn" disabled>End</button>
+				</div>
+				<div class="manual-entry">
+					<button id="oops-btn" class="btn btn-secondary">Oops! Add Missed Session</button>
+				</div>
+			</section>
+
+			<section class="visualization-container">
+				<div class="time-period-selector">
+					<button class="period-btn active" data-period="week">Week</button>
+					<button class="period-btn" data-period="month">Month</button>
+					<button class="period-btn" data-period="year">Year</button>
+					<button class="period-btn" data-period="all">All</button>
+				</div>
+				<div class="chart-container">
+					<svg id="practice-chart" width="100%" height="200"></svg>
+				</div>
+				<div class="session-notes" id="session-notes"></div>
+			</section>
+		</main>
+
+		<footer>
+			<button id="export-btn" class="btn">Export Data</button>
+		</footer>
+	</div>
+
+	<!-- Session Notes Modal -->
+	<div id="notes-modal" class="modal">
+		<div class="modal-content">
+			<h2>Session Complete</h2>
+			<p>You practiced for <span id="session-duration"></span></p>
+			<textarea id="session-notes-input" placeholder="Enter notes about your practice session"></textarea>
+			<button id="save-session-btn" class="btn">Save Session</button>
+		</div>
+	</div>
+
+	<!-- Add this before the closing body tag -->
+	<!-- Manual Entry Modal -->
+	<div id="oops-modal" class="modal">
+		<div class="modal-content">
+			<h2>Add Missed Practice Session</h2>
+			<div class="form-group">
+				<label for="manual-date">Date</label>
+				<input type="date" id="manual-date">
+			</div>
+			<div class="form-group">
+				<label for="manual-time">Start Time</label>
+				<input type="time" id="manual-time">
+			</div>
+			<div class="form-group">
+				<label for="manual-duration">Duration (minutes)</label>
+				<input type="number" id="manual-duration" min="1" step="1">
+			</div>
+			<div class="form-group">
+				<label for="manual-notes">Notes</label>
+				<textarea id="manual-notes" placeholder="Enter notes about your practice session"></textarea>
+			</div>
+			<button id="save-manual-btn" class="btn">Save Session</button>
+			<button id="cancel-manual-btn" class="btn btn-secondary">Cancel</button>
+		</div>
+	</div>
+	<script src="js/timer.js"></script>
+	<script src="js/storage.js"></script>
+	<script src="js/visualization.js"></script>
+	<script src="js/app.js"></script>
+
+
+</body>
+
+</html>

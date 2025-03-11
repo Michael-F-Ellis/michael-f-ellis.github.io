@@ -1,0 +1,266 @@
+:root {
+	--primary-color: #4a6fa5;
+	--secondary-color: #166088;
+	--accent-color: #4fc3a1;
+	--text-color: #333;
+	--background-color: #f8f9fa;
+	--light-gray: #e9ecef;
+	--dark-gray: #6c757d;
+}
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+	line-height: 1.6;
+	color: var(--text-color);
+	background-color: var(--background-color);
+	-webkit-tap-highlight-color: transparent;
+}
+
+.container {
+	width: 100%;
+	max-width: 500px;
+	margin: 0 auto;
+	padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
+header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+
+h1 {
+	font-size: 2rem;
+	font-weight: 700;
+	color: var(--primary-color);
+}
+
+.cumulative-time {
+	font-size: 1rem;
+	font-weight: 500;
+}
+
+main {
+	flex: 1;
+}
+
+.timer-container {
+	text-align: center;
+	padding: 2rem 0;
+	background-color: white;
+	border-radius: 12px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+	margin-bottom: 2rem;
+}
+
+.timer {
+	font-size: 3rem;
+	font-weight: 700;
+	margin-bottom: 1.5rem;
+	font-family: monospace;
+}
+
+.controls {
+	display: flex;
+	justify-content: center;
+	gap: 1rem;
+}
+
+.btn {
+	padding: 0.75rem 1.5rem;
+	font-size: 1rem;
+	font-weight: 500;
+	border: none;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: background-color 0.2s, transform 0.1s;
+	background-color: var(--primary-color);
+	color: white;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.btn:active:not(:disabled) {
+	transform: scale(0.98);
+}
+
+#start-btn {
+	background-color: var(--accent-color);
+}
+
+#end-btn {
+	background-color: var(--secondary-color);
+}
+
+.visualization-container {
+	background-color: white;
+	border-radius: 12px;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+	padding: 1.5rem;
+	margin-bottom: 2rem;
+}
+
+.time-period-selector {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 1rem;
+}
+
+.period-btn {
+	padding: 0.5rem;
+	border: 1px solid var(--light-gray);
+	background-color: white;
+	border-radius: 4px;
+	font-size: 0.85rem;
+	flex: 1;
+	margin: 0 0.25rem;
+}
+
+.period-btn.active {
+	background-color: var(--primary-color);
+	color: white;
+	border-color: var(--primary-color);
+}
+
+.chart-container {
+	margin-bottom: 1rem;
+	overflow-x: auto;
+}
+
+.session-notes {
+	padding: 1rem;
+	background-color: var(--light-gray);
+	border-radius: 8px;
+	min-height: 100px;
+	font-size: 0.9rem;
+}
+
+footer {
+	margin-top: auto;
+	text-align: center;
+	padding: 1rem 0;
+}
+
+.modal {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 100;
+	align-items: center;
+	justify-content: center;
+}
+
+.modal-content {
+	background-color: white;
+	padding: 1.5rem;
+	border-radius: 12px;
+	width: 90%;
+	max-width: 500px;
+}
+
+.modal h2 {
+	margin-bottom: 1rem;
+	font-size: 1.5rem;
+}
+
+#session-notes-input {
+	width: 100%;
+	height: 100px;
+	padding: 0.75rem;
+	border: 1px solid var(--light-gray);
+	border-radius: 8px;
+	margin: 1rem 0;
+	font-family: inherit;
+	resize: none;
+}
+
+#save-session-btn {
+	width: 100%;
+	background-color: var(--accent-color);
+}
+
+/* SVG styling */
+rect.practice-block {
+	fill: var(--primary-color);
+	rx: 2;
+	ry: 2;
+}
+
+rect.practice-block:hover {
+	fill: var(--secondary-color);
+	cursor: pointer;
+}
+
+line.divider {
+	stroke: white;
+	stroke-width: 1;
+}
+
+text.chart-label {
+	font-size: 10px;
+	fill: var(--dark-gray);
+}
+
+/* For iPhone X and newer with notches */
+@supports (padding: max(0px)) {
+	.container {
+		padding-left: max(1rem, env(safe-area-inset-left));
+		padding-right: max(1rem, env(safe-area-inset-right));
+		padding-bottom: max(1rem, env(safe-area-inset-bottom));
+		padding-top: max(1rem, env(safe-area-inset-top));
+	}
+}
+
+.manual-entry {
+	margin-top: 1rem;
+	text-align: center;
+}
+
+.btn-secondary {
+	background-color: var(--dark-gray);
+	font-size: 0.9rem;
+}
+
+/* Add this at the appropriate place in your existing CSS */
+#oops-modal .form-group {
+	margin-bottom: 1rem;
+}
+
+#oops-modal label {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-weight: 500;
+}
+
+#oops-modal input,
+#oops-modal textarea {
+	width: 100%;
+	padding: 0.75rem;
+	border: 1px solid var(--light-gray);
+	border-radius: 8px;
+	font-family: inherit;
+}
+
+#oops-modal textarea {
+	height: 100px;
+	resize: none;
+}
