@@ -14,10 +14,13 @@ if (navigator.standalone) {
 	document.documentElement.classList.add('ios-standalone');
 }
 
-// Prevent scrolling when interacting with controls on iOS
+// Better touch handling for iOS
 document.querySelectorAll('.btn, .period-btn').forEach(button => {
-	button.addEventListener('touchstart', (e) => {
+	// Use this approach to prevent double-firing of events and avoid scrolling
+	button.addEventListener('touchend', (e) => {
 		e.preventDefault();
+		// Manually trigger the click after preventing default
+		button.click();
 	});
 });
 
