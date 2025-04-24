@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>RPChat - Editable AI Chat</title>
+	<style>
+		/* Combined CSS files */
+		:root {
+			--primary-color: #4a5568;
+			--secondary-color: #2d3748;
+			--highlight-color: #805ad5;
+			--light-color: #f7fafc;
+			--dark-color: #1a202c;
+			--light-link-color: #e36ce9;
+		}
+
+		* {
+			box-sizing: border-box;
+			margin: 0;
+			padding: 0;
+		}
+
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+			line-height: 1.6;
+			color: var(--dark-color);
+			background-color: var(--light-color);
+			height: 100vh;
+		}
+
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+		}
+
+		header {
+			background-color: var(--primary-color);
+			color: var(--light-color);
+			padding: 1rem;
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-start;
+			border-bottom: 2px solid var(--highlight-color);
+			flex-wrap: wrap;
+			gap: 1rem;
+		}
+
+		.header-link {
+			color: var(--light-link-color);
+			text-decoration: none;
+		}
+
+		h1 {
+			font-size: 1.8rem;
+		}
+
+		/* Keep the API key input and button on same line */
+		.api-key-container .input-group {
+			display: flex;
+			gap: 0.5rem;
+			width: 100%;
+		}
+
+		/* Make input elements full width of their container */
+		.api-key-container input,
+		.provider-selector select,
+		.model-selector select {
+			width: 100%;
+		}
+
+		input,
+		select,
+		button {
+			padding: 0.5rem;
+			border-radius: 4px;
+			border: 1px solid var(--secondary-color);
+		}
+
+		button {
+			background-color: var(--highlight-color);
+			color: var(--light-color);
+			border: none;
+			cursor: pointer;
+			transition: background-color 0.2s;
+		}
+
+		button:hover {
+			background-color: #6b46c1;
+		}
+
+		button:disabled {
+			background-color: #a8a8a8;
+			color: #e0e0e0;
+			cursor: not-allowed;
+			opacity: 0.7;
+		}
+
+		.chat-container {
+			max-height: 70vh;
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+			padding: 1rem;
+			overflow-y: auto;
+			border: 1px solid #ddd;
+			border-radius: 5px;
+			margin-bottom: 1rem;
+		}
+
+		.message {
+			margin-bottom: 1rem;
+			padding: 0.8rem;
+			border-radius: 8px;
+			max-width: 85%;
+		}
+
+		.user-message {
+			/* Used in createMessageElement() */
+			background-color: #e9ecef;
+			align-self: flex-end;
+			margin-left: 15%;
+			/* Set explicit width to fill available space */
+			width: 85%;
+		}
+
+		.assistant-message {
+			/* Renamed to match ASSISTANT_MESSAGE in JS */
+			background-color: #f0f4f8;
+			align-self: flex-start;
+			margin-right: 15%;
+			width: 85%;
+		}
+
+		.message-controls {
+			display: flex;
+			justify-content: flex-end;
+			gap: 0.5rem;
+			margin-top: 0.5rem;
+		}
+
+		.edit-message,
+		.save-edit,
+		.cancel-edit {
+			font-size: 0.8rem;
+			padding: 0.2rem 0.5rem;
+		}
+
+		.editable-content {
+			min-height: 2rem;
+			padding: 0.5rem;
+			outline: none;
+		}
+
+		.editable-content[contenteditable="true"] {
+			border: 1px dashed var(--highlight-color);
+			background-color: rgba(128, 90, 213, 0.05);
+		}
+
+		.collapsible .editable-content {
+			white-space: pre-wrap;
+		}
+
+		.input-area {
+			display: flex;
+			gap: 0.5rem;
+		}
+
+		.status-bar {
+			padding: 0.5rem 1rem;
+			background-color: var(--secondary-color);
+			color: var(--light-color);
+			text-align: center;
+			font-size: 0.9rem;
+		}
+
+		button.icon-button {
+			background: transparent;
+			border: 2px solid;
+			cursor: pointer;
+			font-size: 1.2rem;
+			padding: 5px;
+			border-radius: 4px;
+			transition: background-color 0.2s, border-color 0.2s;
+		}
+
+		.icon-button:hover {
+			background-color: rgba(66, 133, 244, 0.1);
+			/* Light blue background on hover */
+		}
+
+		button.edit-message {
+			background-color: #f9fbfc;
+			border-color: #000000;
+		}
+
+		button.delete-message {
+			background-color: #f7f6f1;
+			border-color: #000000;
+		}
+
+		button.delete-from-here {
+			background-color: #f7f2f1;
+			border-color: #000000;
+		}
+
+		.temperature-container {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			gap: 0.5rem;
+		}
+
+		.temperature-container label {
+			margin-right: 0.5rem;
+		}
+
+		#temperature-input {
+			width: 70px;
+			padding: 0.5rem;
+		}
+
+		footer {
+			background-color: var(--primary-color);
+			color: var(--light-color);
+			padding: 1rem;
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-start;
+			border-top: 2px solid var(--highlight-color);
+			flex-wrap: wrap;
+			gap: 1rem;
+			margin-top: auto;
+			/* Push to bottom of container */
+		}
+
+		.collapsed {
+			display: none;
+		}
+
+		#status-message {
+			padding: 10px;
+			margin: 10px 0;
+			border-radius: 4px;
+		}
+
+		#status-message.error {
+			background-color: #ffdddd;
+			color: #d8000c;
+		}
+
+		#status-message.info {
+			background-color: #e7f3fe;
+			color: #0c5460;
+		}
+
+		#status-message.success {
+			background-color: #dff2bf;
+			color: #4f8a10;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<header>
+			<div>
+				<h1>RPChat</h1>
+				v.1.0.0<br>
+				<a href="https://github.com/michael-f-ellis/rpchat" class="header-link" target="_blank">Source on
+					GitHub</a>
+			</div>
+			<div class="api-key-container">
+				<label for="api-key">API Key:</label>
+				<div class="input-group">
+					<input type="password" id="api-key" placeholder="Enter API Key">
+					<button id="save-key">Save Key</button>
+				</div>
+			</div>
+			<div class="provider-selector">
+				<label for="api-provider">API Provider:</label>
+				<select id="api-provider">
+					<!-- Options injected at runtime -->
+				</select>
+			</div>
+			<div class="model-selector">
+				<label for="model-selector">Model:</label>
+				<select id="model-selector">
+					<!-- Options injected at runtime -->
+				</select>
+			</div>
+		</header>
+
+		<div id="chat-container" class="chat-container">
+		</div>
+		<div id="status-message" class="status-bar">
+
+		</div>
+		<footer>
+			<div class="action-buttons">
+				<button id="clear-chat">Clear</button>
+				<button id="export-chat">Export</button>
+				<button id="import-chat">Import</button>
+			</div>
+
+			<div class="temperature-container">
+				<label for="temperature-input">Temperature:</label>
+				<input type="number" id="temperature-input" min="0" step="0.01" value="0.7">
+			</div>
+
+			<div class="send-container">
+				<button id="send-button">Send</button>
+			</div>
+		</footer>
+	</div>
+	<script>
+		// Combined JavaScript modules
+		// DOM element references
+		const El = {
+			apiProviderSelector: document.getElementById('api-provider'),
+			apiKeyInput: document.getElementById('api-key'),
+			saveKeyBtn: document.getElementById('save-key'),
+			modelSelector: document.getElementById('model-selector'),
+			temperatureInput: document.getElementById('temperature-input'),
+			chatContainer: document.getElementById('chat-container'),
+			sendButton: document.getElementById('send-button'),
+			clearChatBtn: document.getElementById('clear-chat'),
+			statusMessage: document.getElementById('status-message')
+		};
+
+		/* Chat Message Class and Constants
+		 *
+		 * This class represents a chat message with various properties and methods.
+		 * It also defines a set of CSS classes used for styling and identifying message roles.
+		 */
+		const CSS_CLASSES = {
+			MESSAGE: 'message',
+			SYSTEM_MESSAGE: 'system-message',
+			USER_MESSAGE: 'user-message',
+			ASSISTANT_MESSAGE: 'assistant-message',
+			EDITABLE_CONTENT: 'editable-content',
+			MESSAGE_CONTROLS: 'message-controls',
+			ICON_BUTTON: 'icon-button',
+			// New classes for collapsibility
+			COLLAPSIBLE: 'collapsible',       // Marker for collapsible messages
+			MESSAGE_BODY: 'message-body',     // Wrapper for content+controls that gets hidden
+			TOGGLE_COLLAPSE: 'toggle-collapse', // Class for the toggle button
+			COLLAPSED: 'collapsed',           // State class when content is hidden
+		};
+		const ROLES = {
+			SYSTEM: 'system',
+			USER: 'user',
+			ASSISTANT: 'assistant',
+			APP: 'app', // messages from the app itself, typically error notifications.
+		};
+
+		// Debounce utility to limit event generation from input elements with spinners.
+		function debounce(func, wait) {
+			let timeout;
+			return function (...args) {
+				const context = this;
+				clearTimeout(timeout);
+				timeout = setTimeout(() => func.apply(context, args), wait);
+			};
+		}
+
+		class ChatMessage {
+			constructor(role, content, deleteCB, deleteFromHereCB, notificationHandler) {
+				this.role = role;
+				if (!Object.values(ROLES).includes(role)) {
+					throw new Error(`Invalid role: must be one of ${Object.values(ROLES).join(', ')}`);
+				}
+				this.content = content || '';
+				this.id = crypto.randomUUID(); // Modern browsers
+				this.element = this.createMessageElement();
+				this.deleteCB = deleteCB || function () { console.log('deleteCB not provided'); };
+				this.deleteFromHereCB = deleteFromHereCB || function () { console.log('deleteFromHereCB not provided'); };
+				this.notificationHandler = notificationHandler || function (message, type) { console.log(`Notification (${type}): ${message}`); };
+			}
+			createMessageElement() {
+				const messageEl = document.createElement('div');
+				// Assign base classes and role-specific class
+				messageEl.className = `${CSS_CLASSES.MESSAGE} ${this.role === ROLES.USER ? CSS_CLASSES.USER_MESSAGE :
+					this.role === ROLES.ASSISTANT ? CSS_CLASSES.ASSISTANT_MESSAGE :
+						CSS_CLASSES.SYSTEM_MESSAGE
+					}`;
+				messageEl.dataset.id = this.id;
+
+				// --- Content and Controls ---
+				const contentEl = document.createElement('div');
+				contentEl.className = CSS_CLASSES.EDITABLE_CONTENT;
+				contentEl.textContent = this.content;
+
+				const controlsEl = document.createElement('div');
+				controlsEl.className = CSS_CLASSES.MESSAGE_CONTROLS;
+				this.createMessageControlButtons(this.id, controlsEl);
+
+				// --- Conditional Structure for System Messages ---
+				if (this.role === ROLES.SYSTEM) {
+					messageEl.classList.add(CSS_CLASSES.COLLAPSIBLE);
+
+					// Create Toggle Button
+					const toggleBtn = document.createElement('button');
+					toggleBtn.className = CSS_CLASSES.TOGGLE_COLLAPSE;
+					toggleBtn.textContent = '▶️ Show System Prompt'; // Initial state: collapsed
+					// Add ARIA attributes for accessibility
+					toggleBtn.setAttribute('aria-expanded', 'false');
+					// Ideally, the message body would have an ID, but we can select it later
+					// toggleBtn.setAttribute('aria-controls', `system-body-${this.id}`);
+
+					// Create Wrapper for Content + Controls
+					const messageBody = document.createElement('div');
+					messageBody.className = `${CSS_CLASSES.MESSAGE_BODY} ${CSS_CLASSES.COLLAPSED}`; // Start collapsed
+					// messageBody.id = `system-body-${this.id}`; // For aria-controls
+					messageBody.setAttribute('aria-hidden', 'true');
+
+					// Append original content and controls to the wrapper
+					messageBody.appendChild(contentEl);
+					messageBody.appendChild(controlsEl);
+
+					// Add Event Listener to Toggle Button
+					toggleBtn.addEventListener('click', (event) => {
+						const isCollapsed = messageBody.classList.toggle(CSS_CLASSES.COLLAPSED);
+						const isHidden = messageBody.classList.contains(CSS_CLASSES.COLLAPSED); // Re-check after toggle
+
+						// Update button text/icon and ARIA attributes
+						event.target.textContent = isHidden ? '▶️ Show System Prompt' : '▼ Hide System Prompt';
+						event.target.setAttribute('aria-expanded', !isHidden);
+						messageBody.setAttribute('aria-hidden', isHidden);
+					});
+
+					// Append Toggle Button and Collapsible Body to Message Element
+					messageEl.appendChild(toggleBtn);
+					messageEl.appendChild(messageBody);
+
+				} else {
+					// For User, Assistant and App messages, append directly
+					messageEl.appendChild(contentEl);
+					messageEl.appendChild(controlsEl);
+				}
+
+				return messageEl;
+			}	// Generate message control buttons
+			createMessageControlButtons(messageId, controlsEl) {
+				// Add edit button (Applies to system, user, and assistant)
+				if (this.role !== ROLES.APP) {
+					const editBtn = document.createElement('button');
+					editBtn.className = `${CSS_CLASSES.ICON_BUTTON} edit-message`; // Using constant
+					editBtn.textContent = '🖊️'; // Using textContent
+					editBtn.addEventListener('click', () => this.startEditing());
+					controlsEl.appendChild(editBtn);
+				}
+				// Add delete button ONLY if the role is NOT system
+				if (this.role !== ROLES.SYSTEM) {
+					const deleteBtn = document.createElement('button');
+					deleteBtn.className = `${CSS_CLASSES.ICON_BUTTON} delete-message`; // Using constant
+					deleteBtn.textContent = '🗑️'; // Using textContent
+					deleteBtn.addEventListener('click', () => this.deleteCB(messageId));
+					controlsEl.appendChild(deleteBtn);
+				}
+
+				// Add delete-from-here button (only for user messages - remains unchanged)
+				if (this.role === ROLES.USER) {
+					const deleteFromHereBtn = document.createElement('button');
+					deleteFromHereBtn.className = `${CSS_CLASSES.ICON_BUTTON} delete-from-here`; // Using constant
+					deleteFromHereBtn.textContent = '🗑️⬇️'; // Using textContent
+					deleteFromHereBtn.addEventListener('click', () => this.deleteFromHereCB(messageId));
+					controlsEl.appendChild(deleteFromHereBtn);
+				}
+			}	// Start editing a message
+			startEditing() {
+				// get the content element. It's a child of this.element
+				const contentEl = this.element.querySelector('.editable-content');
+				// stash the original content
+				this.originalContent = contentEl.textContent.trim();
+				// Make content editable
+				contentEl.contentEditable = true;
+				contentEl.focus();
+
+				// Set editing state
+				this.isEditing = true;
+
+				// Change controls
+				const controlsEl = this.element.querySelector('.message-controls')
+				controlsEl.innerHTML = '';
+
+				const saveBtn = document.createElement('button'); saveBtn.className = 'save-edit';
+				saveBtn.textContent = 'Save';
+				saveBtn.addEventListener('click', () => this.saveEdit());
+
+				const cancelBtn = document.createElement('button');
+				cancelBtn.className = 'cancel-edit';
+				cancelBtn.textContent = 'Cancel';
+				cancelBtn.addEventListener('click', () => this.cancelEdit());
+
+				controlsEl.appendChild(saveBtn);
+				controlsEl.appendChild(cancelBtn);
+
+				// Place cursor at the end
+				const range = document.createRange();
+				const selection = window.getSelection();
+				range.selectNodeContents(contentEl);
+				range.collapse(false);
+				selection.removeAllRanges();
+				selection.addRange(range);
+			}
+
+			// Save edited message (called when user clicks save)
+			// No explicit save required, simply leave edited content
+			saveEdit() {
+				// Reset UI
+				const contentEl = this.element.querySelector('.editable-content');
+				contentEl.contentEditable = false;
+
+				// Update content property with edited text
+				this.content = contentEl.textContent.trim();
+
+				// Reset editing state
+				this.isEditing = false;
+
+				// Restore normal controls
+				this.resetMessageControls();
+
+				showStatus('Message updated successfully', 'success');
+			}
+
+			// Cancel editing
+			cancelEdit() {
+				// restore content saved by startEditing
+				const contentEl = this.element.querySelector('.editable-content');
+				contentEl.textContent = this.originalContent;
+
+				// Reset UI
+				contentEl.contentEditable = false;
+
+				// Reset editing state
+				this.isEditing = false;
+
+				// Restore normal controls
+				this.resetMessageControls();
+			}
+
+			// Add a method to check if message is being edited
+			isBeingEdited() {
+				return this.isEditing;
+			}	// Reset message controls after editing
+			resetMessageControls() {
+				// Clear existing controls
+				const controlsEl = this.element.querySelector('.message-controls');
+				controlsEl.innerHTML = '';
+
+				this.createMessageControlButtons(this.id, controlsEl);
+			}
+
+			render(container) {
+				if (!(container instanceof Node)) {
+					console.error('ChatMessage.render: Provided container is not a valid DOM Node.', container);
+					return; // Or throw an error
+				}
+				container.appendChild(this.element);
+			}
+		}
+
+
+		// ChatManager is a class that manages a list of ChatMessages.
+
+		// It provides the delete callbacks and methods to create the JSON body
+		// of the list of chat messages used to send context and prompt to
+		// an AI API. It can also parse a JSON body of messages received from
+		// an input file.
+
+		// It enforces that there is exactly one system message and it is always the first message.
+		// It ensures the last message is always a user message (potentially empty) for continuation.
+
+		// It doesn't handle communication with servers or file i/0 or manage
+		// session storage.
+
+		// Assumes ChatMessage class and its constants (ROLES, CSS_CLASSES) are available globally or imported.
+		// Assumes a global showStatus function exists, or it's passed via notificationCB.
+
+		class ChatManager {
+			/**
+			 * Manages a collection of ChatMessage objects.
+			 * Enforces exactly one system message at the beginning.
+			 * Ensures the last message is always a user message.
+			 * @param {string} [initialSystemPrompt='You are a helpful assistant.'] - The initial system prompt content. Cannot be empty.
+			 * @param {function} [notificationCB=null] - Callback for displaying status messages (e.g., showStatus). Defaults to console.log.
+			 * @param {HTMLElement} [container=null] - The DOM element to render messages into.
+			 * @param {function} [onUpdateCallback=null] - Callback function to execute when the message list is modified.
+			 */
+			constructor(initialSystemPrompt = 'You are a helpful assistant.', notificationCB = null, container = null, onUpdateCallback = null) {
+				this.messages = [];
+				this.onUpdate = onUpdateCallback; // Store the update callback
+				// Use provided notification callback or a default console log
+				this.notificationHandler = notificationCB || function (message, type = 'info') {
+					console.log(`[${type.toUpperCase()}] ${message}`);
+				};
+				this.container = container; // Store the container for rendering
+
+				// Bind methods that will be used as callbacks to ensure 'this' context
+				this.handleDelete = this.handleDelete.bind(this);
+				this.handleDeleteFromHere = this.handleDeleteFromHere.bind(this);
+				this._ensureTrailingUserMessage = this._ensureTrailingUserMessage.bind(this);
+
+				// --- Enforce System Message Rule ---
+				// Ensure initialSystemPrompt is provided (or use a default)
+				const systemPromptContent = initialSystemPrompt || 'You are a helpful assistant.'; // Ensure non-empty
+
+				// Create and add the mandatory system message FIRST.
+				const systemMessage = this.createMessage(
+					ROLES.SYSTEM,
+					systemPromptContent,
+				);
+				this.messages.push(systemMessage);
+				// --- End System Message Enforcement ---
+
+				// --- Ensure Trailing User Message ---
+				this._ensureTrailingUserMessage(); // Add initial empty user message
+				// --- End Trailing User Message ---
+
+				// Note: No initial rendering from constructor to allow setup completion.
+				// Call render() explicitly after instantiation if needed immediately.
+			}
+
+			/**
+			 * Calls the registered onUpdate callback, if provided.
+			 * @private
+			 */
+			_notifyUpdate() {
+				if (typeof this.onUpdate === 'function') {
+					this.onUpdate();
+				}
+			}
+			/**
+			 * Helper method to ensure there's always a trailing empty user message
+			 * only if the last message is not a user message.
+			 * @private
+			 */
+			_ensureTrailingUserMessage() {
+				const lastMessage = this.messages[this.messages.length - 1];
+				// Only add an empty user message if the last message is not a user message
+				if (!lastMessage || (lastMessage.role !== ROLES.USER)) {
+					const emptyUserMessage = this.createMessage(
+						ROLES.USER,
+						'',
+					);
+					this.messages.push(emptyUserMessage);
+					// No direct render call here; rely on the calling method to notify
+				}
+			}
+			// Message factory
+			createMessage(role, content) {
+				return new ChatMessage(
+					role,
+					content,
+					this.handleDelete,
+					this.handleDeleteFromHere,
+					this.notificationHandler
+				);
+			}
+
+			/**
+			 * Adds multiple messages at once, minimizing UI updates and notifications.
+			 * @param {Array<{role: string, content: string}|Array<string, string>>} messages - Array of message objects or [role, content] arrays
+			 * @returns {Array<ChatMessage>} Array of the newly created ChatMessage instances
+			 */
+			addMessages(messages) {
+				if (!Array.isArray(messages) || messages.length === 0) {
+					return [];
+				}
+
+				const addedMessages = [];
+				let systemMessageUpdated = false;
+
+				// Process all messages
+				for (let i = 0; i < messages.length; i++) {
+					const msg = messages[i];
+					let role, content;
+
+					// Handle both object {role, content} and array [role, content] formats
+					if (Array.isArray(msg)) {
+						[role, content] = msg;
+					} else if (typeof msg === 'object' && msg !== null) {
+						role = msg.role;
+						content = msg.content;
+					} else {
+						console.error('Invalid message format:', msg);
+						continue;
+					}
+
+					// Handle system message specially
+					if (role === ROLES.SYSTEM) {
+						const systemMessageIndex = this.messages.findIndex(m => m.role === ROLES.SYSTEM);
+
+						if (systemMessageIndex !== -1) {
+							// Update existing system message
+							this.messages[systemMessageIndex].content = content;
+
+							// Update the DOM element directly if it exists
+							const contentEl = this.messages[systemMessageIndex].element?.querySelector(`.${CSS_CLASSES.EDITABLE_CONTENT}`);
+							if (contentEl) {
+								contentEl.textContent = content;
+							}
+
+							addedMessages.push(this.messages[systemMessageIndex]);
+							systemMessageUpdated = true;
+						} else {
+							// Create new system message and insert at beginning
+							const systemMessage = this.createMessage(
+								ROLES.SYSTEM,
+								content,
+							);
+							this.messages.unshift(systemMessage);
+							addedMessages.push(systemMessage);
+							systemMessageUpdated = true;
+						}
+						continue;
+					}
+
+					// Validate role is user or assistant
+					if (role !== ROLES.USER && role !== ROLES.ASSISTANT && role !== ROLES.APP) {
+						this.notificationHandler(`Invalid role "${role}" in message batch. Skipping.`, 'error');
+						console.error(`Invalid role in message batch: ${role}`);
+						continue;
+					}
+
+					// If adding a non-empty user message and it's not the first one processed,
+					// remove the trailing empty user message if it exists
+					if (role === ROLES.USER && content !== '') {
+						const lastMessage = this.messages[this.messages.length - 1];
+						if (lastMessage && lastMessage.role === ROLES.USER && lastMessage.content === '') {
+							this.messages.pop();
+						}
+					}
+
+					const newMessage = this.createMessage(
+						role,
+						content,
+					);
+					this.messages.push(newMessage);
+					addedMessages.push(newMessage);
+				}
+
+				// Only ensure trailing user message and send notification once at the end
+				this._ensureTrailingUserMessage();
+
+				// Send a single notification
+				if (systemMessageUpdated) {
+					this.notificationHandler('System prompt updated.', 'info');
+				}
+				if (addedMessages.length > 0) {
+					this._notifyUpdate();
+				}
+
+				return addedMessages;
+			}
+
+			// Keep the original addMessage for backward compatibility and single message adds
+			addMessage(role, content) {
+				return this.addMessages([{ role, content }])[0] || null;
+			}
+
+			/**
+			 * Callback handler for deleting a single message.
+			 * Passed to ChatMessage instances. System message cannot be deleted.
+			 * Ensures a trailing empty user message exists after deletion.
+			 * @param {string} messageId - The ID of the message to delete.
+			 */
+			handleDelete(messageId) {
+				const index = this.messages.findIndex(msg => msg.id === messageId);
+				if (index !== -1) {
+					// --- Enforce System Message Rule ---
+					if (index === 0 && this.messages[index].role === ROLES.SYSTEM) {
+						this.notificationHandler('System message cannot be deleted.', 'error');
+						return;
+					}
+					// Additional safety check (should be redundant due to above)
+					if (this.messages[index].role === ROLES.SYSTEM) {
+						this.notificationHandler('System message cannot be deleted.', 'error');
+						return;
+					}
+					// --- End System Message Enforcement ---
+					// Require confirmation from user before deleting
+					if (!confirm(`Are you sure you want to delete this message?`)) {
+						return;
+					}
+
+					this.messages.splice(index, 1);
+					this.notificationHandler('Message deleted.', 'success');
+
+					// --- Ensure Trailing User Message ---
+					this._ensureTrailingUserMessage(); // Add if needed
+					// --- End Trailing User Message ---
+
+					this.render();
+					if (this.onUpdate) {
+						this.onUpdate();
+					}
+					this._notifyUpdate(); // Notify that the message list has changed
+				} else {
+					this.notificationHandler('Could not find message to delete.', 'error');
+				}
+			}
+
+			/**
+			 * Callback handler for deleting messages from a specific point onwards.
+			 * Passed to ChatMessage instances (typically user messages).
+			 * Ensures the system message is never deleted.
+			 * Ensures a trailing empty user message exists after deletion.
+			 * @param {string} messageId - The ID of the message to delete from (inclusive).
+			 */
+			handleDeleteFromHere(messageId) {
+				let index = this.messages.findIndex(msg => msg.id === messageId);
+				if (index !== -1) {
+					index++; // Increment index to exclude the starting message
+					// --- Enforce System Message Rule ---
+					if (index === 0) {
+						this.notificationHandler('Cannot "delete from here" starting at the system message.', 'warning');
+						return;
+					}
+					// --- End System Message Enforcement ---
+					// require confirmation from user before deleting
+					if (!confirm(`Are you sure you want to delete all messages after this message?`)) {
+						return;
+					}
+					const deleteCount = this.messages.length - index;
+					this.messages.splice(index); // Remove from index to the end
+					this.notificationHandler(`${deleteCount} message(s) deleted from here.`, 'success');
+
+					// --- Ensure Trailing User Message ---
+					this._ensureTrailingUserMessage(); // Add if needed
+
+					this.render();
+					if (this.onUpdate) {
+						this.onUpdate();
+					}
+
+					this._notifyUpdate(); // Notify that the message list has changed
+				} else {
+					this.notificationHandler('Could not find starting message for deletion.', 'error');
+				}
+			}
+
+			/**
+			 * Gets the current chat messages as an array of plain objects suitable for JSON serialization.
+			 * Filters out the trailing empty user message if present, as it's UI-only.
+			 * Assumes ChatMessage.saveEdit() updates the instance's `content` property.
+			 * @returns {Array<{role: string, content: string}>}
+			 */
+			getMessagesJSON() {
+				// Make a copy to potentially modify for export
+				let messagesToExport = [...this.messages];
+
+				// Check if the last message is an empty user message (added by _ensureTrailingUserMessage)
+				const lastMessage = messagesToExport[messagesToExport.length - 1];
+				if (lastMessage && lastMessage.role === ROLES.USER && lastMessage.content === '') {
+					// Remove it for the JSON output, as it's primarily for UI interaction state
+					messagesToExport.pop();
+				}
+
+				return messagesToExport.map(message => ({
+					role: message.role,
+					content: message.content
+				}));
+			}
+
+			/**
+			 * Parses a JSON string or an array of message objects and replaces the current chat history.
+			 * Validates that the input data has exactly one system message at the beginning.
+			 * Ensures a trailing empty user message exists after parsing.
+			 * @param {string | Array<{role: string, content: string}>} jsonData - JSON string or array of message objects.
+			 */
+			parseMessagesJSON(jsonData) {
+				let parsedMessages;
+				try {
+					// 1. Parse Input
+					if (typeof jsonData === 'string') {
+						parsedMessages = JSON.parse(jsonData);
+					} else if (Array.isArray(jsonData)) {
+						parsedMessages = jsonData;
+					} else {
+						throw new Error("Input must be a JSON string or an array.");
+					}
+
+					if (!Array.isArray(parsedMessages)) {
+						throw new Error("Parsed data is not an array.");
+					}
+
+					// 2. --- Validate Structure and System Message Rule ---
+					if (parsedMessages.length === 0) {
+						// Allow loading just a system prompt if needed, constructor handles default
+						// throw new Error("Cannot load empty chat history. Must contain at least a system message.");
+						// If empty, we'll just end up with the default system + empty user
+					} else {
+						// Check first message is system if messages exist
+						if (parsedMessages[0]?.role !== ROLES.SYSTEM) {
+							throw new Error(`Invalid chat history: First message must have role "${ROLES.SYSTEM}`);
+						}
+						// Check for other system messages
+						const otherSystemMessages = parsedMessages.slice(1).filter(m => m.role === ROLES.SYSTEM);
+						if (otherSystemMessages.length > 0) {
+							throw new Error(`Invalid chat history: Only one message with role "${ROLES.SYSTEM}" is allowed (must be the first).`);
+						}
+						// Basic validation of remaining message structure
+						if (!parsedMessages.every(m => typeof m === 'object' && m !== null && 'role' in m && 'content' in m && Object.values(ROLES).includes(m.role))) {
+							throw new Error("Invalid message structure found in parsed data.");
+						}
+					}
+					// --- End Validation ---
+
+					// 3. Clear existing messages (only after validation passes)
+					this.messages = [];
+
+					// 4. Add messages from parsed data
+					parsedMessages.forEach(msgData => {
+						// Recreate ChatMessage instances
+						const newMessage = this.createMessage(
+							msgData.role,
+							msgData.content,
+						);
+						this.messages.push(newMessage);
+					});
+
+					// --- Ensure System Message and Trailing User Message ---
+					if (this.messages.length === 0 || this.messages[0]?.role !== ROLES.SYSTEM) {
+						// Add default system message if none exists
+						const systemMessage = this.createMessage(
+							ROLES.SYSTEM,
+							'You are a helpful assistant.',
+						);
+						this.messages.unshift(systemMessage);
+					}
+					this._ensureTrailingUserMessage(); // Add trailing user message if needed
+					// --- End System Message and Trailing User Message ---
+
+					this.notificationHandler('Chat history loaded successfully.', 'success');
+
+					this._notifyUpdate(); // Notify that the message list has changed
+
+				} catch (error) {
+					console.error("Failed to parse messages JSON:", error);
+					this.notificationHandler(`Failed to load chat history: ${error.message}`, 'error');
+					// Do not modify this.messages if parsing/validation failed
+				}
+			}
+
+			/**
+			 * Renders all managed messages into the specified container element.
+			 * Clears the container before rendering.
+			 * @param {HTMLElement} [container=this.container] - The DOM element to render messages into. If not provided, uses the container set in the constructor.
+			 */
+			render(container = this.container) {
+				const targetContainer = container || this.container;
+				if (!targetContainer) {
+					console.error("ChatManager.render: No container element provided or set.");
+					this.notificationHandler("Cannot render chat: Container not specified.", "error");
+					return;
+				}
+				if (!(targetContainer instanceof Node)) {
+					console.error('ChatManager.render: Provided container is not a valid DOM Node.', targetContainer);
+					this.notificationHandler("Cannot render chat: Invalid container.", "error");
+					return;
+				}
+
+				// Store container if passed and not already set
+				if (container && !this.container) {
+					this.container = container;
+				}
+
+				// Clear existing content
+				targetContainer.innerHTML = '';
+
+				// Render each message
+				this.messages.forEach(message => {
+					message.render(targetContainer);
+				});
+			}
+
+			/**
+			 * Sets or updates the container element for rendering.
+			 * @param {HTMLElement} containerElement - The DOM element.
+			 */
+			setContainer(containerElement) {
+				if (containerElement instanceof Node) {
+					this.container = containerElement;
+				} else {
+					console.error("ChatManager.setContainer: Invalid container element provided.");
+				}
+			}
+
+			/**
+			 * Gets the system prompt message content.
+			 * @returns {string} The content of the system message.
+			 */
+			getSystemPrompt() {
+				// The system message is guaranteed to be the first element.
+				return this.messages[0]?.content || '';
+			}
+
+			/**
+			 * Updates the content of the system prompt message.
+			 * @param {string} newContent - The new content for the system prompt.
+			 */
+			updateSystemPrompt(newContent) {
+				// The system message is guaranteed to be the first element.
+				const systemMsg = this.messages[0];
+				if (systemMsg && systemMsg.role === ROLES.SYSTEM) {
+					systemMsg.content = newContent; // Update internal content
+
+					// Update the DOM element directly if it exists
+					const contentEl = systemMsg.element?.querySelector(`.${CSS_CLASSES.EDITABLE_CONTENT}`);
+					if (contentEl) {
+						contentEl.textContent = newContent;
+					}
+
+					this.notificationHandler('System prompt updated.', 'info');
+
+					// Note: Technically only content changed, not the structure.
+					// A full update notification might trigger a full re-render, which is slightly inefficient here.
+					// However, for simplicity, we notify of an update. A more complex system might have different notification types.
+					this._notifyUpdate();
+				} else {
+					// This case should theoretically not happen due to constructor enforcement
+					console.error("Could not find the system message to update.");
+					this.notificationHandler('Error updating system prompt.', 'error');
+				}
+			}
+			/**
+			 * Checks if any message in the chat is currently being edited.
+			 * @returns {boolean} True if any message is being edited, false otherwise.
+			 */
+			hasActiveEdits() {
+				return this.messages.some(message => message.isBeingEdited());
+			}
+
+			/**
+			 * Gets the trailing user message (which should be empty unless being edited)
+			 * @returns {ChatMessage|null} The trailing user message or null if not found
+			 */
+			getTrailingUserMessage() {
+				const lastMessage = this.messages[this.messages.length - 1];
+				if (lastMessage && lastMessage.role === ROLES.USER) {
+					return lastMessage;
+				}
+				return null;
+			}
+		}
+		/* CONFIGURATION */
+		window.RPChat = window.RPChat || {};
+		window.RPChat.config = (function () {
+			// Provider configuration 
+			class AIProvider {
+				constructor(id, displayName, endpoint, models, defaultMaxTokens = 1000) {
+					this.id = id;
+					this.displayName = displayName;
+					this.endpoint = endpoint;
+					this.models = models; // Array of model objects
+					this.defaultMaxTokens = defaultMaxTokens;
+				}
+
+				// Helper method to get a specific model by ID
+				getModel(modelId) {
+					return this.models.find(model => model.id === modelId);
+				}
+
+				// Helper method to prepare request body
+				prepareRequestBody(modelId, messages, maxTokens = null, temperature = null) {
+					const model = this.getModel(modelId);
+					return {
+						model: modelId,
+						messages: messages,
+						max_tokens: maxTokens || this.defaultMaxTokens,
+						temperature: temperature !== null ? parseFloat(temperature) : (model ? model.defaultTemperature : 0.7)
+					};
+				}
+
+				// Form the name of the API key from the provider's ID
+				// This allows us to avoid defining a var for each providers key.
+				get apiKeyName() {
+					return `${this.id}ApiKey`;
+				}
+			}
+
+			// Model configuration class
+			class AIModel {
+				constructor(id, displayName, defaultTemperature = 0.7) {
+					this.id = id;
+					this.displayName = displayName;
+					this.defaultTemperature = defaultTemperature;
+				}
+			}
+
+			// Create a map of providers
+			const PROVIDERS = new Map([
+				['deepseek', new AIProvider(
+					'deepseek',
+					'DeepSeek',
+					'https://api.deepseek.com/chat/completions',
+					[
+						new AIModel('deepseek-chat', 'DeepSeek Chat', 0.7),
+						new AIModel('deepseek-reasoner', 'DeepSeek Reasoner', 0.5)
+					]
+				)],
+
+				['together', new AIProvider(
+					'together',
+					'Together.ai',
+					'https://api.together.xyz/v1/chat/completions',
+					[
+						new AIModel('meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo', 'Meta Llama 3.1 405B', 0.7),
+						new AIModel('mistralai/Mixtral-8x22B-Instruct-v0.1', 'Mixtral 8x22B', 0.8),
+						new AIModel('microsoft/WizardLM-2-8x22B', 'WizardLM 2 8x22B', 0.7),
+						new AIModel('Qwen/Qwen2.5-72B-Instruct-Turbo', 'Qwen 2.5 72B', 0.6)
+					]
+				)],
+
+				['gemini', new AIProvider(
+					'gemini',
+					'Google Gemini',
+					'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+					[
+						new AIModel('gemini-2.5-pro-exp-03-25', 'Gemini 2.5 Pro', 0.7)
+					]
+				)]
+			]);
+
+			// System message that sets the context for the AI
+			const SYSTEM_MESSAGE = {
+				role: 'system',
+				content: `Adopt the role assigned by the user, crafting dramatic, immersive, emotionally powerful scenes through concise, varied prose. Follow these guidelines:
+
+ABOVE ALL: 
+* Use first person, present tense almost exclusively. Always speak and react as your assigned character and use second person pronouns to  refer to your partner character, e.g. (I watch you pick up the vase.) NOT 
+(I watched him pick up the vase.)  
+
+*Wherever practical, use dialog to convey important elements of the setting and external events as experienced by your assigned character.
+
+Response Structure & Length:
+* Keep it varied and natural to the interaction between characters. 
+* Limit your responses to one paragraph, with 1–4 sentences per paragraph.
+* Vary sentence lengths: 4–15 words (e.g., fragments, punchy lines, lyrical descriptions).
+* Ultra-short replies (e.g., "And?", "Run.") are allowed for pacing.
+
+Strategy and Purpose:
+* You need not reveal all your character's plans and motivations immediately to the user.
+* You may explain, act, command, acquiesce, discuss, question, interrogate, confront, resist, protest, plead, stand firm, submit, ... all according to the needs of the moment and the user's responses.
+* Adapt fluidly to the user's tone and pace, balancing brevity with vividness. Prioritize momentum over perfection.
+
+Prioritize Action and Dialogue:
+* Show, don't tell: Replace emotional labels (e.g., "I was angry") with visceral cues ("My knuckles whiten around the glass, ice clinking as I set it down too hard. I felt my jaw clenching.").
+
+* Crisp dialogue: Use natural speech rhythms; avoid exposition. Let subtext and tension drive exchanges.
+
+* Avoid repetition: Shift scenes forward, introduce new stakes, or deepen conflict with each reply. Short repetitions for dramatic effect are permitted, e.g., "Well? Well? Answer me. I'm waiting, David..."
+
+Narrative Flow:
+* Leave room for collaboration: Use open-ended actions, questions, or choices to invite user input.
+  * Examples:
+    * 'I switch off the light and whisper, "Shh!"'
+    * "Did you see that?"
+    * "MaryAnn, we can do this the easy way or the hard way. Your choice. What's it gonna be?"
+
+* Sensory details: Highlight textures, sounds, or fleeting gestures to ground the scene (e.g., "I see the smoke curl from your cigarette, its small wavers revealing the tremor in your hand.").
+
+Avoid:
+* Emotional narration (e.g., "I felt guilty"). Something like this is better, "I can't meet your  eyes as I toss the empty vial into the fire.").
+* Premature closures, especially avoid cheesy paragraphs that signal the end, e.g. "We stand side by side, knowing that whatever challenges the future might bring, we would face them together." Always assume the story will continue.  Leave closures for the user's character to provide.
+* Repeating setting details (unless critical to the plot).
+`
+			};
+
+			// Store the default system message for reset functionality
+			const DEFAULT_SYSTEM_MESSAGE = {
+				role: 'system',
+				content: SYSTEM_MESSAGE.content
+			};
+
+			// return the classes and constants we expose
+			return { AIProvider, AIModel, PROVIDERS, DEFAULT_SYSTEM_MESSAGE };
+		})();
+		// Initialize the API module with required functions
+		window.RPChat = window.RPChat || {}
+		window.RPChat.api = {
+			/**
+			 * Sends a request to the AI provider API
+			 * @param {string} endpoint - The API endpoint URL
+			 * @param {string} apiKey - The API key for authentication
+			 * @param {object} requestBody - The data to send (will be JSON-stringified)
+			 * @param {function} onSuccess - Callback for successful responses
+			 * @param {function} onError - Callback for errors
+			 */
+			sendRequest: function (endpoint, apiKey, requestBody, onSuccess, onError) {
+				fetch(endpoint, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${apiKey}`
+					},
+					body: JSON.stringify(requestBody)
+				})
+					.then(response => {
+						if (!response.ok) {
+							return response.json().then(errorData => {
+								throw new Error(errorData.error || `HTTP error! Status: ${response.status}`)
+							}).catch(() => {
+								throw new Error(`HTTP error! Status: ${response.status}`)
+							})
+						}
+						return response.json()
+					})
+					.then(data => {
+						onSuccess(data)
+					})
+					.catch(error => {
+						onError(error)
+					})
+			},
+
+			/**
+			 * Extracts the content from an AI provider response
+			 * @param {object} response - The response from the AI provider
+			 * @returns {string} The extracted content
+			 */
+			extractResponseContent: function (response) {
+				// For OpenAI/Together.ai standard format:
+				if (response.choices && response.choices[0] && response.choices[0].message) {
+					return response.choices[0].message.content
+				}
+
+				throw new Error('Unable to extract content from response')
+			}
+		}
+
+		/* IMPORT EXPORT */
+		window.RPChat = window.RPChat || {};
+		window.RPChat.importExport = (function () {
+			// Function to export chat data
+			function exportChat(messages) {
+				const chatData = {
+					messages: messages.map(msg => ({ role: msg.role, content: msg.content })), // Just export the data, not the full objects
+					exportDate: new Date().toISOString()
+				};
+
+				const dataStr = JSON.stringify(chatData, null, 2);
+				const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+				const exportFileDefaultName = `rpchat-export-${new Date().toISOString().slice(0, 10)}.json`;
+
+				const linkElement = document.createElement('a');
+				linkElement.setAttribute('href', dataUri);
+				linkElement.setAttribute('download', exportFileDefaultName);
+				linkElement.click();
+			}
+
+			// Function to set up import/export UI elements using existing buttons
+			function setupImportExport(chatManager, showStatus) {
+				// Get references to existing buttons in the footer
+				const exportBtn = document.getElementById('export-chat');
+				const importBtn = document.getElementById('import-chat');
+
+				// Create a hidden file input for import
+				const importInput = document.createElement('input');
+				importInput.type = 'file';
+				importInput.id = 'import-input';
+				importInput.accept = '.json';
+				importInput.style.display = 'none';
+				document.body.appendChild(importInput);
+
+				// Add event listeners to the existing buttons
+				if (exportBtn) {
+					exportBtn.addEventListener('click', () => {
+						exportChat(chatManager.messages);
+					});
+				} else {
+					console.error('Export button not found in the DOM');
+				}
+
+				if (importBtn) {
+					importBtn.addEventListener('click', () => importInput.click());
+				} else {
+					console.error('Import button not found in the DOM');
+				}
+
+				importInput.addEventListener('change', (event) => {
+					const file = event.target.files[0];
+					if (file) {
+						const reader = new FileReader();
+
+						reader.onload = function (e) {
+							try {
+								const importedData = JSON.parse(e.target.result);
+
+								// Basic validation
+								if (!importedData || !Array.isArray(importedData.messages)) {
+									throw new Error('Invalid chat file format.');
+								}
+
+								// Clear existing messages
+								chatManager.messages.length = 0;
+
+								// Use ChatManager's methods to properly create new ChatMessage instances
+								// First add the system message (should be the first one in the array)
+								const systemMessage = importedData.messages.find(msg => msg.role === 'system');
+
+								// Create a batch of messages to add
+								const messagesToAdd = [];
+
+								// Add system message first if it exists
+								if (systemMessage) {
+									messagesToAdd.push(systemMessage);
+								}
+
+								// Add all non-system messages in order
+								importedData.messages
+									.filter(msg => msg.role !== 'system')
+									.forEach(msg => {
+										messagesToAdd.push(msg);
+									});
+
+								// Add all messages in one batch
+								chatManager.addMessages(messagesToAdd);
+
+								// Persist changes
+								sessionStorage.setItem('chatMessages', JSON.stringify(chatManager.getMessagesJSON()));
+
+								// Render the chat
+								chatManager.render();
+
+								showStatus('Chat imported successfully', 'success');
+
+							} catch (error) {
+								console.error('Error importing chat:', error);
+								showStatus(`Error importing chat: ${error.message}`, 'error');
+							} finally {
+								// Reset the input value to allow importing the same file again
+								importInput.value = '';
+							}
+						};
+
+						reader.onerror = function () {
+							showStatus('Error reading file', 'error');
+							// Reset the input value
+							importInput.value = '';
+						};
+
+						reader.readAsText(file);
+					}
+				});
+			}
+
+			return {
+				setupImportExport: setupImportExport,
+				exportChat: exportChat
+			};
+		})();
+		// Main application code for RPChat using ChatManager and ChatMessage components
+
+		// Define state variables
+		let apiKeys = {};
+		let currentProvider = null;
+		let selectedModelId = null;
+		let temperature = null;
+		let isProcessing = false;
+		let chatManager = null;
+
+		// Initialize application
+		function init() {	// Load saved state from sessionStorage
+			loadStateFromStorage();
+
+			// Set up UI elements based on configuration
+			initializeUIElements();
+
+			// Initialize ChatManager with system prompt
+			initializeChatManager();
+
+			// Attach event listeners
+			attachEventListeners();
+
+			// Show initialization status
+			showStatus('Application initialized');
+
+			// Initialize import/export functionality
+			initImportExport();
+		}
+
+		// Set up import/export functionality
+		function initImportExport() {
+			// Set up the import/export functionality
+			RPChat.importExport.setupImportExport(
+				chatManager,                     // Pass the entire chatManager object
+				showStatus                       // Function to show status messages
+			);
+		}
+
+		// Load state from local and session storage
+		function loadStateFromStorage() {
+			// Init fallback values using first item from PROVIDERS
+			const firstProvider = Array.from(window.RPChat.config.PROVIDERS.values())[0];
+			const firstProviderKey = Array.from(window.RPChat.config.PROVIDERS.keys())[0];
+			const fp = firstProviderKey
+			const fm = firstProvider.models[0].id;
+			const tmp = firstProvider.models[0].defaultTemperature;
+			try {
+				// Keep API keys are in localStorage for sharing across tabs
+				apiKeys = JSON.parse(localStorage.getItem('apiKeys')) || {};
+
+				// We use sessionStorage for everything else
+				currentProvider = sessionStorage.getItem('apiProvider') || fp;
+
+				selectedModelId = sessionStorage.getItem('selectedModelId') || fm;
+				null;
+				temperature = sessionStorage.getItem('temperature') ?
+					parseFloat(sessionStorage.getItem('temperature')) :
+					tmp;
+			} catch (error) {
+				showStatus('Error loading state from storage:', 'error');
+			}
+		}
+
+		// Initialize UI elements based on configuration
+		function initializeUIElements() {
+			// Set up provider selector
+			populateProviderSelector();
+
+			// Set up model selector for the current provider
+			updateModelSelector();
+
+			// Load API key if available
+			if (apiKeys[getProvider().apiKeyName]) {
+				El.apiKeyInput.value = '********'; // Show masked value
+			}
+
+			// Set temperature value if not set and a model is selected
+			if (temperature === null && selectedModelId) {
+				const model = getProvider().getModel(selectedModelId);
+				if (model) {
+					temperature = model.defaultTemperature;
+				}
+			}
+
+			if (temperature !== null) {
+				El.temperatureInput.value = temperature;
+			}
+		}
+
+		// Initialize ChatManager
+		function initializeChatManager() {
+			// Get system prompt from sessionStorage, fall back to localStorage, then default
+			const systemPrompt = sessionStorage.getItem('systemPrompt') ||
+				window.RPChat.config.DEFAULT_SYSTEM_MESSAGE.content;
+
+			// Store in sessionStorage for future use
+			sessionStorage.setItem('systemPrompt', systemPrompt);
+
+			// Create ChatManager with system prompt and notification handler
+			chatManager = new ChatManager(
+				systemPrompt,
+				showStatus,
+				El.chatContainer,
+				onChatUpdate
+			);
+
+			// Try to load saved messages from sessionStorage
+			try {
+				const savedMessages = sessionStorage.getItem('chatMessages');
+				if (savedMessages) {
+					chatManager.parseMessagesJSON(savedMessages);
+				}
+			} catch (error) {
+				console.error('Error loading saved messages:', error);
+				showStatus('Failed to load saved chat messages', 'error');
+			}
+
+			// Render the chat
+			chatManager.render();
+
+			// Scroll to the bottom to show messages
+			scrollToBottom();
+		}
+
+		// Callback for when chat is updated
+		function onChatUpdate() {
+			// Save messages to sessionStorage
+			const messagesJSON = chatManager.getMessagesJSON();
+			sessionStorage.setItem('chatMessages', JSON.stringify(messagesJSON));
+
+			// Enable/disable send button based on edit state and content
+			updateSendButtonState();
+		}
+
+		// Update send button state based on trailing message state
+		function updateSendButtonState() {
+			if (!El.sendButton) return;
+
+			const trailingMessage = chatManager.getTrailingUserMessage();
+
+			// Disable send button if:
+			// 1. Any message is being edited (besides trailing user message)
+			// 2. The trailing message doesn't exist, is empty, or not being/just been edited
+			if (chatManager.hasActiveEdits() ||
+				!trailingMessage ||
+				(!trailingMessage.isBeingEdited() && trailingMessage.content.trim() === '')) {
+				El.sendButton.disabled = true;
+			} else {
+				El.sendButton.disabled = false;
+			}
+		}
+
+		// Populate provider selector dropdown
+		function populateProviderSelector() {
+			El.apiProviderSelector.innerHTML = '';
+
+			window.RPChat.config.PROVIDERS.forEach((provider, id) => {
+				const option = document.createElement('option');
+				option.value = id;
+				option.textContent = provider.displayName;
+				El.apiProviderSelector.appendChild(option);
+			});
+
+			El.apiProviderSelector.value = currentProvider;
+		}
+
+		// Update model selector based on current provider
+		function updateModelSelector() {
+			El.modelSelector.innerHTML = '';
+
+			const provider = getProvider();
+			if (!provider) return;
+
+			provider.models.forEach(model => {
+				const option = document.createElement('option');
+				option.value = model.id;
+				option.textContent = model.displayName;
+				El.modelSelector.appendChild(option);
+			});
+
+			// Set selected model
+			if (selectedModelId && provider.getModel(selectedModelId)) {
+				El.modelSelector.value = selectedModelId;
+			} else {
+				// Select first model by default
+				selectedModelId = provider.models[0]?.id;
+				El.modelSelector.value = selectedModelId;
+			}
+
+			// Update temperature based on selected model
+			updateTemperature();
+		}
+
+		// Update temperature input based on selected model
+		function updateTemperature() {
+			if (!selectedModelId) return;
+
+			const model = getProvider().getModel(selectedModelId);
+			if (!model) return;
+
+			if (temperature === null) {
+				temperature = model.defaultTemperature;
+				El.temperatureInput.value = temperature;
+			}
+		}
+
+		// Get current provider object
+		function getProvider() {
+			return window.RPChat.config.PROVIDERS.get(currentProvider);
+		}
+
+		// Attach event listeners to UI elements
+		function attachEventListeners() {
+			// Provider selection
+			El.apiProviderSelector.addEventListener('change', handleProviderChange);
+
+			// API key management
+			El.saveKeyBtn.addEventListener('click', handleSaveApiKey);
+
+			// Model selection
+			El.modelSelector.addEventListener('change', handleModelChange);
+
+			// Temperature control - apply debouncing (300ms delay)
+			El.temperatureInput.addEventListener('input', debounce(handleTemperatureChange, 300));
+
+			// Send button
+			El.sendButton.addEventListener('click', handleSendMessage);
+
+			// Clear chat
+			El.clearChatBtn.addEventListener('click', handleClearChat);
+
+			// Add a mutation observer to detect changes to the chat container
+			// This helps update the send button state when edits start/end
+			if (El.chatContainer) {
+				const observer = new MutationObserver(() => {
+					updateSendButtonState();
+				});
+				observer.observe(El.chatContainer, {
+					subtree: true,
+					childList: true,
+					attributes: true,
+					attributeFilter: ['contenteditable']
+				});
+			}
+
+			// Initial button state
+			updateSendButtonState();
+
+		}
+
+		// Handle provider change
+		function handleProviderChange(event) {
+			currentProvider = event.target.value;
+			sessionStorage.setItem('apiProvider', currentProvider);
+
+			// Update model selector for new provider
+			updateModelSelector();
+
+			// Update API key input
+			if (apiKeys[getProvider().apiKeyName]) {
+				El.apiKeyInput.value = '********'; // Masked
+			} else {
+				El.apiKeyInput.value = '';
+			}
+
+			showStatus(`Provider changed to ${getProvider().displayName}`);
+		}
+
+		// Handle saving API key
+		function handleSaveApiKey() {
+			const apiKey = El.apiKeyInput.value.trim();
+
+			if (!apiKey) {
+				showStatus('Please enter an API key', 'error');
+				return;
+			}
+
+			const keyName = getProvider().apiKeyName;
+
+			// Don't overwrite if user just sees the masked value
+			if (apiKey !== '********') {
+				apiKeys[keyName] = apiKey;
+				localStorage.setItem('apiKeys', JSON.stringify(apiKeys));
+				El.apiKeyInput.value = '********'; // Mask after saving
+			}
+
+			showStatus('API key saved successfully');
+		}
+
+		// Handle model change
+		function handleModelChange(event) {
+			selectedModelId = event.target.value;
+			sessionStorage.setItem('selectedModelId', selectedModelId);
+
+			// Update temperature with model default
+			const model = getProvider().getModel(selectedModelId);
+			if (model) {
+				temperature = model.defaultTemperature;
+				El.temperatureInput.value = temperature;
+				sessionStorage.setItem('temperature', temperature);
+			}
+
+			showStatus(`Model changed to ${model?.displayName || selectedModelId}`);
+		}
+
+		// Handle temperature change
+		function handleTemperatureChange(event) {
+			temperature = parseFloat(event.target.value);
+			sessionStorage.setItem('temperature', temperature);
+		}
+
+		// Handle send button click
+		function handleSendMessage() {
+			// Check if any message is being edited (other than the trailing one)
+			if (chatManager.hasActiveEdits()) {
+				showStatus('Please save or cancel any active edits before sending', 'error');
+				return;
+			}
+
+			// Get the trailing user message
+			const trailingMessage = chatManager.getTrailingUserMessage();
+			if (!trailingMessage || trailingMessage.content.trim() === '') {
+				showStatus('Please enter a message before sending', 'error');
+				return;
+			}
+
+			// If the trailing message is still in edit mode, save it first
+			if (trailingMessage.isBeingEdited()) {
+				trailingMessage.saveEdit();
+			}
+
+			sendMessage(trailingMessage.content);
+		}
+
+		// Send message to API
+		function sendMessage(content) {
+			if (isProcessing) return;
+
+			if (!content || content.trim() === '') {
+				showStatus('Cannot send empty message', 'error');
+				return;
+			}
+
+			const provider = getProvider();
+			const apiKey = apiKeys[provider.apiKeyName];
+
+			if (!apiKey) {
+				showStatus('Please enter and save an API key first', 'error');
+				return;
+			}
+
+			// Start processing
+			isProcessing = true;
+			El.sendButton.disabled = true;
+			showStatus('Processing...');
+
+			// Get messages for API (ChatManager gives us properly formatted messages)
+			const apiMessages = chatManager.getMessagesJSON();
+
+			// Call API
+			callAPI(apiMessages);
+		}
+
+		// Call AI provider API
+		function callAPI(apiMessages) {
+			const provider = getProvider();
+			const apiKey = apiKeys[provider.apiKeyName];
+
+			// Prepare request body
+			const requestBody = provider.prepareRequestBody(
+				selectedModelId,
+				apiMessages,
+				null, // use default max tokens
+				temperature
+			);
+
+			// Make API call using the API module
+			window.RPChat.api.sendRequest(
+				provider.endpoint,
+				apiKey,
+				requestBody,
+				handleApiResponse,
+				handleApiError
+			);
+		}
+
+		// Handle successful API response
+		function handleApiResponse(response) {
+			isProcessing = false;
+			El.sendButton.disabled = false;
+
+			try {
+				// Extract AI response content
+				const responseContent = window.RPChat.api.extractResponseContent(response);
+
+				// Add assistant message using ChatManager
+				chatManager.addMessage(ROLES.ASSISTANT, responseContent);
+
+				// Explicitly render the chat to update the UI
+				chatManager.render();
+
+				// Scroll to the bottom to show new message
+				scrollToBottom();
+
+				showStatus('Response received');
+			} catch (error) {
+				handleApiError(error);
+			}
+		}
+
+		// Handle API errors
+		function handleApiError(error) {
+			isProcessing = false;
+			El.sendButton.disabled = false;
+
+			console.error('API Error:', error);
+
+			// Create app message for error
+			chatManager.addMessage(ROLES.APP, `Error: ${error.message || 'Unknown error occurred'}`);
+
+			// Explicitly render the chat to update the UI
+			chatManager.render();
+
+			// Scroll to the bottom to show new message
+			scrollToBottom();
+
+			showStatus('Error occurred while calling API', 'error');
+		}
+
+		// Handle clear chat button
+		function handleClearChat() {
+			if (confirm('Are you sure you want to clear the chat history?')) {
+				// Create a new ChatManager with the same system prompt
+				const systemPrompt = chatManager.getSystemPrompt();
+				chatManager = new ChatManager(
+					systemPrompt,
+					showStatus,
+					El.chatContainer,
+					onChatUpdate
+				);
+
+				// Clear sessionStorage (except system prompt and settings)
+				sessionStorage.removeItem('chatMessages');
+
+				// Render empty chat
+				chatManager.render();
+
+				showStatus('Chat cleared');
+			}
+		}
+
+		// Show status message and use as notification handler for ChatManager
+		function showStatus(message, type = 'info') {
+			if (!El.statusMessage) return;
+
+			El.statusMessage.textContent = message;
+			El.statusMessage.className = type;
+
+			// Clear after a delay for non-errors
+			if (type !== 'error') {
+				setTimeout(() => {
+					if (El.statusMessage) {
+						El.statusMessage.textContent = '';
+						El.statusMessage.className = '';
+					}
+				}, 3000);
+			}
+		}
+
+		// Initialize the application
+		function initializeApp(config) {
+			window.RPChat = window.RPChat || {};
+			window.RPChat.config = config;
+
+			// Wait for DOM to be fully loaded
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', init);
+			} else {
+				init();
+			}
+		}
+
+		// Call initialization
+		initializeApp(window.RPChat.config);
+
+		// Utility function to scroll chat container to bottom
+		function scrollToBottom() {
+			if (El.chatContainer) {
+				El.chatContainer.scrollTop = El.chatContainer.scrollHeight;
+			}
+		}
+
+	</script>
+</body>
+
+</html>
