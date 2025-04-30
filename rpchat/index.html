@@ -1241,7 +1241,7 @@ Avoid:
 			// Function to export chat data
 			function exportChat(messages) {
 				const chatData = {
-					messages: messages.map(msg => ({ role: msg.role, content: msg.content })), // Just export the data, not the full objects
+					messages: messages, // Just export the data, not the full objects
 					exportDate: new Date().toISOString()
 				};
 
@@ -1273,7 +1273,7 @@ Avoid:
 				// Add event listeners to the existing buttons
 				if (exportBtn) {
 					exportBtn.addEventListener('click', () => {
-						exportChat(chatManager.messages);
+						exportChat(chatManager.getMessagesJSON());
 					});
 				} else {
 					console.error('Export button not found in the DOM');
