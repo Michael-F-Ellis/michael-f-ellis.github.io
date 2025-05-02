@@ -270,7 +270,7 @@
 		<header>
 			<div>
 				<h1>RPChat</h1>
-				v.1.0.2<br>
+				v1.0.3<br>
 				<a href="https://github.com/michael-f-ellis/rpchat" class="header-link" target="_blank">Source on
 					GitHub</a>
 			</div>
@@ -1804,6 +1804,9 @@ Avoid:
 
 				// Render empty chat
 				chatManager.render();
+
+				// Force update of internal state to match the new empty chat
+				chatManager._notifyUpdate();
 
 				showStatus('Chat cleared');
 			}
