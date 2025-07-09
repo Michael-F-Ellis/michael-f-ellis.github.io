@@ -69,7 +69,8 @@
 		/* Make input elements full width of their container */
 		.api-key-container input,
 		.provider-selector select,
-		.model-selector select {
+		.model-selector select,
+		.system-prompt-selector select {
 			width: 100%;
 		}
 
@@ -268,7 +269,7 @@
 		<header>
 			<div>
 				<h1>RPChat</h1>
-				v1.0.4<br>
+				v1.0.5<br>
 				<a href="https://github.com/michael-f-ellis/rpchat" class="header-link" target="_blank">Source on
 					GitHub</a>
 			</div>
@@ -288,6 +289,12 @@
 			<div class="model-selector">
 				<label for="model-selector">Model:</label>
 				<select id="model-selector">
+					<!-- Options injected at runtime -->
+				</select>
+			</div>
+			<div class="system-prompt-selector">
+				<label for="system-prompt-selector">System Prompt:</label>
+				<select id="system-prompt-selector">
 					<!-- Options injected at runtime -->
 				</select>
 			</div>
@@ -324,6 +331,7 @@
 			apiKeyInput: document.getElementById('api-key'),
 			saveKeyBtn: document.getElementById('save-key'),
 			modelSelector: document.getElementById('model-selector'),
+			systemPromptSelector: document.getElementById('system-prompt-selector'),
 			temperatureInput: document.getElementById('temperature-input'),
 			chatContainer: document.getElementById('chat-container'),
 			sendButton: document.getElementById('send-button'),
@@ -369,17 +377,25 @@
 		}
 
 		class ChatMessage {
-			constructor(role, content, deleteCB, deleteFromHereCB, notificationHandler) {
+			constructor(role, content, deleteCB, deleteFromHereCB, notificationHandler, characterId = 0, visibility = 1) {
 				this.role = role;
 				if (!Object.values(ROLES).includes(role)) {
 					throw new Error(`Invalid role: must be one of ${Object.values(ROLES).join(', ')}`);
 				}
 				this.content = content || '';
 				this.id = crypto.randomUUID(); // Modern browsers
+
+				// Step 1: Add characterId and visibility properties
+				this.characterId = characterId;
+				this.visibility = visibility;
+
 				this.element = this.createMessageElement();
 				this.deleteCB = deleteCB || function () { console.log('deleteCB not provided'); };
 				this.deleteFromHereCB = deleteFromHereCB || function () { console.log('deleteFromHereCB not provided'); };
 				this.notificationHandler = notificationHandler || function (message, type) { console.log(`Notification (${type}): ${message}`); };
+
+				// Step 1: Call console log method when a message is created
+				this._logNewMessageDetails();
 			}
 			createMessageElement() {
 				const messageEl = document.createElement('div');
@@ -389,6 +405,10 @@
 						CSS_CLASSES.SYSTEM_MESSAGE
 					}`;
 				messageEl.dataset.id = this.id;
+
+				// Step 1: Add data-character-id and data-visibility attributes
+				messageEl.dataset.characterId = this.characterId;
+				messageEl.dataset.visibility = this.visibility;
 
 				// --- Content and Controls ---
 				const contentEl = document.createElement('div');
@@ -564,6 +584,18 @@
 				container.appendChild(this.element);
 			}
 		}
+		// Step 1: Add a console log method that prints the new vars and attributes
+		ChatMessage.prototype._logNewMessageDetails = function () {
+			if (this.element) {
+				console.log(`ChatMessage Created/Details:
+    ID: ${this.id}, Role: ${this.role}
+    Character ID: ${this.characterId}, Visibility: ${this.visibility}
+    Element data-character-id: ${this.element.dataset.characterId}
+    Element data-visibility: ${this.element.dataset.visibility}`);
+			} else {
+				console.log(`ChatMessage Initializing: ID: ${this.id}, Role: ${this.role}, Character ID: ${this.characterId}, Visibility: ${this.visibility} (Element not yet created)`);
+			}
+		};
 
 
 		// ChatManager is a class that manages a list of ChatMessages.
@@ -623,13 +655,15 @@
 				// --- End Trailing User Message ---
 
 				// Note: No initial rendering from constructor to allow setup completion.
-				// Call render() explicitly after instantiation if needed immediately.
+				// Call render() explicitly after instantiation if needed immediately.				
 			}
 
 			/**
 			 * Calls the registered onUpdate callback, if provided.
 			 * @private
 			 */
+
+
 			_notifyUpdate() {
 				if (typeof this.onUpdate === 'function') {
 					this.onUpdate();
@@ -646,20 +680,25 @@
 				if (!lastMessage || (lastMessage.role !== ROLES.USER)) {
 					const emptyUserMessage = this.createMessage(
 						ROLES.USER,
-						'',
+						// Step 2: Ensure trailing user message gets default characterId and visibility
+						// These will be picked up by createMessage's new default parameters.
+						'?',
 					);
 					this.messages.push(emptyUserMessage);
 					// No direct render call here; rely on the calling method to notify
 				}
 			}
 			// Message factory
-			createMessage(role, content) {
+			// Step 2: Modify createMessage to accept characterId and visibility
+			createMessage(role, content, characterId = 0, visibility = 1) {
 				return new ChatMessage(
 					role,
 					content,
 					this.handleDelete,
 					this.handleDeleteFromHere,
-					this.notificationHandler
+					this.notificationHandler,
+					characterId, // Pass to ChatMessage constructor
+					visibility   // Pass to ChatMessage constructor
 				);
 			}
 
@@ -712,6 +751,8 @@
 							// Create new system message and insert at beginning
 							const systemMessage = this.createMessage(
 								ROLES.SYSTEM,
+								// Step 2: Ensure new system message gets default characterId and visibility
+								// These will be picked up by createMessage's new default parameters.
 								content,
 							);
 							this.messages.unshift(systemMessage);
@@ -739,6 +780,8 @@
 
 					const newMessage = this.createMessage(
 						role,
+						// Step 2: Ensure new messages get default characterId and visibility if not specified
+						// These will be picked up by createMessage's new default parameters.
 						content,
 					);
 					this.messages.push(newMessage);
@@ -864,8 +907,68 @@
 
 				return messagesToExport.map(message => ({
 					role: message.role,
-					content: message.content
+					content: message.content,
+					characterId: message.characterId, // Step 3: Include characterId
+					visibility: message.visibility    // Step 3: Include visibility
 				}));
+			}
+
+			/**
+			 * Prepares messages for API request specifically for a character.
+			 * Filters and transforms messages based on character visibility and ownership.
+			 * @param {number} nextCharacterId - The ID of the character to prepare messages for
+			 * @param {Array<ChatMessage>} [allMessages=this.messages] - Optional array of messages to use instead of this.messages
+			 * @returns {Array<{role: string, content: string}>} Array of transformed message objects for API
+			 */
+			prepareApiMessagesForCharacter(nextCharacterId, allMessages = this.messages) {
+				if (!Array.isArray(allMessages)) {
+					console.error("Invalid messages array provided to prepareApiMessagesForCharacter");
+					return [];
+				}
+
+				// Create a new array of message objects according to the specified rules
+				return allMessages.reduce((apiMessages, message) => {
+					// Skip messages that should be omitted:
+					// - Private messages not belonging to nextCharacterId
+					if (message.visibility === 0 && message.characterId !== nextCharacterId) {
+						return apiMessages; // Skip this message
+					}
+
+					// Determine the role for API based on the rules
+					let apiRole;
+
+					if (
+						// Global system messages rule
+						(message.characterId === 0 && message.visibility === 1 && message.role === ROLES.SYSTEM) ||
+						// Private messages for nextCharacterId rule
+						(message.characterId === nextCharacterId && message.visibility === 0)
+					) {
+						apiRole = 'system';
+					} else if (
+						// Public messages FROM nextCharacterId rule
+						message.characterId === nextCharacterId && message.visibility === 1
+					) {
+						apiRole = 'assistant';
+					} else if (
+						// Public messages FROM other characters rule
+						(message.characterId !== nextCharacterId && message.characterId !== 0 && message.visibility === 1) ||
+						// Public messages from human user rule
+						(message.characterId === 0 && message.visibility === 1 && message.role === ROLES.USER)
+					) {
+						apiRole = 'user';
+					} else {
+						// If no rule matches, skip this message
+						return apiMessages;
+					}
+
+					// Add the transformed message to the API messages array
+					apiMessages.push({
+						role: apiRole,
+						content: message.content
+					});
+
+					return apiMessages;
+				}, []);
 			}
 
 			/**
@@ -921,6 +1024,9 @@
 						const newMessage = this.createMessage(
 							msgData.role,
 							msgData.content,
+							// Step 3: Read characterId and visibility, provide defaults for backward compatibility
+							msgData.characterId !== undefined ? msgData.characterId : 0,
+							msgData.visibility !== undefined ? msgData.visibility : 1,
 						);
 						this.messages.push(newMessage);
 					});
@@ -930,6 +1036,8 @@
 						// Add default system message if none exists
 						const systemMessage = this.createMessage(
 							ROLES.SYSTEM,
+							// Step 2: Ensure default system message gets default characterId and visibility
+							// These will be picked up by createMessage's new default parameters.
 							'You are a helpful assistant.',
 						);
 						this.messages.unshift(systemMessage);
@@ -1102,36 +1210,44 @@
 					'https://api.deepseek.com/chat/completions',
 					[
 						new AIModel('deepseek-chat', 'DeepSeek Chat', 0.7),
-						new AIModel('deepseek-reasoner', 'DeepSeek Reasoner', 0.5)
-					]
+						new AIModel('deepseek-reasoner', 'DeepSeek Reasoner', 0.5),
+					],
+					5000
 				)],
-
+				['gemini', new AIProvider(
+					'gemini',
+					'Google Gemini',
+					'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+					[
+						new AIModel('gemini-2.5-pro', 'Gemini 2.5 Pro', 0.7, {"safetySettings": [{"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}, {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}, {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"}, {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}]}),
+						new AIModel('gemini-2.5-flash', 'Gemini 2.5 Flash', 0.7, {"safetySettings": [{"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}, {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}, {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"}, {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}]}),
+					],
+					5000
+				)],
 				['together', new AIProvider(
 					'together',
 					'Together.ai',
 					'https://api.together.xyz/v1/chat/completions',
 					[
 						new AIModel('meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo', 'Meta Llama 3.1 405B', 0.7),
-						new AIModel('mistralai/Mixtral-8x22B-Instruct-v0.1', 'Mixtral 8x22B', 0.8),
-						new AIModel('microsoft/WizardLM-2-8x22B', 'WizardLM 2 8x22B', 0.7),
-						new AIModel('Qwen/Qwen2.5-72B-Instruct-Turbo', 'Qwen 2.5 72B', 0.6)
-					]
+						new AIModel('Qwen/Qwen2.5-72B-Instruct-Turbo', 'Qwen 2.5 72B', 0.6),
+					],
+					5000
 				)],
-
-				['gemini', new AIProvider(
-					'gemini',
-					'Google Gemini',
-					'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
-					[
-						new AIModel('gemini-2.5-pro-exp-03-25', 'Gemini 2.5 Pro', 0.7)
-					]
-				)]
 			]);
 
-			// System message that sets the context for the AI
-			const SYSTEM_MESSAGE = {
-				role: 'system',
-				content: `Adopt the role assigned by the user, crafting dramatic, immersive, emotionally powerful scenes through concise, varied prose. Follow these guidelines:
+			// System prompts configuration
+			
+
+			// return the classes and constants we expose
+			return { AIProvider, AIModel, PROVIDERS };
+		})();
+
+		// Global variable to store system prompts
+			let systemPrompts = [
+				{
+					name: 'First Person',
+					content: `Adopt the role assigned by the user, crafting dramatic, immersive, emotionally powerful scenes through concise, varied prose. Follow these guidelines:
 
 ABOVE ALL: 
 * Use first person, present tense almost exclusively. Always speak and react as your assigned character and use second person pronouns to  refer to your partner character, e.g. (I watch you pick up the vase.) NOT 
@@ -1141,7 +1257,7 @@ ABOVE ALL:
 
 Response Structure & Length:
 * Keep it varied and natural to the interaction between characters. 
-* Limit your responses to one paragraph, with 1–4 sentences per paragraph.
+* Typically, limit your responses to three paragraphs, with 1–4 sentences per paragraph.
 * Vary sentence lengths: 4–15 words (e.g., fragments, punchy lines, lyrical descriptions).
 * Ultra-short replies (e.g., "And?", "Run.") are allowed for pacing.
 
@@ -1171,17 +1287,108 @@ Avoid:
 * Premature closures, especially avoid cheesy paragraphs that signal the end, e.g. "We stand side by side, knowing that whatever challenges the future might bring, we would face them together." Always assume the story will continue.  Leave closures for the user's character to provide.
 * Repeating setting details (unless critical to the plot).
 `
-			};
+				},
+				{
+					name: 'Minimal',
+					content: `You are a helpful assistant.`
+				},
+				{
+					name: 'Third Person',
+					content: `You are a fiction story generator, crafting dramatic, immersive, emotionally powerful scenes through concise, varied prose. The user will provide character descriptions and an initial scenario including locale and preceding events.
 
-			// Store the default system message for reset functionality
-			const DEFAULT_SYSTEM_MESSAGE = {
-				role: 'system',
-				content: SYSTEM_MESSAGE.content
-			};
+Follow these guidelines:
 
-			// return the classes and constants we expose
-			return { AIProvider, AIModel, PROVIDERS, DEFAULT_SYSTEM_MESSAGE };
-		})();
+ABOVE ALL: 
+* Unless directed otherwise by the users, tell the story in past tense from a neutral observer viewpoint, e.g. 'Jim entered the lobby.  Ellen looked up and said, "Hello, stranger. Where have you been?"
+
+*Wherever practical, use dialog to convey important elements of the setting and external events experienced by characters.
+
+Response Structure & Length:  
+* Tell the story in small chunks.
+* Keep it varied and natural to the interaction between characters. 
+* Typically, limit your responses to three paragraphs, with 1–4 sentences per paragraph.
+* Vary sentence lengths: 4–15 words (e.g., fragments, punchy lines, lyrical descriptions).
+* Ultra-short replies (e.g., "And?", "Run.") are allowed for pacing.
+
+Strategy and Purpose:
+* Characters need not reveal all their plans and motivations immediately to the reader.
+* You may explain, act, flee, command, acquiesce, discuss, question, interrogate, confront, resist, protest, plead, stand firm, submit, ... all according to the needs of the moment and the arc of the story.
+* Adapt fluidly to directives from the user, balancing brevity with vividness. Prioritize momentum over perfection.
+
+Prioritize Action and Dialogue:
+* Show, don't tell: Replace emotional labels (e.g., 'He was angry') with visceral cues ('His knuckles whitened around the glass, ice clinking as he set it down too hard. She saw his jaw clenching.').
+
+* Crisp dialogue: Use natural speech rhythms; avoid exposition. Let subtext and tension drive exchanges.
+
+* Avoid repetition: Shift scenes forward, introduce new stakes, or deepen conflict with each reply. Short repetitions for dramatic effect are permitted, e.g., "Well? Well? Answer me. I'm waiting, David..."
+
+Narrative Flow:
+* Leave room for collaboration: Use open-ended actions, questions, or choices to motivate character responses.
+  * Examples:
+    * 'She switched off the light and whispered, "Shh!"'
+    * "Did you see that?"
+    * "MaryAnn, we can do this the easy way or the hard way. Your choice. What's it gonna be?"
+
+* Sensory details: Highlight textures, sounds, or fleeting gestures to ground the scene (e.g., "He saw the smoke curling from her cigarette, its small wavers revealing the tremor in her hand.").
+
+Avoid:
+* Emotional narration (e.g., "She felt guilty"). Something like this is better, "She couldn't meet his eyes as she tossed the empty vial into the fire.").
+* Premature closures, especially avoid cheesy paragraphs that signal the end, e.g. "They stood side by side, knowing that whatever challenges the future might bring, they would face them together." Always assume the story will continue.  Avoid closures unless directed by the user.
+* Repeating setting details (unless critical to the plot).
+
+User Directives:
+The user prompts should be regarded as directives for the next increments of the story.  The simplest directive is a bare question mark, i.e. '?' which means, "Continue the story." Other directives might be things like, "Describe Ellen's outfit" or "Explain what delayed Ed's arrival"`
+				},
+			];
+
+		// Function to update the system prompt selector dropdown
+		function updateSystemPromptSelector() {
+			const selector = El.systemPromptSelector;
+			if (!selector) return;
+
+			// Clear existing options
+			selector.innerHTML = '';
+
+			// Add options for each system prompt
+			systemPrompts.forEach((prompt, index) => {
+				const option = document.createElement('option');
+				option.value = index;
+				option.textContent = prompt.name;
+				selector.appendChild(option);
+			});
+
+			// Set the first option as selected
+			if (systemPrompts.length > 0) {
+				selector.selectedIndex = 0;
+			}
+		}
+
+		// Function to get the current system prompt content
+		function getCurrentSystemPrompt() {
+			const selectedIndex = El.systemPromptSelector?.selectedIndex || 0;
+			return systemPrompts[selectedIndex]?.content || 'You are a helpful assistant.';
+		}
+
+		// Function to update the system prompt when selector changes
+		function updateSystemPrompt() {
+			if (!chatManager) return;
+
+			const newSystemPrompt = getCurrentSystemPrompt();
+
+			// Update the system message in the chat manager
+			const messages = chatManager.messages;
+			if (messages.length > 0 && messages[0].role === 'system') {
+				messages[0].content = newSystemPrompt;
+				// Update the DOM element
+				const contentEl = messages[0].element?.querySelector('.editable-content');
+				if (contentEl) {
+					contentEl.textContent = newSystemPrompt;
+				}
+			}
+
+			// Trigger chat update to save changes
+			chatManager._notifyUpdate();
+		}
 		// Initialize the API module with required functions
 		window.RPChat = window.RPChat || {}
 		window.RPChat.api = {
@@ -1377,6 +1584,132 @@ Avoid:
 			// Initialize ChatManager with system prompt
 			initializeChatManager();
 
+			// Test function for prepareApiMessagesForCharacter.
+			// Add this after the chatManager initialization in the init() function
+			// This makes the test function globally accessible from the browser console
+			window.testPrepareApiMessagesForCharacter = function () {
+				console.log("=== Testing prepareApiMessagesForCharacter() ===");
+
+				// Create an array of test messages with various combinations
+				const testMessages = [
+					{
+						id: "1",
+						role: ROLES.SYSTEM,
+						content: "Global system message",
+						characterId: 0,
+						visibility: 1,
+						expected: { char1: "system", char2: "system", char3: "system" }
+					},
+					{
+						id: "2",
+						role: ROLES.USER,
+						content: "User message (human)",
+						characterId: 0,
+						visibility: 1,
+						expected: { char1: "user", char2: "user", char3: "user" }
+					},
+					{
+						id: "3",
+						role: ROLES.ASSISTANT,
+						content: "Character 1 public message",
+						characterId: 1,
+						visibility: 1,
+						expected: { char1: "assistant", char2: "user", char3: "user" }
+					},
+					{
+						id: "4",
+						role: ROLES.ASSISTANT,
+						content: "Character 2 public message",
+						characterId: 2,
+						visibility: 1,
+						expected: { char1: "user", char2: "assistant", char3: "user" }
+					},
+					{
+						id: "5",
+						role: ROLES.ASSISTANT,
+						content: "Character 1 private message",
+						characterId: 1,
+						visibility: 0,
+						expected: { char1: "system", char2: null, char3: null }
+					},
+					{
+						id: "6",
+						role: ROLES.ASSISTANT,
+						content: "Character 3 private message",
+						characterId: 3,
+						visibility: 0,
+						expected: { char1: null, char2: null, char3: "system" }
+					}
+				];
+
+				// Convert the test messages into ChatMessage instances
+				const mockMessages = testMessages.map(msg => {
+					return {
+						id: msg.id,
+						role: msg.role,
+						content: msg.content,
+						characterId: msg.characterId,
+						visibility: msg.visibility,
+						element: document.createElement('div'), // Mock element
+						expected: msg.expected
+					};
+				});
+
+				// Test for different character IDs
+				const characterIds = [1, 2, 3];
+
+				// Results table for visual comparison
+				console.log("Test Message Summary:");
+				console.table(testMessages.map(m => ({
+					ID: m.id,
+					Content: m.content,
+					Role: m.role,
+					CharId: m.characterId,
+					Visible: m.visibility === 1 ? "Public" : "Private"
+				})));
+
+				// Run tests for each character
+				characterIds.forEach(charId => {
+					console.log(`\n=== Testing for Character ID: ${charId} ===`);
+
+					// Call the method with the current character ID
+					const result = chatManager.prepareApiMessagesForCharacter(charId, mockMessages);
+
+					// Log the raw result
+					console.log("Raw result:", result);
+
+					// Check if each message was processed correctly
+					const expectedResults = mockMessages
+						.filter(msg => msg.expected[`char${charId}`] !== null)
+						.map(msg => ({
+							content: msg.content,
+							expectedRole: msg.expected[`char${charId}`]
+						}));
+
+					// Create comparison table
+					const comparisonTable = result.map((item, index) => {
+						const expected = expectedResults[index];
+						return {
+							"Message": item.content,
+							"Actual Role": item.role,
+							"Expected Role": expected?.expectedRole || "Should be omitted",
+							"Match": expected && item.role === expected.expectedRole ? "✅" : "❌"
+						};
+					});
+
+					console.log(`Results for Character ${charId}:`);
+					console.table(comparisonTable);
+
+					// Verify message count
+					const expectedCount = expectedResults.length;
+					console.log(`Expected ${expectedCount} messages, got ${result.length}: ${expectedCount === result.length ? "✅" : "❌"}`);
+				});
+
+				return "Test completed - check console for results";
+			};
+
+			console.log("Test function added! Run window.testPrepareApiMessagesForCharacter() in console to test.");
+
 			// Attach event listeners
 			attachEventListeners();
 
@@ -1430,6 +1763,9 @@ Avoid:
 			// Set up model selector for the current provider
 			updateModelSelector();
 
+			// Set up system prompt selector
+			updateSystemPromptSelector();
+
 			// Load API key if available
 			if (apiKeys[getProvider().apiKeyName]) {
 				El.apiKeyInput.value = '********'; // Show masked value
@@ -1450,16 +1786,10 @@ Avoid:
 
 		// Initialize ChatManager
 		function initializeChatManager() {
-			// Get system prompt from sessionStorage, fall back to localStorage, then default
-			const systemPrompt = sessionStorage.getItem('systemPrompt') ||
-				window.RPChat.config.DEFAULT_SYSTEM_MESSAGE.content;
-
-			// Store in sessionStorage for future use
-			sessionStorage.setItem('systemPrompt', systemPrompt);
 
 			// Create ChatManager with system prompt and notification handler
 			chatManager = new ChatManager(
-				systemPrompt,
+				getCurrentSystemPrompt(),
 				showStatus,
 				El.chatContainer,
 				onChatUpdate
@@ -1585,6 +1915,9 @@ Avoid:
 
 			// Model selection
 			El.modelSelector.addEventListener('change', handleModelChange);
+
+			// System prompt selection
+			El.systemPromptSelector.addEventListener('change', updateSystemPrompt);
 
 			// Temperature control - apply debouncing (300ms delay)
 			El.temperatureInput.addEventListener('input', debounce(handleTemperatureChange, 300));
@@ -1806,10 +2139,12 @@ Avoid:
 		// Handle clear chat button
 		function handleClearChat() {
 			if (confirm('Are you sure you want to clear the chat history?')) {
-				// Create a new ChatManager with the same system prompt
-				const systemPrompt = chatManager.getSystemPrompt();
+				// Reset system prompt selector to first option
+				El.systemPromptSelector.selectedIndex = 0;
+				
+				// Create a new ChatManager with the first system prompt
 				chatManager = new ChatManager(
-					systemPrompt,
+					getCurrentSystemPrompt(),
 					showStatus,
 					El.chatContainer,
 					onChatUpdate
