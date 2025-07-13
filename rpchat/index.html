@@ -43,11 +43,151 @@
 			color: var(--light-color);
 			padding: 1rem;
 			display: flex;
+			flex-direction: column;
+			border-bottom: 2px solid var(--highlight-color);
+			gap: 1rem;
+		}
+
+		.header-title {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			width: 100%;
+			gap: 1rem;
+		}
+
+		.header-title .temperature-container {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-end;
+			gap: 0.25rem;
+			margin-left: auto;
+		}
+
+		.header-title .temperature-container label {
+			margin: 0;
+			font-size: 0.9rem;
+		}
+
+		.header-title .temperature-container input {
+			width: 60px;
+			padding: 0.25rem;
+			font-size: 0.9rem;
+		}
+
+		.header-toggle {
+			background: none;
+			border: none;
+			color: var(--light-color);
+			font-size: 1.2rem;
+			cursor: pointer;
+			padding: 0.25rem;
+			border-radius: 4px;
+			transition: background-color 0.2s;
+		}
+
+		.header-toggle:hover {
+			background-color: rgba(255, 255, 255, 0.1);
+		}
+
+		.header-content {
+			display: flex;
 			justify-content: space-between;
 			align-items: flex-start;
-			border-bottom: 2px solid var(--highlight-color);
 			flex-wrap: wrap;
 			gap: 1rem;
+			width: 100%;
+			transition: max-height 0.3s ease, opacity 0.3s ease;
+			overflow: hidden;
+		}
+
+		.header-content.collapsed {
+			max-height: 0;
+			opacity: 0;
+			padding: 0;
+			margin: 0;
+		}
+
+		.header-info {
+			display: flex;
+			flex-direction: column;
+		}
+
+		/* Mobile-specific styles */
+		@media (max-width: 768px) {
+			header {
+				padding: 0.75rem;
+			}
+
+			.header-title {
+				flex-wrap: wrap;
+				gap: 0.5rem;
+			}
+
+			.header-title h1 {
+				font-size: 1.5rem;
+			}
+
+			.header-title .temperature-container {
+				order: 1;
+				margin-left: 0;
+				flex: 1;
+			}
+
+			.header-title .temperature-container label {
+				font-size: 0.8rem;
+			}
+
+			.header-title .temperature-container input {
+				width: 50px;
+				padding: 0.2rem;
+				font-size: 0.8rem;
+			}
+
+			.header-toggle {
+				order: 2;
+				margin-left: auto;
+			}
+
+			.header-content {
+				flex-direction: column;
+				align-items: stretch;
+			}
+
+			.header-content > div {
+				width: 100%;
+			}
+
+			/* Auto-collapse on mobile by default */
+			.header-content {
+				max-height: 0;
+				opacity: 0;
+				padding: 0;
+				margin: 0;
+			}
+
+			.header-content.expanded {
+				max-height: 1000px;
+				opacity: 1;
+				padding: 0;
+				margin: 1rem 0 0 0;
+			}
+
+			.header-toggle {
+				display: block;
+			}
+		}
+
+		/* Desktop styles */
+		@media (min-width: 769px) {
+			.header-toggle {
+				display: none;
+			}
+
+			.header-content {
+				max-height: none;
+				opacity: 1;
+			}
 		}
 
 		.header-link {
@@ -179,12 +319,12 @@
 
 		button.icon-button {
 			background: transparent;
-			border: 2px solid;
+			border: none;
 			cursor: pointer;
 			font-size: 1.2rem;
 			padding: 5px;
 			border-radius: 4px;
-			transition: background-color 0.2s, border-color 0.2s;
+			transition: background-color 0.2s;
 		}
 
 		.icon-button:hover {
@@ -193,25 +333,25 @@
 		}
 
 		button.edit-message {
-			background-color: #f9fbfc;
-			border-color: #000000;
+			background: transparent;
+			border: none;
 		}
 
 		button.delete-message {
-			background-color: #f7f6f1;
-			border-color: #000000;
+			background: transparent;
+			border: none;
 		}
 
 		button.delete-from-here {
-			background-color: #f7f2f1;
-			border-color: #000000;
+			background: transparent;
+			border: none;
+			color: red;
+			font-style: bold;
 		}
 
 		.temperature-container {
 			display: flex;
-			flex-direction: row;
-			align-items: center;
-			gap: 0.5rem;
+			flex-direction: column;
 		}
 
 		.temperature-container label {
@@ -267,36 +407,46 @@
 <body>
 	<div class="container">
 		<header>
-			<div>
+			<div class="header-title">
 				<h1>RPChat</h1>
-				v1.0.5<br>
-				<a href="https://github.com/michael-f-ellis/rpchat" class="header-link" target="_blank">Source on
-					GitHub</a>
-			</div>
-			<div class="api-key-container">
-				<label for="api-key">API Key:</label>
-				<div class="input-group">
-					<input type="password" id="api-key" placeholder="Enter API Key">
-					<button id="save-key">Save Key</button>
+				<div class="header-info">
+				<p>
+					v1.0.6&nbsp
+					<a href="https://github.com/michael-f-ellis/rpchat" class="header-link" target="_blank">Source code</a>
+						</p>
 				</div>
+				<button id="header-toggle" class="header-toggle" aria-label="Toggle header">⚙️</button>
 			</div>
-			<div class="provider-selector">
-				<label for="api-provider">API Provider:</label>
-				<select id="api-provider">
-					<!-- Options injected at runtime -->
-				</select>
-			</div>
-			<div class="model-selector">
-				<label for="model-selector">Model:</label>
-				<select id="model-selector">
-					<!-- Options injected at runtime -->
-				</select>
-			</div>
-			<div class="system-prompt-selector">
-				<label for="system-prompt-selector">System Prompt:</label>
-				<select id="system-prompt-selector">
-					<!-- Options injected at runtime -->
-				</select>
+			<div id="header-content" class="header-content">
+				<div class="api-key-container">
+					<label for="api-key">API Key:</label>
+					<div class="input-group">
+						<input type="password" id="api-key" placeholder="Enter API Key">
+						<button id="save-key">Save Key</button>
+					</div>
+				</div>
+				<div class="provider-selector">
+					<label for="api-provider">API Provider:</label>
+					<select id="api-provider">
+						<!-- Options injected at runtime -->
+					</select>
+				</div>
+				<div class="model-selector">
+					<label for="model-selector">Model:</label>
+					<select id="model-selector">
+						<!-- Options injected at runtime -->
+					</select>
+				</div>
+				<div class="temperature-container">
+					<label for="temperature-input">Temperature:</label>
+					<input type="number" id="temperature-input" min="0" step="0.01" value="0.7">
+				</div>
+				<div class="system-prompt-selector">
+					<label for="system-prompt-selector">System Prompt:</label>
+					<select id="system-prompt-selector">
+						<!-- Options injected at runtime -->
+					</select>
+				</div>
 			</div>
 		</header>
 
@@ -310,11 +460,6 @@
 				<button id="clear-chat">Clear</button>
 				<button id="export-chat">Export</button>
 				<button id="import-chat">Import</button>
-			</div>
-
-			<div class="temperature-container">
-				<label for="temperature-input">Temperature:</label>
-				<input type="number" id="temperature-input" min="0" step="0.01" value="0.7">
 			</div>
 
 			<div class="send-container">
@@ -337,7 +482,9 @@
 			sendButton: document.getElementById('send-button'),
 			clearChatBtn: document.getElementById('clear-chat'),
 			statusMessage: document.getElementById('status-message'),
-			sendLabel: document.getElementById('send-label')
+			sendLabel: document.getElementById('send-label'),
+			headerToggle: document.getElementById('header-toggle'),
+			headerContent: document.getElementById('header-content')
 		};
 
 		/* Chat Message Class and Constants
@@ -474,20 +621,13 @@
 					editBtn.addEventListener('click', () => this.startEditing());
 					controlsEl.appendChild(editBtn);
 				}
-				// Add delete button ONLY if the role is NOT system
-				if (this.role !== ROLES.SYSTEM) {
-					const deleteBtn = document.createElement('button');
-					deleteBtn.className = `${CSS_CLASSES.ICON_BUTTON} delete-message`; // Using constant
-					deleteBtn.textContent = '🗑️'; // Using textContent
-					deleteBtn.addEventListener('click', () => this.deleteCB(messageId));
-					controlsEl.appendChild(deleteBtn);
-				}
+
 
 				// Add delete-from-here button (only for user messages - remains unchanged)
 				if (this.role === ROLES.USER) {
 					const deleteFromHereBtn = document.createElement('button');
 					deleteFromHereBtn.className = `${CSS_CLASSES.ICON_BUTTON} delete-from-here`; // Using constant
-					deleteFromHereBtn.textContent = '🗑️⬇️'; // Using textContent
+					deleteFromHereBtn.textContent = '⟲'; // Using textContent
 					deleteFromHereBtn.addEventListener('click', () => this.deleteFromHereCB(messageId));
 					controlsEl.appendChild(deleteFromHereBtn);
 				}
@@ -1162,12 +1302,13 @@
 		window.RPChat.config = (function () {
 			// Provider configuration 
 			class AIProvider {
-				constructor(id, displayName, endpoint, models, defaultMaxTokens = 1000) {
+				constructor(id, displayName, endpoint, models, defaultMaxTokens = 1000, apiFormat = 'openai') {
 					this.id = id;
 					this.displayName = displayName;
 					this.endpoint = endpoint;
 					this.models = models; // Array of model objects
 					this.defaultMaxTokens = defaultMaxTokens;
+					this.apiFormat = apiFormat;
 				}
 
 				// Helper method to get a specific model by ID
@@ -1178,12 +1319,78 @@
 				// Helper method to prepare request body
 				prepareRequestBody(modelId, messages, maxTokens = null, temperature = null) {
 					const model = this.getModel(modelId);
-					return {
+					
+					if (this.apiFormat === 'gemini-native') {
+						return this.prepareGeminiRequestBody(modelId, messages, maxTokens, temperature, model);
+					} else {
+						// Default to OpenAI format
+						return this.prepareOpenAIRequestBody(modelId, messages, maxTokens, temperature, model);
+					}
+				}
+
+				// OpenAI-compatible request body
+				prepareOpenAIRequestBody(modelId, messages, maxTokens, temperature, model) {
+					const requestBody = {
 						model: modelId,
 						messages: messages,
 						max_tokens: maxTokens || this.defaultMaxTokens,
 						temperature: temperature !== null ? parseFloat(temperature) : (model ? model.defaultTemperature : 0.7)
 					};
+					
+					// Include extraFields if they exist
+					if (model && model.extraFields) {
+						console.log('Model extraFields:', model.extraFields);
+						Object.assign(requestBody, model.extraFields);
+						console.log('Request body after extraFields merge:', requestBody);
+					}
+					
+					return requestBody;
+				}
+
+				// Gemini native request body
+				prepareGeminiRequestBody(modelId, messages, maxTokens, temperature, model) {
+					// Separate system instruction from conversation messages
+					let systemInstruction = null;
+					const contents = [];
+
+					for (const msg of messages) {
+						if (msg.role === 'system') {
+							// Extract system instruction (only use the first one)
+							if (!systemInstruction) {
+								systemInstruction = {
+									parts: [{ text: msg.content }]
+								};
+							}
+						} else if (msg.role === 'user' || msg.role === 'assistant') {
+							// Convert to Gemini format
+							contents.push({
+								role: msg.role === 'assistant' ? 'model' : 'user',
+								parts: [{ text: msg.content }]
+							});
+						}
+					}
+
+					const requestBody = {
+						contents: contents,
+						generationConfig: {
+							temperature: temperature !== null ? parseFloat(temperature) : (model ? model.defaultTemperature : 0.7),
+							maxOutputTokens: maxTokens || this.defaultMaxTokens
+						}
+					};
+
+					// Add system instruction if present
+					if (systemInstruction) {
+						requestBody.system_instruction = systemInstruction;
+					}
+
+					// Include extraFields (like safetySettings) if they exist
+					if (model && model.extraFields) {
+						console.log('Model extraFields:', model.extraFields);
+						Object.assign(requestBody, model.extraFields);
+						console.log('Request body after extraFields merge:', requestBody);
+					}
+
+					return requestBody;
 				}
 
 				// Form the name of the API key from the provider's ID
@@ -1195,10 +1402,11 @@
 
 			// Model configuration class
 			class AIModel {
-				constructor(id, displayName, defaultTemperature = 0.7) {
+				constructor(id, displayName, defaultTemperature = 0.7, extraFields=null) {
 					this.id = id;
 					this.displayName = displayName;
 					this.defaultTemperature = defaultTemperature;
+					this.extraFields = extraFields;
 				}
 			}
 
@@ -1212,17 +1420,19 @@
 						new AIModel('deepseek-chat', 'DeepSeek Chat', 0.7),
 						new AIModel('deepseek-reasoner', 'DeepSeek Reasoner', 0.5),
 					],
-					5000
+					5000,
+					'openai'
 				)],
 				['gemini', new AIProvider(
 					'gemini',
 					'Google Gemini',
-					'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions',
+					'https://generativelanguage.googleapis.com/v1beta/models/{{model}}:generateContent',
 					[
 						new AIModel('gemini-2.5-pro', 'Gemini 2.5 Pro', 0.7, {"safetySettings": [{"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}, {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}, {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"}, {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}]}),
 						new AIModel('gemini-2.5-flash', 'Gemini 2.5 Flash', 0.7, {"safetySettings": [{"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}, {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}, {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"}, {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}]}),
 					],
-					5000
+					5000,
+					'gemini-native'
 				)],
 				['together', new AIProvider(
 					'together',
@@ -1232,7 +1442,8 @@
 						new AIModel('meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo', 'Meta Llama 3.1 405B', 0.7),
 						new AIModel('Qwen/Qwen2.5-72B-Instruct-Turbo', 'Qwen 2.5 72B', 0.6),
 					],
-					5000
+					5000,
+					'openai'
 				)],
 			]);
 
@@ -1357,15 +1568,41 @@ The user prompts should be regarded as directives for the next increments of the
 				selector.appendChild(option);
 			});
 
-			// Set the first option as selected
-			if (systemPrompts.length > 0) {
+			// Check if there's an imported system prompt in sessionStorage
+			const importedPrompt = sessionStorage.getItem('importedSystemPrompt');
+			if (importedPrompt) {
+				const importedOption = document.createElement('option');
+				importedOption.value = 'imported';
+				importedOption.textContent = 'Imported';
+				selector.appendChild(importedOption);
+			}
+
+			// Restore the previously selected system prompt option or default to first
+			const savedSelection = sessionStorage.getItem('selectedSystemPrompt');
+			if (savedSelection === 'imported' && importedPrompt) {
+				selector.value = 'imported';
+			} else if (savedSelection && systemPrompts[parseInt(savedSelection)]) {
+				selector.value = savedSelection;
+			} else if (systemPrompts.length > 0) {
 				selector.selectedIndex = 0;
 			}
 		}
 
 		// Function to get the current system prompt content
 		function getCurrentSystemPrompt() {
-			const selectedIndex = El.systemPromptSelector?.selectedIndex || 0;
+			const selector = El.systemPromptSelector;
+			if (!selector) return 'You are a helpful assistant.';
+			
+			const selectedValue = selector.value;
+			
+			// Check if "Imported" is selected
+			if (selectedValue === 'imported') {
+				const importedPrompt = sessionStorage.getItem('importedSystemPrompt');
+				return importedPrompt || 'You are a helpful assistant.';
+			}
+			
+			// Otherwise use the standard system prompts
+			const selectedIndex = parseInt(selectedValue) || 0;
 			return systemPrompts[selectedIndex]?.content || 'You are a helpful assistant.';
 		}
 
@@ -1374,6 +1611,9 @@ The user prompts should be regarded as directives for the next increments of the
 			if (!chatManager) return;
 
 			const newSystemPrompt = getCurrentSystemPrompt();
+
+			// Save the selected system prompt option to sessionStorage
+			sessionStorage.setItem('selectedSystemPrompt', El.systemPromptSelector.value);
 
 			// Update the system message in the chat manager
 			const messages = chatManager.messages;
@@ -1428,11 +1668,49 @@ The user prompts should be regarded as directives for the next increments of the
 			},
 
 			/**
+			 * Sends a request to Gemini native API (no authorization header)
+			 * @param {string} endpoint - The API endpoint
+			 * @param {object} requestBody - The request body
+			 * @param {function} onSuccess - Callback for successful response
+			 * @param {function} onError - Callback for errors
+			 */
+			sendGeminiRequest: function (endpoint, requestBody, onSuccess, onError) {
+				fetch(endpoint, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(requestBody)
+				})
+					.then(response => {
+						if (!response.ok) {
+							return response.json().then(errorData => {
+								throw new Error(errorData.error || `HTTP error! Status: ${response.status}`)
+							}).catch(() => {
+								throw new Error(`HTTP error! Status: ${response.status}`)
+							})
+						}
+						return response.json()
+					})
+					.then(data => {
+						onSuccess(data)
+					})
+					.catch(error => {
+						onError(error)
+					})
+			},
+
+			/**
 			 * Extracts the content from an AI provider response
 			 * @param {object} response - The response from the AI provider
 			 * @returns {string} The extracted content
 			 */
 			extractResponseContent: function (response) {
+				// For Gemini native API format:
+				if (response.candidates && response.candidates[0] && response.candidates[0].content) {
+					return response.candidates[0].content.parts[0].text
+				}
+				
 				// For OpenAI/Together.ai standard format:
 				if (response.choices && response.choices[0] && response.choices[0].message) {
 					return response.choices[0].message.content
@@ -1513,6 +1791,11 @@ The user prompts should be regarded as directives for the next increments of the
 								// First add the system message (should be the first one in the array)
 								const systemMessage = importedData.messages.find(msg => msg.role === 'system');
 
+								// Save the imported system prompt to sessionStorage
+								if (systemMessage) {
+									sessionStorage.setItem('importedSystemPrompt', systemMessage.content);
+								}
+
 								// Create a batch of messages to add
 								const messagesToAdd = [];
 
@@ -1533,6 +1816,14 @@ The user prompts should be regarded as directives for the next increments of the
 
 								// Persist changes
 								sessionStorage.setItem('chatMessages', JSON.stringify(chatManager.getMessagesJSON()));
+
+								// Update the system prompt selector to include the "Imported" option
+								updateSystemPromptSelector();
+								
+								// Set the selector to "Imported" if we have an imported system prompt
+								if (systemMessage) {
+									El.systemPromptSelector.value = 'imported';
+								}
 
 								// Render the chat
 								chatManager.render();
@@ -2083,22 +2374,56 @@ The user prompts should be regarded as directives for the next increments of the
 				temperature
 			);
 
-			// Make API call using the API module
-			window.RPChat.api.sendRequest(
-				provider.endpoint,
-				apiKey,
-				requestBody,
-				handleApiResponse,
-				handleApiError
-			);
+			// Prepare endpoint and make API call
+			let endpoint = provider.endpoint;
+			if (provider.apiFormat === 'gemini-native') {
+				// Replace {{model}} placeholder with actual model ID
+				endpoint = endpoint.replace('{{model}}', selectedModelId);
+				// Add API key as URL parameter
+				endpoint += `?key=${apiKey}`;
+				
+				// Make API call without authorization header for Gemini
+				window.RPChat.api.sendGeminiRequest(
+					endpoint,
+					requestBody,
+					(response) => handleApiResponse(response, requestBody),
+					handleApiError
+				);
+			} else {
+				// Use standard OpenAI-compatible API
+				window.RPChat.api.sendRequest(
+					endpoint,
+					apiKey,
+					requestBody,
+					(response) => handleApiResponse(response, requestBody),
+					handleApiError
+				);
+			}
 		}
 
 		// Handle successful API response
-		function handleApiResponse(response) {
+		function handleApiResponse(response, requestBody) {
 			isProcessing = false;
 			El.sendButton.disabled = false;
 
 			try {
+				// Check finish_reason and log if not 'stop'
+				let finishReason = null;
+				
+				// For Gemini native API format:
+				if (response.candidates && response.candidates[0] && response.candidates[0].finishReason) {
+					finishReason = response.candidates[0].finishReason;
+				}
+				// For OpenAI/Together.ai standard format:
+				else if (response.choices && response.choices[0] && response.choices[0].finish_reason) {
+					finishReason = response.choices[0].finish_reason;
+				}
+				
+				if (finishReason && finishReason !== 'STOP' && finishReason !== 'stop') {
+					console.log('Non-stop finish_reason detected:', finishReason);
+					console.log('Request body:', requestBody);
+				}
+
 				// Extract AI response content
 				const responseContent = window.RPChat.api.extractResponseContent(response);
 
@@ -2186,10 +2511,7 @@ The user prompts should be regarded as directives for the next increments of the
 		}
 
 		// Initialize the application
-		function initializeApp(config) {
-			window.RPChat = window.RPChat || {};
-			window.RPChat.config = config;
-
+		function initializeApp() {
 			// Wait for DOM to be fully loaded
 			if (document.readyState === 'loading') {
 				document.addEventListener('DOMContentLoaded', init);
@@ -2198,8 +2520,56 @@ The user prompts should be regarded as directives for the next increments of the
 			}
 		}
 
+		// Header toggle functionality
+		function initHeaderToggle() {
+			// Check if we're on mobile
+			function isMobile() {
+				return window.innerWidth <= 768;
+			}
+
+			// Set initial state based on screen size
+			function setInitialHeaderState() {
+				if (isMobile()) {
+					El.headerContent.classList.remove('expanded');
+					El.headerToggle.setAttribute('aria-expanded', 'false');
+				} else {
+					El.headerContent.classList.add('expanded');
+					El.headerToggle.setAttribute('aria-expanded', 'true');
+				}
+				// Gear icon stays the same regardless of state
+				El.headerToggle.textContent = '⚙️';
+			}
+
+			// Toggle header content
+			function toggleHeader() {
+				const isExpanded = El.headerContent.classList.contains('expanded');
+				
+				if (isExpanded) {
+					El.headerContent.classList.remove('expanded');
+					El.headerToggle.setAttribute('aria-expanded', 'false');
+				} else {
+					El.headerContent.classList.add('expanded');
+					El.headerToggle.setAttribute('aria-expanded', 'true');
+				}
+				// Gear icon stays the same regardless of state
+				El.headerToggle.textContent = '⚙️';
+			}
+
+			// Add event listeners
+			El.headerToggle.addEventListener('click', toggleHeader);
+			
+			// Handle window resize
+			window.addEventListener('resize', setInitialHeaderState);
+			
+			// Set initial state
+			setInitialHeaderState();
+		}
+
+		// Initialize header toggle
+		initHeaderToggle();
+
 		// Call initialization
-		initializeApp(window.RPChat.config);
+		initializeApp();
 
 		// Utility function to scroll chat container to bottom
 		function scrollToBottom() {
