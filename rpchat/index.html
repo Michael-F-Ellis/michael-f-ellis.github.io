@@ -392,6 +392,11 @@
 			color: #d8000c;
 		}
 
+		#status-message.token-count {
+			background-color: #e7f3fe;
+			color: #0c5460;
+		}
+
 		#status-message.info {
 			background-color: #e7f3fe;
 			color: #0c5460;
@@ -411,7 +416,7 @@
 				<h1>RPChat</h1>
 				<div class="header-info">
 				<p>
-					v1.0.7&nbsp
+					v1.0.8&nbsp
 					<a href="https://github.com/michael-f-ellis/rpchat" class="header-link" target="_blank">Source code</a>
 						</p>
 				</div>
@@ -1439,8 +1444,21 @@
 					'Together.ai',
 					'https://api.together.xyz/v1/chat/completions',
 					[
+						new AIModel('openai/gpt-oss-120b', 'OpenAI GPT-OSS-120B', 0.7),
+						new AIModel('openai/gpt-oss-20b', 'OpenAI GPT-OSS-20B', 0.7),
 						new AIModel('meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo', 'Meta Llama 3.1 405B', 0.7),
 						new AIModel('Qwen/Qwen2.5-72B-Instruct-Turbo', 'Qwen 2.5 72B', 0.6),
+					],
+					5000,
+					'openai'
+				)],
+				['Z', new AIProvider(
+					'Z',
+					'Z',
+					'https://api.z.ai/api/paas/v4/chat/completions',
+					[
+						new AIModel('glm-4.5', 'glm-4.5', 0.7),
+						new AIModel('glm-4.5-air', 'glm-4.5-air', 0.7),
 					],
 					5000,
 					'openai'
@@ -1701,6 +1719,38 @@ The user prompts should be regarded as directives for the next increments of the
 			},
 
 			/**
+			 * Gets a formatted string for token usage from an AI provider response.
+			 * @param {object} response - The response from the AI provider.
+			 * @returns {string|null} A formatted string like "Tokens: 123 --> 456" or null.
+			 */
+			getTokenUsageString: function (response) {
+				let sentTokens = 0;
+				let receivedTokens = 0;
+				let thinkingTokens = 0;
+
+				// Gemini native API format
+				if (response.usageMetadata) {
+					sentTokens = response.usageMetadata.promptTokenCount || 0;
+					receivedTokens = response.usageMetadata.candidatesTokenCount || 0;
+					thinkingTokens = response.usageMetadata.totalTokenCount - sentTokens - receivedTokens;
+				}
+				// OpenAI/Together.ai standard format
+				else if (response.usage) {
+					sentTokens = response.usage.prompt_tokens || 0;
+					receivedTokens = response.usage.completion_tokens || 0;
+				}
+
+				if (sentTokens > 0 || receivedTokens > 0) {
+					let logMessage = `Tokens: ${sentTokens} sent,  ${receivedTokens} received`;
+					if (thinkingTokens > 0) {
+						logMessage += ` (+ ${thinkingTokens} thinking)`; 
+					}
+					return logMessage;
+				}
+				return null;
+			},
+
+			/**
 			 * Extracts the content from an AI provider response
 			 * @param {object} response - The response from the AI provider
 			 * @returns {string} The extracted content
@@ -1708,11 +1758,13 @@ The user prompts should be regarded as directives for the next increments of the
 			extractResponseContent: function (response) {
 				// For Gemini native API format:
 				if (response.candidates && response.candidates[0] && response.candidates[0].content) {
+					console.log(response)
 					return response.candidates[0].content.parts[0].text
 				}
 				
 				// For OpenAI/Together.ai standard format:
 				if (response.choices && response.choices[0] && response.choices[0].message) {
+					console.log(response)
 					return response.choices[0].message.content
 				}
 
@@ -2433,10 +2485,11 @@ The user prompts should be regarded as directives for the next increments of the
 				// Explicitly render the chat to update the UI
 				chatManager.render();
 
-				// Scroll to the bottom to show new message
-				scrollToBottom();
+				// Scroll to the top of the new message to bring it into view
+				scrollToTopOfLastAssistantMessage();
 
-				showStatus('Response received');
+				const tokenInfo = window.RPChat.api.getTokenUsageString(response);
+				showStatus(tokenInfo || 'Response received', 'token-count');
 			} catch (error) {
 				handleApiError(error);
 			}
@@ -2491,24 +2544,30 @@ The user prompts should be regarded as directives for the next increments of the
 		// Show status message and use as notification handler for ChatManager
 		function showStatus(message, type = 'info') {
 			if (!El.statusMessage) return;
+			console.log('status message:', message)
 
 			El.statusMessage.textContent = message;
 			El.statusMessage.className = type;
 
-			// Clear after a delay for non-errors
-			if (type !== 'error') {
-				let timeout = 3000;
-				if (type === 'success') {
-					timeout = 500; // just a quick acknowledgement
-				}
-				setTimeout(() => {
-					if (El.statusMessage) {
-						El.statusMessage.textContent = '';
-						El.statusMessage.className = '';
-					}
-				}, timeout);
+            /*
+            // Leave the message visible for token counts and error
+			if (type == 'error' || type=='token-count') {
+				return;
 			}
-		}
+			// Otherwise, auto-clear after a delay
+			let timeout = 10000;
+			if (type === 'success') {
+				timeout = 500; // just a quick acknowledgement
+			}
+			setTimeout(() => {
+				if (El.statusMessage) {
+					El.statusMessage.textContent = '';
+					El.statusMessage.className = '';
+					console.log('status message cleared')
+				}
+			}, timeout);
+			*/
+	   }	
 
 		// Initialize the application
 		function initializeApp() {
@@ -2570,6 +2629,26 @@ The user prompts should be regarded as directives for the next increments of the
 
 		// Call initialization
 		initializeApp();
+
+		// Utility function to scroll to the top of the last assistant message
+		function scrollToTopOfLastAssistantMessage() {
+			if (El.chatContainer) {
+				const assistantMessages = El.chatContainer.querySelectorAll('.assistant-message');
+				if (assistantMessages.length > 0) {
+					const lastAssistantMessage = assistantMessages[assistantMessages.length - 1];
+					const containerRect = El.chatContainer.getBoundingClientRect();
+					const messageRect = lastAssistantMessage.getBoundingClientRect();
+
+					// Calculate the scroll amount needed to bring the message's top to the container's top.
+					const scrollAmount = El.chatContainer.scrollTop + (messageRect.top - containerRect.top);
+
+					El.chatContainer.scrollTo({
+						top: scrollAmount,
+						behavior: 'smooth'
+					});
+				}
+			}
+		}
 
 		// Utility function to scroll chat container to bottom
 		function scrollToBottom() {
