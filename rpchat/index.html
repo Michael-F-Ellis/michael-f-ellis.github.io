@@ -154,7 +154,7 @@
 				align-items: stretch;
 			}
 
-			.header-content > div {
+			.header-content>div {
 				width: 100%;
 			}
 
@@ -406,6 +406,67 @@
 			background-color: #dff2bf;
 			color: #4f8a10;
 		}
+
+		/* Modal Styles */
+		.modal-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background-color: rgba(0, 0, 0, 0.6);
+			display: none;
+			/* Hidden by default */
+			justify-content: center;
+			align-items: center;
+			z-index: 1000;
+		}
+
+		.modal-content {
+			background-color: var(--light-color);
+			padding: 2rem;
+			border-radius: 8px;
+			box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+			width: 90%;
+			max-width: 500px;
+		}
+
+		.modal-content h2 {
+			margin-top: 0;
+			margin-bottom: 1.5rem;
+			color: var(--primary-color);
+		}
+
+		.modal-options .option {
+			display: flex;
+			align-items: center;
+			margin-bottom: 1rem;
+		}
+
+		.modal-options .option input[type="checkbox"] {
+			margin-right: 0.75rem;
+			width: auto;
+			/* Override default full-width */
+		}
+
+		.modal-buttons {
+			display: flex;
+			justify-content: flex-end;
+			gap: 0.75rem;
+			margin-top: 2rem;
+		}
+
+		.modal-buttons button {
+			padding: 0.6rem 1.2rem;
+		}
+
+		.modal-buttons .cancel-btn {
+			background-color: var(--secondary-color);
+		}
+
+		.modal-buttons .cancel-btn:hover {
+			background-color: #4a5568;
+		}
 	</style>
 </head>
 
@@ -415,10 +476,11 @@
 			<div class="header-title">
 				<h1>RPChat</h1>
 				<div class="header-info">
-				<p>
-					v1.0.8&nbsp
-					<a href="https://github.com/michael-f-ellis/rpchat" class="header-link" target="_blank">Source code</a>
-						</p>
+					<p>
+						v1.0.9&nbsp
+						<a href="https://github.com/michael-f-ellis/rpchat" class="header-link" target="_blank">Source
+							code</a>
+					</p>
 				</div>
 				<button id="header-toggle" class="header-toggle" aria-label="Toggle header">⚙️</button>
 			</div>
@@ -465,6 +527,7 @@
 				<button id="clear-chat">Clear</button>
 				<button id="export-chat">Export</button>
 				<button id="import-chat">Import</button>
+				<button id="extract-chat-md">Extract</button>
 			</div>
 
 			<div class="send-container">
@@ -473,6 +536,35 @@
 			</div>
 		</footer>
 	</div>
+
+	<div id="extract-md-modal" class="modal-overlay">
+		<div class="modal-content">
+			<h2>Extract Chat to Markdown</h2>
+			<div class="modal-options">
+				<div class="option">
+					<input type="checkbox" id="md-include-assistant" checked>
+					<label for="md-include-assistant">Include Assistant messages</label>
+				</div>
+				<div class="option">
+					<input type="checkbox" id="md-include-user" checked>
+					<label for="md-include-user">Include User messages</label>
+				</div>
+				<div class="option">
+					<input type="checkbox" id="md-include-system">
+					<label for="md-include-system">Include System prompt</label>
+				</div>
+				<div class="option">
+					<input type="checkbox" id="md-include-labels">
+					<label for="md-include-labels">Add role labels (e.g., "User:")</label>
+				</div>
+			</div>
+			<div class="modal-buttons">
+				<button id="extract-md-cancel" class="cancel-btn">Cancel</button>
+				<button id="extract-md-confirm">Extract</button>
+			</div>
+		</div>
+	</div>
+
 	<script>
 		// Combined JavaScript modules
 		// DOM element references
@@ -489,7 +581,16 @@
 			statusMessage: document.getElementById('status-message'),
 			sendLabel: document.getElementById('send-label'),
 			headerToggle: document.getElementById('header-toggle'),
-			headerContent: document.getElementById('header-content')
+			headerContent: document.getElementById('header-content'),
+			// New elements for Markdown extraction
+			extractMdBtn: document.getElementById('extract-chat-md'),
+			extractMdModal: document.getElementById('extract-md-modal'),
+			extractMdConfirmBtn: document.getElementById('extract-md-confirm'),
+			extractMdCancelBtn: document.getElementById('extract-md-cancel'),
+			mdIncludeAssistant: document.getElementById('md-include-assistant'),
+			mdIncludeUser: document.getElementById('md-include-user'),
+			mdIncludeSystem: document.getElementById('md-include-system'),
+			mdIncludeLabels: document.getElementById('md-include-labels')
 		};
 
 		/* Chat Message Class and Constants
@@ -1052,9 +1153,7 @@
 
 				return messagesToExport.map(message => ({
 					role: message.role,
-					content: message.content,
-					characterId: message.characterId, // Step 3: Include characterId
-					visibility: message.visibility    // Step 3: Include visibility
+					content: message.content
 				}));
 			}
 
@@ -1168,10 +1267,7 @@
 						// Recreate ChatMessage instances
 						const newMessage = this.createMessage(
 							msgData.role,
-							msgData.content,
-							// Step 3: Read characterId and visibility, provide defaults for backward compatibility
-							msgData.characterId !== undefined ? msgData.characterId : 0,
-							msgData.visibility !== undefined ? msgData.visibility : 1,
+							msgData.content
 						);
 						this.messages.push(newMessage);
 					});
@@ -1324,7 +1420,7 @@
 				// Helper method to prepare request body
 				prepareRequestBody(modelId, messages, maxTokens = null, temperature = null) {
 					const model = this.getModel(modelId);
-					
+
 					if (this.apiFormat === 'gemini-native') {
 						return this.prepareGeminiRequestBody(modelId, messages, maxTokens, temperature, model);
 					} else {
@@ -1341,14 +1437,14 @@
 						max_tokens: maxTokens || this.defaultMaxTokens,
 						temperature: temperature !== null ? parseFloat(temperature) : (model ? model.defaultTemperature : 0.7)
 					};
-					
+
 					// Include extraFields if they exist
 					if (model && model.extraFields) {
 						console.log('Model extraFields:', model.extraFields);
 						Object.assign(requestBody, model.extraFields);
 						console.log('Request body after extraFields merge:', requestBody);
 					}
-					
+
 					return requestBody;
 				}
 
@@ -1407,7 +1503,7 @@
 
 			// Model configuration class
 			class AIModel {
-				constructor(id, displayName, defaultTemperature = 0.7, extraFields=null) {
+				constructor(id, displayName, defaultTemperature = 0.7, extraFields = null) {
 					this.id = id;
 					this.displayName = displayName;
 					this.defaultTemperature = defaultTemperature;
@@ -1426,6 +1522,16 @@
 						new AIModel('deepseek-reasoner', 'DeepSeek Reasoner', 0.5),
 					],
 					5000,
+					'openai'
+				)],
+				['fireworks', new AIProvider(
+					'fireworks',
+					'Fireworks',
+					'https://api.fireworks.ai/inference/v1/chat/completions',
+					[
+						new AIModel('accounts/fireworks/models/qwen3-235b-a22b-instruct-2507', 'Qwen 3 235B', 0.7),
+					],
+					4999,
 					'openai'
 				)],
 				['gemini', new AIProvider(
@@ -1610,15 +1716,15 @@ The user prompts should be regarded as directives for the next increments of the
 		function getCurrentSystemPrompt() {
 			const selector = El.systemPromptSelector;
 			if (!selector) return 'You are a helpful assistant.';
-			
+
 			const selectedValue = selector.value;
-			
+
 			// Check if "Imported" is selected
 			if (selectedValue === 'imported') {
 				const importedPrompt = sessionStorage.getItem('importedSystemPrompt');
 				return importedPrompt || 'You are a helpful assistant.';
 			}
-			
+
 			// Otherwise use the standard system prompts
 			const selectedIndex = parseInt(selectedValue) || 0;
 			return systemPrompts[selectedIndex]?.content || 'You are a helpful assistant.';
@@ -1721,8 +1827,8 @@ The user prompts should be regarded as directives for the next increments of the
 			/**
 			 * Gets a formatted string for token usage from an AI provider response.
 			 * @param {object} response - The response from the AI provider.
-			 * @returns {string|null} A formatted string like "Tokens: 123 --> 456" or null.
-			 */
+			 * @returns {string|null} A formatted string of token counts, or null if no tokens were used.
+				*/
 			getTokenUsageString: function (response) {
 				let sentTokens = 0;
 				let receivedTokens = 0;
@@ -1743,7 +1849,7 @@ The user prompts should be regarded as directives for the next increments of the
 				if (sentTokens > 0 || receivedTokens > 0) {
 					let logMessage = `Tokens: ${sentTokens} sent,  ${receivedTokens} received`;
 					if (thinkingTokens > 0) {
-						logMessage += ` (+ ${thinkingTokens} thinking)`; 
+						logMessage += ` (+ ${thinkingTokens} thinking)`;
 					}
 					return logMessage;
 				}
@@ -1761,7 +1867,7 @@ The user prompts should be regarded as directives for the next increments of the
 					console.log(response)
 					return response.candidates[0].content.parts[0].text
 				}
-				
+
 				// For OpenAI/Together.ai standard format:
 				if (response.choices && response.choices[0] && response.choices[0].message) {
 					console.log(response)
@@ -1798,6 +1904,7 @@ The user prompts should be regarded as directives for the next increments of the
 				// Get references to existing buttons in the footer
 				const exportBtn = document.getElementById('export-chat');
 				const importBtn = document.getElementById('import-chat');
+				const extractBtn = document.getElementById('extract-chat-md');
 
 				// Create a hidden file input for import
 				const importInput = document.createElement('input');
@@ -1820,6 +1927,48 @@ The user prompts should be regarded as directives for the next increments of the
 					importBtn.addEventListener('click', () => importInput.click());
 				} else {
 					console.error('Import button not found in the DOM');
+				}
+
+				// New logic for Markdown extraction
+				if (extractBtn) {
+					const modal = El.extractMdModal;
+
+					extractBtn.addEventListener('click', () => {
+						modal.style.display = 'flex';
+					});
+
+					El.extractMdCancelBtn.addEventListener('click', () => {
+						modal.style.display = 'none';
+					});
+
+					El.extractMdConfirmBtn.addEventListener('click', () => {
+						const assistant = El.mdIncludeAssistant.checked;
+						const user = El.mdIncludeUser.checked;
+						const system = El.mdIncludeSystem.checked;
+						const labels = El.mdIncludeLabels.checked;
+
+						const markdownContent = window.extractChatToMarkdown(assistant, user, system, labels);
+
+						if (markdownContent) {
+							const dataUri = 'data:text/markdown;charset=utf-8,' + encodeURIComponent(markdownContent);
+							const exportFileDefaultName = `rpchat-extract-${new Date().toISOString().slice(0, 10)}.md`;
+
+							const linkElement = document.createElement('a');
+							linkElement.setAttribute('href', dataUri);
+							linkElement.setAttribute('download', exportFileDefaultName);
+							linkElement.click();
+						}
+						modal.style.display = 'none';
+					});
+
+					window.addEventListener('click', (event) => {
+						if (event.target === modal) {
+							modal.style.display = 'none';
+						}
+					});
+
+				} else {
+					console.error('Extract button not found in the DOM');
 				}
 
 				importInput.addEventListener('change', (event) => {
@@ -1871,7 +2020,7 @@ The user prompts should be regarded as directives for the next increments of the
 
 								// Update the system prompt selector to include the "Imported" option
 								updateSystemPromptSelector();
-								
+
 								// Set the selector to "Imported" if we have an imported system prompt
 								if (systemMessage) {
 									El.systemPromptSelector.value = 'imported';
@@ -1916,6 +2065,52 @@ The user prompts should be regarded as directives for the next increments of the
 		let temperature = null;
 		let isProcessing = false;
 		let chatManager = null;
+
+		/**
+		 * Extracts the current chat to a Markdown formatted string.
+		 * This function is available on the window object for console access.
+		 * @param {boolean} [assistant=true] - Include assistant messages.
+		 * @param {boolean} [user=true] - Include user messages.
+		 * @param {boolean} [system=false] - Include system messages.
+		 * @param {boolean} [labels=false] - Add role labels to each message.
+		 * @returns {string} The chat content in Markdown format.
+		 */
+		window.extractChatToMarkdown = function (assistant = true, user = true, system = false, labels = false) {
+			if (!chatManager) {
+				console.error("ChatManager not initialized.");
+				return "Error: ChatManager not found.";
+			}
+
+			// Filter out the trailing empty user message
+			const messagesToExport = chatManager.getMessagesJSON();
+
+			let markdown = '';
+
+			messagesToExport.forEach(message => {
+				let include = false;
+				if (assistant && message.role === ROLES.ASSISTANT) {
+					include = true;
+				}
+				if (user && message.role === ROLES.USER && message.content) { // Exclude empty user messages
+					include = true;
+				}
+				if (system && message.role === ROLES.SYSTEM) {
+					include = true;
+				}
+
+				if (include) {
+					if (labels) {
+						markdown += `**${message.role.charAt(0).toUpperCase() + message.role.slice(1)}:** `;
+					}
+					markdown += `${message.content.trim()}\n\n`;
+				}
+			});
+
+			// For easy copying, log to console and return
+			console.log(markdown);
+
+			return markdown;
+		}
 
 		// Initialize application
 		function init() {	// Load saved state from sessionStorage
@@ -2433,7 +2628,7 @@ The user prompts should be regarded as directives for the next increments of the
 				endpoint = endpoint.replace('{{model}}', selectedModelId);
 				// Add API key as URL parameter
 				endpoint += `?key=${apiKey}`;
-				
+
 				// Make API call without authorization header for Gemini
 				window.RPChat.api.sendGeminiRequest(
 					endpoint,
@@ -2461,7 +2656,7 @@ The user prompts should be regarded as directives for the next increments of the
 			try {
 				// Check finish_reason and log if not 'stop'
 				let finishReason = null;
-				
+
 				// For Gemini native API format:
 				if (response.candidates && response.candidates[0] && response.candidates[0].finishReason) {
 					finishReason = response.candidates[0].finishReason;
@@ -2470,7 +2665,7 @@ The user prompts should be regarded as directives for the next increments of the
 				else if (response.choices && response.choices[0] && response.choices[0].finish_reason) {
 					finishReason = response.choices[0].finish_reason;
 				}
-				
+
 				if (finishReason && finishReason !== 'STOP' && finishReason !== 'stop') {
 					console.log('Non-stop finish_reason detected:', finishReason);
 					console.log('Request body:', requestBody);
@@ -2519,7 +2714,7 @@ The user prompts should be regarded as directives for the next increments of the
 			if (confirm('Are you sure you want to clear the chat history?')) {
 				// Reset system prompt selector to first option
 				El.systemPromptSelector.selectedIndex = 0;
-				
+
 				// Create a new ChatManager with the first system prompt
 				chatManager = new ChatManager(
 					getCurrentSystemPrompt(),
@@ -2549,8 +2744,8 @@ The user prompts should be regarded as directives for the next increments of the
 			El.statusMessage.textContent = message;
 			El.statusMessage.className = type;
 
-            /*
-            // Leave the message visible for token counts and error
+			/*
+			// Leave the message visible for token counts and error
 			if (type == 'error' || type=='token-count') {
 				return;
 			}
@@ -2567,7 +2762,7 @@ The user prompts should be regarded as directives for the next increments of the
 				}
 			}, timeout);
 			*/
-	   }	
+		}
 
 		// Initialize the application
 		function initializeApp() {
@@ -2602,7 +2797,7 @@ The user prompts should be regarded as directives for the next increments of the
 			// Toggle header content
 			function toggleHeader() {
 				const isExpanded = El.headerContent.classList.contains('expanded');
-				
+
 				if (isExpanded) {
 					El.headerContent.classList.remove('expanded');
 					El.headerToggle.setAttribute('aria-expanded', 'false');
@@ -2616,10 +2811,10 @@ The user prompts should be regarded as directives for the next increments of the
 
 			// Add event listeners
 			El.headerToggle.addEventListener('click', toggleHeader);
-			
+
 			// Handle window resize
 			window.addEventListener('resize', setInitialHeaderState);
-			
+
 			// Set initial state
 			setInitialHeaderState();
 		}
