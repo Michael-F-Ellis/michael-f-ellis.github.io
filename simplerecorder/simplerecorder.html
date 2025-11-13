@@ -262,6 +262,11 @@
 					const audioUrl = URL.createObjectURL(this.currentAudioBlob);
 					const audio = new Audio(audioUrl);
 
+					// Set the volume to maximum (1.0)
+					// Note: This sets the *initial* playback volume.
+					// The user can still adjust their device's master volume.
+					audio.volume = 1.0;
+
 					audio.onended = () => {
 						URL.revokeObjectURL(audioUrl);
 						this.status.textContent = 'Playback complete';
