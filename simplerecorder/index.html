@@ -153,7 +153,7 @@
 		<div id="error" class="error"></div>
 
 		<footer style="margin-top: 40px; color: #8e8e93; font-size: 12px;">
-			Version 1.0.1
+			Version 1.0.2
 		</footer>
 
 	</div>
@@ -180,6 +180,20 @@
 			init() {
 				this.setupEventListeners();
 				this.checkCompatibility();
+				// Add global keyboard event listener
+				document.addEventListener('keydown', (event) => {
+					if (event.code === 'Space') {
+						event.preventDefault(); // Prevent default spacebar behavior (e.g., scrolling)
+						if (!this.playButton.disabled) {
+							this.playButton.click();
+						}
+					} else if (event.code === 'Enter') {
+						event.preventDefault(); // Prevent default enter behavior
+						if (!this.recordButton.disabled) {
+							this.recordButton.click();
+						}
+					}
+				});
 			}
 
 			setupEventListeners() {
