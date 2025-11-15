@@ -153,13 +153,68 @@
 		<div id="error" class="error"></div>
 
 		<footer style="margin-top: 40px; color: #8e8e93; font-size: 12px;">
-			Version 1.0.2
+			Version 1.0.3 <a href="https://github.com/michael-f-ellis/SimpleRecorder" target="_blank">Source Code</a>
 		</footer>
 
 	</div>
 
 	<script>
 		// JavaScript will go here
+		const constraints = {
+			audio: {
+				// 44100 Hz (CD Quality) or 48000 Hz for professional use
+				sampleRate: { ideal: 44100 },
+				channelCount: { ideal: 2 },
+				echoCancellation: false,
+				noiseSuppression: false,
+				autoGainControl: false // might want to experiment with setting this to true.
+			},
+			video: false
+		};
+		function getBestAudioRecorderOptions() {
+			// How to use this function:
+			// 1. Get the stream (same high-quality constraints for all platforms)
+			// const stream = await navigator.mediaDevices.getUserMedia(constraints); 
+			// 2. Get the best options for the current browser
+			// const options = getBestAudioRecorderOptions(); 
+			// 3. Initialize the recorder
+			// const mediaRecorder = new MediaRecorder(stream, options);
+
+			const opusMime = 'audio/webm; codecs=opus';
+			const aacMime = 'audio/mp4; codecs=mp4a.40.2';
+
+			// High Bitrate Target (Opus is more efficient, so 256k is top-tier)
+			const bitrate = 256000;
+
+			let mimeType;
+
+			// 1. Check for Opus (Best for Chrome/Edge/Android/Windows)
+			if (MediaRecorder.isTypeSupported(opusMime)) {
+				mimeType = opusMime;
+				console.log("Using WebM/Opus for high quality.");
+			}
+			// 2. Check for AAC (Best for iOS/Safari)
+			else if (MediaRecorder.isTypeSupported(aacMime)) {
+				mimeType = aacMime;
+				// Note: AAC encoding can sometimes benefit from a slightly higher requested bitrate
+				// bitrate = 320000; 
+				console.log("Using MP4/AAC for high quality.");
+			}
+			// 3. Fallback to a simpler, default option
+			else {
+				mimeType = 'audio/webm'; // Chromium default (often Opus)
+				if (!MediaRecorder.isTypeSupported(mimeType)) {
+					mimeType = 'audio/mp4'; // Safari fallback (often AAC)
+				}
+				console.warn(`Falling back to ${mimeType}. Quality may vary.`);
+			}
+
+			return {
+				mimeType: mimeType,
+				audioBitsPerSecond: bitrate
+			};
+		}
+
 		class MusicRecorder {
 			constructor() {
 				this.mediaRecorder = null;
@@ -221,18 +276,11 @@
 				try {
 					this.hideError();
 
-					const stream = await navigator.mediaDevices.getUserMedia({
-						audio: {
-							echoCancellation: false,
-							noiseSuppression: false,
-							autoGainControl: false
-						}
-					});
+					const stream = await navigator.mediaDevices.getUserMedia(constraints);
+					const options = getBestAudioRecorderOptions();
 
-					// Determine supported MIME type for Safari compatibility
-					const mimeType = this.getSupportedMimeType();
 
-					this.mediaRecorder = new MediaRecorder(stream, { mimeType });
+					this.mediaRecorder = new MediaRecorder(stream, options);
 					this.audioChunks = [];
 
 					this.mediaRecorder.ondataavailable = (event) => {
@@ -310,24 +358,6 @@
 					this.isPlaying = false;
 					this.updateUI();
 				}
-			}
-			getSupportedMimeType() {
-				// Prioritize AAC/MP4 for Safari compatibility
-				const types = [
-					'audio/mp4', // AAC in MP4 - Safari preferred
-					'audio/webm', // Fallback for other browsers
-					'audio/webm;codecs=opus',
-					'audio/ogg;codecs=opus'
-				];
-
-				for (let type of types) {
-					if (MediaRecorder.isTypeSupported(type)) {
-						return type;
-					}
-				}
-
-				// If no specific type is supported, let browser choose default
-				return undefined;
 			}
 
 			updateUI() {
