@@ -2,414 +2,79 @@
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="UTF-8" />
+	<link rel="icon" type="image/svg+xml" href="/vite.svg" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>Simple Music Recorder</title>
 	<!-- Add Font Awesome for icons -->
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-	<style>
-		/* CSS will go here */
-		body {
-			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-			margin: 0;
-
-			padding: 20px;
-			background: #000000;
-			display: flex;
-			flex-direction: column;
-			/* M, */
-			align-items: center;
-			justify-content: center;
-			max-height: 100vh;
-		}
-
-		.container {
-			text-align: center;
-			/* max-width: 300px; */
-			width: 100%;
-		}
-
-		h1 {
-			color: lime;
-			margin-bottom: 40px;
-			font-weight: 600;
-		}
-
-
-		.button {
-			width: 25vh;
-			/* 35% of viewport width */
-			height: 25vh;
-			/* 20% of viewport height */
-			border-radius: 5vh;
-			border: none;
-			font-size: 16px;
-			font-weight: 600;
-			cursor: pointer;
-			transition: all 0.2s ease;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			flex-direction: column;
-			margin-top: 5vh;
-			margin-bottom: auto;
-			margin-left: auto;
-			/* Center the button horizontally */
-			margin-right: auto
-				/* Center the button horizontally */
-		}
-
-		.button:active {
-			transform: scale(0.95);
-		}
-
-		.record-button {
-			background: #ff3b30;
-			color: white;
-			margin-bottom: 20px;
-			/* Space between buttons */
-		}
-
-		.button i {
-			font-size: 8vw;
-			/* Icon size relative to viewport width */
-			margin-bottom: 5px;
-		}
-
-		.button span {
-			font-size: 4vw;
-			/* Text size relative to viewport width */
-		}
-
-		.record-button.recording {
-			background: #ff3b30;
-			animation: pulse 1.5s infinite;
-		}
-
-		.play-button {
-			background: #34c759;
-			color: white;
-		}
-
-		.play-button:disabled {
-			background: #8e8e93;
-			cursor: not-allowed;
-			transform: none;
-		}
-
-		.record-button:disabled {
-			background: #8e8e93;
-			cursor: not-allowed;
-			transform: none;
-		}
-
-		.status {
-			margin-top: 30px;
-			padding: 10px;
-			color: #ffffff;
-			font-size: 14px;
-			min-height: 20px;
-		}
-
-		.error {
-			color: #ff3b30;
-			background: #ffebea;
-			padding: 10px;
-			border-radius: 8px;
-			margin-top: 20px;
-			display: none;
-		}
-
-		@keyframes pulse {
-			0% {
-				transform: scale(1);
-			}
-
-			50% {
-				transform: scale(1.05);
-			}
-
-			100% {
-				transform: scale(1);
-			}
-		}
-	</style>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script type="module" crossorigin src="/assets/index-aJpjXPf0.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DPKcMtRW.css">
 </head>
 
 <body>
 	<div class="container">
 		<h1>Simple Recorder</h1>
 
-		<button id="recordButton" class="button record-button">
-			<i class="fas fa-microphone"></i><span>Record</span>
-		</button>
+		<!-- Repertoire View -->
+		<div id="repertoire-view">
+			<div id="piece-list" class="piece-list">
+				<!-- Pieces will be injected here -->
+			</div>
+			<button id="add-piece-btn" class="button secondary-button"
+				style="height: auto; min-height: 50px; font-size: 1.2rem; margin-top: 20px;">
+				<i class="fas fa-plus"></i> Add New Piece
+			</button>
+			<div id="new-piece-form" style="display: none; margin-top: 20px;">
+				<input type="text" id="new-piece-name" placeholder="Piece Name" class="input-field">
+				<input type="number" id="new-piece-measures" placeholder="Total Measures" class="input-field">
+				<button id="save-piece-btn" class="button-small">Save</button>
+				<button id="cancel-piece-btn" class="button-small cancel">Cancel</button>
+			</div>
+			<div style="margin-top: 20px;">
+				<button id="export-btn" class="button-text">Export Data</button>
+				<button id="import-btn" class="button-text">Import Data</button>
+				<input type="file" id="import-file" style="display:none">
+			</div>
+		</div>
 
-		<button id="playButton" class="button play-button" disabled>
-			<i class="fas fa-play"></i><span>Play</span>
-		</button>
+		<!-- Practice View -->
+		<div id="practice-view" style="display: none;">
+			<div class="practice-header">
+				<button id="back-to-repertoire" class="back-button"><i class="fas fa-arrow-left"></i>
+					Repertoire</button>
+				<h2 id="current-piece-name">Piece Name</h2>
+				<div id="current-segment-display" class="segment-display">Measure 1</div>
+			</div>
 
-		<div id="status" class="status">Ready to record</div>
+			<button id="recordButton" class="button record-button">
+				<i class="fas fa-microphone"></i><span>Record</span>
+			</button>
 
-		<div id="error" class="error"></div>
+			<button id="playButton" class="button play-button" disabled>
+				<i class="fas fa-play"></i><span>Play</span>
+			</button>
 
-		<footer style="margin-top: 40px; color: #8e8e93; font-size: 12px;">
-			Version 1.0.4 <a href="https://github.com/michael-f-ellis/SimpleRecorder" target="_blank">Source Code</a>
+			<div id="status" class="status">Ready to record</div>
+
+			<div id="readiness-controls" style="display: none; margin-top: 20px;">
+				<p>How was that?</p>
+				<div class="rating-buttons">
+					<button class="rate-btn" data-level="0">0 (New)</button>
+					<button class="rate-btn" data-level="1">1 (Hard)</button>
+					<button class="rate-btn" data-level="2">2 (Okay)</button>
+					<button class="rate-btn" data-level="3">3 (Ready)</button>
+				</div>
+			</div>
+
+			<div id="error" class="error"></div>
+		</div>
+
+		<footer style="margin-top: 40px; color: #8e8e93; font-size: 12px">
+			Version 1.1.0
+			<a href="https://github.com/michael-f-ellis/SimpleRecorder" target="_blank">Source Code</a>
 		</footer>
-
 	</div>
-
-	<script>
-		// JavaScript will go here
-		const constraints = {
-			audio: {
-				// 44100 Hz (CD Quality) or 48000 Hz for professional use
-				sampleRate: { ideal: 44100 },
-				channelCount: { ideal: 2 },
-				echoCancellation: false,
-				noiseSuppression: false,
-				autoGainControl: false // might want to experiment with setting this to true.
-			},
-			video: false
-		};
-		function getBestAudioRecorderOptions() {
-			// How to use this function:
-			// 1. Get the stream (same high-quality constraints for all platforms)
-			// const stream = await navigator.mediaDevices.getUserMedia(constraints); 
-			// 2. Get the best options for the current browser
-			// const options = getBestAudioRecorderOptions(); 
-			// 3. Initialize the recorder
-			// const mediaRecorder = new MediaRecorder(stream, options);
-
-			const opusMime = 'audio/webm; codecs=opus';
-			const aacMime = 'audio/mp4; codecs=mp4a.40.2';
-
-			// High Bitrate Target (Opus is more efficient, so 256k is top-tier)
-			const bitrate = 256000;
-
-			let mimeType;
-
-			// 1. Check for Opus (Best for Chrome/Edge/Android/Windows)
-			if (MediaRecorder.isTypeSupported(opusMime)) {
-				mimeType = opusMime;
-				console.log("Using WebM/Opus for high quality.");
-			}
-			// 2. Check for AAC (Best for iOS/Safari)
-			else if (MediaRecorder.isTypeSupported(aacMime)) {
-				mimeType = aacMime;
-				// Note: AAC encoding can sometimes benefit from a slightly higher requested bitrate
-				// bitrate = 320000; 
-				console.log("Using MP4/AAC for high quality.");
-			}
-			// 3. Fallback to a simpler, default option
-			else {
-				mimeType = 'audio/webm'; // Chromium default (often Opus)
-				if (!MediaRecorder.isTypeSupported(mimeType)) {
-					mimeType = 'audio/mp4'; // Safari fallback (often AAC)
-				}
-				console.warn(`Falling back to ${mimeType}. Quality may vary.`);
-			}
-
-			return {
-				mimeType: mimeType,
-				audioBitsPerSecond: bitrate
-			};
-		}
-
-		class MusicRecorder {
-			constructor() {
-				this.mediaRecorder = null;
-				this.audioChunks = [];
-				this.currentAudioBlob = null;
-				this.isRecording = false;
-				this.hasRecording = false;
-				this.isPlaying = false;
-
-				this.recordButton = document.getElementById('recordButton');
-				this.playButton = document.getElementById('playButton');
-				this.status = document.getElementById('status');
-				this.error = document.getElementById('error');
-
-				this.init();
-			}
-
-			init() {
-				this.setupEventListeners();
-				this.checkCompatibility();
-				// Add global keyboard event listener
-				document.addEventListener('keydown', (event) => {
-					if (event.code === 'Space') {
-						event.preventDefault(); // Prevent default spacebar behavior (e.g., scrolling)
-						if (!this.playButton.disabled) {
-							this.playButton.click();
-						}
-					} else if (event.code === 'Enter') {
-						event.preventDefault(); // Prevent default enter behavior
-						if (!this.recordButton.disabled) {
-							this.recordButton.click();
-						}
-					}
-				});
-			}
-
-			setupEventListeners() {
-				this.recordButton.addEventListener('click', () => this.toggleRecording());
-				this.playButton.addEventListener('click', () => this.playRecording());
-			}
-
-			checkCompatibility() {
-				if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-					this.showError('Your browser does not support audio recording');
-					return false;
-				}
-				return true;
-			}
-
-			async toggleRecording() {
-				if (this.isRecording) {
-					this.stopRecording();
-				} else {
-					await this.startRecording();
-				}
-			}
-
-			async startRecording() {
-				try {
-					this.hideError();
-
-					const stream = await navigator.mediaDevices.getUserMedia(constraints);
-					const options = getBestAudioRecorderOptions();
-
-
-					this.mediaRecorder = new MediaRecorder(stream, options);
-					this.audioChunks = [];
-
-					this.mediaRecorder.ondataavailable = (event) => {
-						if (event.data.size > 0) {
-							this.audioChunks.push(event.data);
-						}
-					};
-
-					this.mediaRecorder.onstop = () => {
-						this.currentAudioBlob = new Blob(this.audioChunks, {
-							type: this.mediaRecorder.mimeType
-						});
-						this.hasRecording = true;
-						this.updateUI();
-
-						// Stop all tracks in the stream
-						stream.getTracks().forEach(track => track.stop());
-					};
-
-					this.mediaRecorder.start();
-					this.isRecording = true;
-
-					this.updateUI();
-
-				} catch (error) {
-					this.showError('Failed to start recording: ' + error.message);
-				}
-			}
-
-			stopRecording() {
-				if (this.mediaRecorder && this.isRecording) {
-					this.mediaRecorder.stop();
-					this.isRecording = false;
-					this.updateUI();
-				}
-			}
-
-			playRecording() {
-				if (this.isPlaying) {
-					this.stopPlaying();
-					return;
-				}
-				if (this.currentAudioBlob && this.hasRecording) {
-					const audioUrl = URL.createObjectURL(this.currentAudioBlob);
-					const audio = new Audio(audioUrl);
-
-					// Set the volume to maximum (1.0)
-					// Note: This sets the *initial* playback volume.
-					// The user can still adjust their device's master volume.
-					audio.volume = 1.0;
-
-					audio.onended = () => {
-						this.isPlaying = false;
-						URL.revokeObjectURL(audioUrl);
-						this.updateUI();
-					};
-
-					audio.play().catch(error => {
-						this.showError('Failed to play recording: ' + error.message);
-					});
-
-					this.isPlaying = true;
-					this.audio = audio; // Store the audio object
-					this.recordButton.disabled = true; // Disable record button while playing
-					this.updateUI();
-				} else {
-					this.showError('No recording to play');
-				}
-			}
-
-			stopPlaying() {
-				if (this.audio && !this.audio.paused) {
-					this.audio.pause();
-					this.audio.currentTime = 0; // Reset playback to the beginning
-					this.isPlaying = false;
-					this.updateUI();
-				}
-			}
-
-			updateUI() {
-				// Update Record Button
-				if (this.isRecording) {
-					this.recordButton.classList.add('recording');
-					this.recordButton.innerHTML = '<i class="fas fa-stop"></i><span>Stop</span>'; // Change icon and text
-					this.playButton.disabled = true;
-					this.recordButton.disabled = false; // Always enable stop button
-					this.status.textContent = 'Recording...';
-				} else {
-					this.recordButton.classList.remove('recording');
-					this.recordButton.innerHTML = '<i class="fas fa-microphone"></i><span>Record</span>'; // Change icon and text back
-					// Disable record button if playing
-					this.recordButton.disabled = this.isPlaying;
-					if (this.hasRecording && !this.isPlaying) {
-						this.status.textContent = '';
-					} else if (!this.hasRecording && !this.isPlaying) {
-						this.status.textContent = 'Ready to record';
-					}
-				}
-
-				// Update Play Button
-				if (this.isPlaying) { // If playing, disable play button and update status
-					this.status.textContent = 'Playing...';
-					this.playButton.innerHTML = '<i class="fas fa-stop"></i><span>Stop</span>'; // Change icon and text
-				} else {
-					// Enable play button only if there's a recording and not currently recording
-					this.playButton.disabled = !this.hasRecording || this.isRecording;
-					this.playButton.innerHTML = '<i class="fas fa-play"></i><span>Play</span>'
-				}
-			}
-
-			showError(message) {
-				this.error.textContent = message;
-				this.error.style.display = 'block';
-				// Only update status if it's not already showing recording/playing
-				if (!this.isRecording && !this.isPlaying) {
-					this.status.textContent = 'Error occurred';
-				}
-			}
-
-			hideError() {
-				this.error.style.display = 'none';
-			}
-		}
-
-		// Initialize the app when the page loads
-		document.addEventListener('DOMContentLoaded', () => {
-			new MusicRecorder();
-		});
-	</script>
 </body>
 
 </html>
