@@ -8,8 +8,8 @@
 	<title>Simple Music Recorder</title>
 	<!-- Add Font Awesome for icons -->
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
-  <script type="module" crossorigin src="/simplerecorder/assets/index-aJpjXPf0.js"></script>
-  <link rel="stylesheet" crossorigin href="/simplerecorder/assets/index-DPKcMtRW.css">
+  <script type="module" crossorigin src="/simplerecorder/assets/index-B4PiMM7v.js"></script>
+  <link rel="stylesheet" crossorigin href="/simplerecorder/assets/index-BxS3CBqe.css">
 </head>
 
 <body>
@@ -41,15 +41,16 @@
 		<!-- Practice View -->
 		<div id="practice-view" style="display: none;">
 			<div class="practice-header">
-				<button id="back-to-repertoire" class="back-button"><i class="fas fa-arrow-left"></i>
-					Repertoire</button>
+				<button id="back-to-repertoire" class="back-button"><i class="fas fa-arrow-left"></i> Suspend</button>
 				<h2 id="current-piece-name">Piece Name</h2>
 				<div id="current-segment-display" class="segment-display">Measure 1</div>
 			</div>
 
-			<button id="recordButton" class="button record-button">
-				<i class="fas fa-microphone"></i><span>Record</span>
-			</button>
+			<div class="controls-row" style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+				<button id="recordButton" class="button record-button">
+					<i class="fas fa-microphone"></i><span>Record</span>
+				</button>
+			</div>
 
 			<button id="playButton" class="button play-button" disabled>
 				<i class="fas fa-play"></i><span>Play</span>
@@ -75,6 +76,18 @@
 			<a href="https://github.com/michael-f-ellis/SimpleRecorder" target="_blank">Source Code</a>
 		</footer>
 	</div>
+	<div id="resume-modal" class="modal" style="display: none;">
+		<div class="modal-content">
+			<h3>Resume Session?</h3>
+			<p>You have a saved session for <strong id="resume-piece-name"></strong>.</p>
+			<div class="modal-actions">
+				<button id="resume-btn" class="button">Resume</button>
+				<button id="discard-btn" class="button secondary-button">Discard & Restart</button>
+				<button id="cancel-resume-btn" class="button-text">Cancel</button>
+			</div>
+		</div>
+	</div>
+
 </body>
 
 </html>
