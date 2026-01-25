@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<link rel="icon" type="image/png" href="/elephantsoup/logo.png" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<title>Elephant Soup</title>
+  <script type="module" crossorigin src="/elephantsoup/assets/index-C7k6XbW8.js"></script>
+  <link rel="stylesheet" crossorigin href="/elephantsoup/assets/index-BxS3CBqe.css">
+</head>
+
+<body>
+	<div id="app">
+		<header>
+			<div
+				style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+				<img src="/elephantsoup/logo.png" alt="Elephant Soup Logo" style="height: 200px;">
+				<div style="color: #8e8e93; font-size: 12px;">
+					Version 1.1.0
+					<a href="https://github.com/michael-f-ellis/SimpleRecorder" target="_blank"
+						style="color: #8e8e93; text-decoration: underline;">Source Code</a>
+				</div>
+			</div>
+		</header>
+		<div class="container">
+			<!-- Repertoire View -->
+			<div id="repertoire-view">
+				<button id="add-piece-btn" class="button secondary-button"
+					style="height: auto; min-height: 50px; font-size: 1.2rem; margin-bottom: 20px;">
+					<i class="fas fa-plus"></i> Add New Piece
+				</button>
+				<div id="new-piece-form" style="display: none; margin-bottom: 20px;">
+					<input type="text" id="new-piece-name" placeholder="Piece Name" class="input-field">
+					<input type="number" id="new-piece-measures" placeholder="Total Measures" class="input-field">
+					<button id="save-piece-btn" class="button-small">Save</button>
+					<button id="cancel-piece-btn" class="button-small cancel">Cancel</button>
+				</div>
+				<div style="margin-bottom: 20px;">
+					<button id="export-btn" class="button-text">Export Data</button>
+					<button id="import-btn" class="button-text">Import Data</button>
+					<input type="file" id="import-file" style="display:none">
+				</div>
+				<div id="piece-list" class="piece-list">
+					<!-- Pieces will be injected here -->
+				</div>
+			</div>
+
+			<!-- Practice View -->
+			<div id="practice-view" style="display: none;">
+				<div class="practice-header">
+					<button id="back-to-repertoire" class="back-button"><i class="fas fa-arrow-left"></i>
+						Suspend</button>
+					<h2 id="current-piece-name">Piece Name</h2>
+					<div id="current-segment-display" class="segment-display">Measure 1</div>
+				</div>
+
+				<div class="controls-row"
+					style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
+					<button id="recordButton" class="button record-button">
+						<i class="fas fa-microphone"></i><span>Record</span>
+					</button>
+				</div>
+
+				<button id="playButton" class="button play-button" disabled>
+					<i class="fas fa-play"></i><span>Play</span>
+				</button>
+
+				<div id="status" class="status">Ready to record</div>
+
+				<div id="readiness-controls" style="display: none; margin-top: 20px;">
+					<p>How was that?</p>
+					<div class="rating-buttons">
+						<button class="rate-btn" data-level="0">0 (New)</button>
+						<button class="rate-btn" data-level="1">1 (Hard)</button>
+						<button class="rate-btn" data-level="2">2 (Okay)</button>
+						<button class="rate-btn" data-level="3">3 (Ready)</button>
+					</div>
+				</div>
+
+				<div id="error" class="error"></div>
+			</div>
+
+
+		</div>
+		<div id="resume-modal" class="modal" style="display: none;">
+			<div class="modal-content">
+				<h3>Resume Session?</h3>
+				<p>You have a saved session for <strong id="resume-piece-name"></strong>.</p>
+				<div class="modal-actions">
+					<button id="resume-btn" class="button">Resume</button>
+					<button id="discard-btn" class="button secondary-button">Discard & Restart</button>
+					<button id="cancel-resume-btn" class="button-text">Cancel</button>
+				</div>
+			</div>
+		</div>
+
+</body>
+
+</html>
