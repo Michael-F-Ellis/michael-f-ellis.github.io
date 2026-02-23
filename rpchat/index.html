@@ -75,7 +75,14 @@
 			font-size: 0.9rem;
 		}
 
-		.header-toggle {
+		.header-actions {
+			display: flex;
+			gap: 0.5rem;
+			align-items: center;
+		}
+
+		.header-toggle,
+		.header-icon-btn {
 			background: none;
 			border: none;
 			color: var(--light-color);
@@ -86,7 +93,8 @@
 			transition: background-color 0.2s;
 		}
 
-		.header-toggle:hover {
+		.header-toggle:hover,
+		.header-icon-btn:hover {
 			background-color: rgba(255, 255, 255, 0.1);
 		}
 
@@ -144,7 +152,7 @@
 				font-size: 0.8rem;
 			}
 
-			.header-toggle {
+			.header-actions {
 				order: 2;
 				margin-left: auto;
 			}
@@ -477,12 +485,18 @@
 				<h1>RPChat</h1>
 				<div class="header-info">
 					<p>
-						v1.0.9&nbsp
+						v1.1.0&nbsp
 						<a href="https://github.com/michael-f-ellis/rpchat" class="header-link" target="_blank">Source
 							code</a>
 					</p>
 				</div>
-				<button id="header-toggle" class="header-toggle" aria-label="Toggle header">⚙️</button>
+				<div class="header-actions">
+					<button id="scroll-top" class="header-icon-btn" aria-label="Scroll to top"
+						title="Scroll to top">▲</button>
+					<button id="scroll-bottom" class="header-icon-btn" aria-label="Scroll to bottom"
+						title="Scroll to bottom">▼</button>
+					<button id="header-toggle" class="header-toggle" aria-label="Toggle header">⚙️</button>
+				</div>
 			</div>
 			<div id="header-content" class="header-content">
 				<div class="api-key-container">
@@ -566,7 +580,6 @@
 	</div>
 
 	<script>
-		// Combined JavaScript modules
 		// DOM element references
 		const El = {
 			apiProviderSelector: document.getElementById('api-provider'),
@@ -582,6 +595,8 @@
 			sendLabel: document.getElementById('send-label'),
 			headerToggle: document.getElementById('header-toggle'),
 			headerContent: document.getElementById('header-content'),
+			scrollTopBtn: document.getElementById('scroll-top'),
+			scrollBottomBtn: document.getElementById('scroll-bottom'),
 			// New elements for Markdown extraction
 			extractMdBtn: document.getElementById('extract-chat-md'),
 			extractMdModal: document.getElementById('extract-md-modal'),
@@ -594,7 +609,7 @@
 		};
 
 		/* Chat Message Class and Constants
-		 *
+		 * 
 		 * This class represents a chat message with various properties and methods.
 		 * It also defines a set of CSS classes used for styling and identifying message roles.
 		 */
@@ -717,7 +732,7 @@
 				}
 
 				return messageEl;
-			}	// Generate message control buttons
+			} // Generate message control buttons
 			createMessageControlButtons(messageId, controlsEl) {
 				// Add edit button (Applies to system, user, and assistant)
 				if (this.role !== ROLES.APP) {
@@ -737,7 +752,7 @@
 					deleteFromHereBtn.addEventListener('click', () => this.deleteFromHereCB(messageId));
 					controlsEl.appendChild(deleteFromHereBtn);
 				}
-			}	// Start editing a message
+			} // Start editing a message
 			startEditing() {
 				// get the content element. It's a child of this.element
 				const contentEl = this.element.querySelector('.editable-content');
@@ -813,7 +828,7 @@
 			// Add a method to check if message is being edited
 			isBeingEdited() {
 				return this.isEditing;
-			}	// Reset message controls after editing
+			} // Reset message controls after editing
 			resetMessageControls() {
 				// Clear existing controls
 				const controlsEl = this.element.querySelector('.message-controls');
@@ -842,7 +857,6 @@
 				console.log(`ChatMessage Initializing: ID: ${this.id}, Role: ${this.role}, Character ID: ${this.characterId}, Visibility: ${this.visibility} (Element not yet created)`);
 			}
 		};
-
 
 		// ChatManager is a class that manages a list of ChatMessages.
 
@@ -901,14 +915,13 @@
 				// --- End Trailing User Message ---
 
 				// Note: No initial rendering from constructor to allow setup completion.
-				// Call render() explicitly after instantiation if needed immediately.				
+				// Call render() explicitly after instantiation if needed immediately.			}
+
+				/**
+				 * Calls the registered onUpdate callback, if provided.
+				 * @private
+				 */
 			}
-
-			/**
-			 * Calls the registered onUpdate callback, if provided.
-			 * @private
-			 */
-
 
 			_notifyUpdate() {
 				if (typeof this.onUpdate === 'function') {
@@ -1245,7 +1258,7 @@
 					} else {
 						// Check first message is system if messages exist
 						if (parsedMessages[0]?.role !== ROLES.SYSTEM) {
-							throw new Error(`Invalid chat history: First message must have role "${ROLES.SYSTEM}`);
+							throw new Error(`Invalid chat history: First message must have role "${ROLES.SYSTEM}"`);
 						}
 						// Check for other system messages
 						const otherSystemMessages = parsedMessages.slice(1).filter(m => m.role === ROLES.SYSTEM);
@@ -1398,6 +1411,7 @@
 				return null;
 			}
 		}
+
 		/* CONFIGURATION */
 		window.RPChat = window.RPChat || {};
 		window.RPChat.config = (function () {
@@ -1508,6 +1522,10 @@
 					this.displayName = displayName;
 					this.defaultTemperature = defaultTemperature;
 					this.extraFields = extraFields;
+					// The following are used at run time to track cumulative tokens
+					this.tokensSent = 0;
+					this.tokensReceived = 0;
+					this.tokensThinking = 0;
 				}
 			}
 
@@ -1519,7 +1537,7 @@
 					'https://api.deepseek.com/chat/completions',
 					[
 						new AIModel('deepseek-chat', 'DeepSeek Chat', 0.7),
-						new AIModel('deepseek-reasoner', 'DeepSeek Reasoner', 0.5),
+						new AIModel('deepseek-reasoner', 'DeepSeek Reasoner', 0.5)
 					],
 					5000,
 					'openai'
@@ -1530,6 +1548,7 @@
 					'https://api.fireworks.ai/inference/v1/chat/completions',
 					[
 						new AIModel('accounts/fireworks/models/qwen3-235b-a22b-instruct-2507', 'Qwen 3 235B', 0.7),
+						new AIModel('accounts/fireworks/models/deepseek-v3-0324', 'DeepSeek v3', 0.7)
 					],
 					4999,
 					'openai'
@@ -1539,8 +1558,8 @@
 					'Google Gemini',
 					'https://generativelanguage.googleapis.com/v1beta/models/{{model}}:generateContent',
 					[
-						new AIModel('gemini-2.5-pro', 'Gemini 2.5 Pro', 0.7, {"safetySettings": [{"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}, {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}, {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"}, {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}]}),
-						new AIModel('gemini-2.5-flash', 'Gemini 2.5 Flash', 0.7, {"safetySettings": [{"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}, {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}, {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE"}, {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"}]}),
+						new AIModel('gemini-2.5-pro', 'Gemini 2.5 Pro', 0.7, { "safetySettings": [{ "category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE" }, { "category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE" }, { "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE" }, { "category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE" }] }),
+						new AIModel('gemini-2.5-flash', 'Gemini 2.5 Flash', 0.7, { "safetySettings": [{ "category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE" }, { "category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE" }, { "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_NONE" }, { "category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE" }] })
 					],
 					5000,
 					'gemini-native'
@@ -1553,7 +1572,7 @@
 						new AIModel('openai/gpt-oss-120b', 'OpenAI GPT-OSS-120B', 0.7),
 						new AIModel('openai/gpt-oss-20b', 'OpenAI GPT-OSS-20B', 0.7),
 						new AIModel('meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo', 'Meta Llama 3.1 405B', 0.7),
-						new AIModel('Qwen/Qwen2.5-72B-Instruct-Turbo', 'Qwen 2.5 72B', 0.6),
+						new AIModel('Qwen/Qwen2.5-72B-Instruct-Turbo', 'Qwen 2.5 72B', 0.6)
 					],
 					5000,
 					'openai'
@@ -1564,25 +1583,22 @@
 					'https://api.z.ai/api/paas/v4/chat/completions',
 					[
 						new AIModel('glm-4.5', 'glm-4.5', 0.7),
-						new AIModel('glm-4.5-air', 'glm-4.5-air', 0.7),
+						new AIModel('glm-4.5-air', 'glm-4.5-air', 0.7)
 					],
 					5000,
 					'openai'
-				)],
+				)]
 			]);
-
-			// System prompts configuration
-			
 
 			// return the classes and constants we expose
 			return { AIProvider, AIModel, PROVIDERS };
 		})();
 
 		// Global variable to store system prompts
-			let systemPrompts = [
-				{
-					name: 'First Person',
-					content: `Adopt the role assigned by the user, crafting dramatic, immersive, emotionally powerful scenes through concise, varied prose. Follow these guidelines:
+		let systemPrompts = [
+			{
+				name: 'First Person',
+				content: `Adopt the role assigned by the user, crafting dramatic, immersive, emotionally powerful scenes through concise, varied prose. Follow these guidelines:
 
 ABOVE ALL: 
 * Use first person, present tense almost exclusively. Always speak and react as your assigned character and use second person pronouns to  refer to your partner character, e.g. (I watch you pick up the vase.) NOT 
@@ -1622,14 +1638,14 @@ Avoid:
 * Premature closures, especially avoid cheesy paragraphs that signal the end, e.g. "We stand side by side, knowing that whatever challenges the future might bring, we would face them together." Always assume the story will continue.  Leave closures for the user's character to provide.
 * Repeating setting details (unless critical to the plot).
 `
-				},
-				{
-					name: 'Minimal',
-					content: `You are a helpful assistant.`
-				},
-				{
-					name: 'Third Person',
-					content: `You are a fiction story generator, crafting dramatic, immersive, emotionally powerful scenes through concise, varied prose. The user will provide character descriptions and an initial scenario including locale and preceding events.
+			},
+			{
+				name: 'Minimal',
+				content: `You are a helpful assistant.`
+			},
+			{
+				name: 'Third Person',
+				content: `You are a fiction story generator, crafting dramatic, immersive, emotionally powerful scenes through concise, varied prose. The user will provide character descriptions and an initial scenario including locale and preceding events.
 
 Follow these guidelines:
 
@@ -1673,8 +1689,8 @@ Avoid:
 
 User Directives:
 The user prompts should be regarded as directives for the next increments of the story.  The simplest directive is a bare question mark, i.e. '?' which means, "Continue the story." Other directives might be things like, "Describe Ellen's outfit" or "Explain what delayed Ed's arrival"`
-				},
-			];
+			}
+		];
 
 		// Function to update the system prompt selector dropdown
 		function updateSystemPromptSelector() {
@@ -1742,9 +1758,10 @@ The user prompts should be regarded as directives for the next increments of the
 			// Update the system message in the chat manager
 			const messages = chatManager.messages;
 			if (messages.length > 0 && messages[0].role === 'system') {
-				messages[0].content = newSystemPrompt;
+				messages[0].content = newSystemPrompt; // Update internal content
+
 				// Update the DOM element
-				const contentEl = messages[0].element?.querySelector('.editable-content');
+				const contentEl = messages[0].element?.querySelector(`.${CSS_CLASSES.EDITABLE_CONTENT}`);
 				if (contentEl) {
 					contentEl.textContent = newSystemPrompt;
 				}
@@ -2056,6 +2073,7 @@ The user prompts should be regarded as directives for the next increments of the
 				exportChat: exportChat
 			};
 		})();
+
 		// Main application code for RPChat using ChatManager and ChatMessage components
 
 		// Define state variables
@@ -2112,8 +2130,248 @@ The user prompts should be regarded as directives for the next increments of the
 			return markdown;
 		}
 
+		// Provider and model management functions
+		window.createProvider = function (providerData) {
+			return new Promise((resolve, reject) => {
+				if (!validateProviderData(providerData)) {
+					return Promise.reject({ reason: 'Invalid provider data', data: providerData });
+				}
+				if (!db) return reject('DB not initialized');
+				const transaction = db.transaction(['providers'], 'readwrite');
+				const store = transaction.objectStore('providers');
+				const request = store.add(providerData);
+				request.onsuccess = () => resolve(providerData);
+				request.onerror = (event) => reject(event.target.error);
+			});
+		};
+
+		window.readProvider = function (providerId) {
+			return new Promise((resolve, reject) => {
+				if (!db) return reject('DB not initialized');
+				const transaction = db.transaction(['providers', 'models'], 'readonly');
+				const providerStore = transaction.objectStore('providers');
+				const modelStore = transaction.objectStore('models');
+
+				const providerRequest = providerStore.get(providerId);
+
+				providerRequest.onsuccess = () => {
+					const provider = providerRequest.result;
+					if (!provider) {
+						resolve(null);
+						return;
+					}
+
+					const modelIndex = modelStore.index('providerId');
+					const modelsRequest = modelIndex.getAll(providerId);
+
+					modelsRequest.onsuccess = () => {
+						provider.models = modelsRequest.result;
+						resolve(provider);
+					};
+				};
+				transaction.onerror = (event) => reject(event.target.error);
+			});
+		};
+
+		window.updateProvider = function (providerId, providerData) {
+			if (providerData.id !== providerId) {
+				return Promise.reject('Provider ID mismatch');
+			}
+			return new Promise((resolve, reject) => {
+				if (!db) return reject('DB not initialized');
+				const transaction = db.transaction(['providers'], 'readwrite');
+				const store = transaction.objectStore('providers');
+				const dataToStore = { ...providerData };
+				delete dataToStore.models; // Models are managed in their own store
+				const request = store.put(dataToStore);
+				request.onsuccess = () => resolve(providerData);
+				request.onerror = (event) => reject(event.target.error);
+			});
+		};
+
+		window.deleteProvider = function (providerId) {
+			return new Promise((resolve, reject) => {
+				if (!db) return reject('DB not initialized');
+				const transaction = db.transaction(['providers', 'models'], 'readwrite');
+				const providerStore = transaction.objectStore('providers');
+				const modelStore = transaction.objectStore('models');
+
+				providerStore.delete(providerId);
+
+				const modelIndex = modelStore.index('providerId');
+				const modelsRequest = modelIndex.openCursor(providerId);
+
+				modelsRequest.onsuccess = () => {
+					const cursor = modelsRequest.result;
+					if (cursor) {
+						modelStore.delete(cursor.primaryKey);
+						cursor.continue();
+					}
+				};
+
+				transaction.oncomplete = () => resolve(providerId);
+				transaction.onerror = (event) => reject(event.target.error);
+			});
+		};
+		// validateProviderData returns true if providerData is a proper config.RPChat.AIProvider object.
+		function validateProviderData(providerData) {
+			if (!providerData || typeof providerData !== 'object') {
+				return false;
+			}
+			const requiredKeys = ['id', 'displayName', 'apiFormat', 'endpoint', 'models'];
+			for (const key of requiredKeys) {
+				if (!providerData.hasOwnProperty(key)) {
+					return false;
+				}
+			}
+			if (!Array.isArray(providerData.models)) {
+				return false;
+			}
+			return true;
+		}
+
+		// TODO Revise createModel. It should read the provider object, append the model
+		// data to the models array, then update the provider.
+		window.createModel = function (providerId, modelData) {
+			return new Promise((resolve, reject) => {
+				if (!validateModelData(modelData)) {
+					return Promise.reject({ reason: 'Invalid model data', data: modelData });
+				}
+				if (!db) return reject('DB not initialized');
+				const transaction = db.transaction(['models'], 'readwrite');
+				const store = transaction.objectStore('models');
+				const dataToAdd = { ...modelData, providerId: providerId };
+				const request = store.add(dataToAdd);
+				request.onsuccess = () => resolve(dataToAdd);
+				request.onerror = (event) => reject(event.target.error);
+			});
+		};
+
+		window.readModel = function (providerId, modelId) {
+			return new Promise((resolve, reject) => {
+				if (!db) return reject('DB not initialized');
+				const transaction = db.transaction(['models'], 'readonly');
+				const store = transaction.objectStore('models');
+				const request = store.get(modelId);
+				request.onsuccess = () => {
+					const model = request.result;
+					if (model && model.providerId === providerId) {
+						resolve(model);
+					} else {
+						resolve(null);
+					}
+				};
+				request.onerror = (event) => reject(event.target.error);
+			});
+		};
+
+		window.updateModel = function (providerId, modelId, modelData) {
+			if (modelData.id !== modelId) {
+				return Promise.reject('Model ID mismatch');
+			}
+			return new Promise((resolve, reject) => {
+				if (!db) return reject('DB not initialized');
+				const transaction = db.transaction(['models'], 'readwrite');
+				const store = transaction.objectStore('models');
+				const dataToUpdate = { ...modelData, providerId: providerId };
+				const request = store.put(dataToUpdate);
+				request.onsuccess = () => resolve(dataToUpdate);
+				request.onerror = (event) => reject(event.target.error);
+			});
+		};
+
+		window.deleteModel = function (providerId, modelId) {
+			return new Promise((resolve, reject) => {
+				if (!db) return reject('DB not initialized');
+				const transaction = db.transaction(['models'], 'readwrite');
+				const store = transaction.objectStore('models');
+
+				const getRequest = store.get(modelId);
+				getRequest.onsuccess = () => {
+					const model = getRequest.result;
+					if (model && model.providerId === providerId) {
+						const deleteRequest = store.delete(modelId);
+						deleteRequest.onsuccess = () => resolve(modelId);
+						deleteRequest.onerror = (event) => reject(event.target.error);
+					} else if (model) {
+						reject(`Model ${modelId} does not belong to provider ${providerId}`);
+					} else {
+						resolve(null); // Not found, but not an error for delete
+					}
+				};
+				getRequest.onerror = (event) => reject(event.target.error);
+			});
+		};
+
+		// validateModelData(modelData) returns true if modelData is a proper RPChat.config.AIModel object.
+		function validateModelData(modelData) {
+			if (!modelData || typeof modelData !== 'object') {
+				return false;
+			}
+			const requiredKeys = ['id', 'displayName', 'defaultTemperature'];
+			for (const key of requiredKeys) {
+				if (!modelData.hasOwnProperty(key)) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+
+		// Database management
+		const DB_NAME = 'rpchatDB';
+		const DB_VERSION = 1; // Using a simple integer for IndexedDB version
+		let db;
+
+		function initDB() {
+			return new Promise((resolve, reject) => {
+				console.log('Opening database:', DB_NAME, 'version:', DB_VERSION);
+				const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+				request.onupgradeneeded = (event) => {
+					const db = event.target.result;
+					console.log('Upgrading database...');
+
+					// Create providers object store
+					if (!db.objectStoreNames.contains('providers')) {
+						const providersStore = db.createObjectStore('providers', { keyPath: 'id' });
+						console.log('Created providers object store');
+					}
+
+					// Create models object store
+					if (!db.objectStoreNames.contains('models')) {
+						const modelsStore = db.createObjectStore('models', { keyPath: 'id' });
+						modelsStore.createIndex('providerId', 'providerId', { unique: false });
+						console.log('Created models object store and providerId index');
+					}
+				};
+
+				request.onsuccess = (event) => {
+					db = event.target.result;
+					console.log('Database initialized successfully');
+					resolve(db);
+				};
+
+				request.onerror = (event) => {
+					console.error('Database error:', event.target.error);
+					reject(event.target.error);
+				};
+
+				request.onblocked = (event) => {
+					console.error('Database blocked - another connection may be open');
+					reject(new Error('Database blocked'));
+				};
+			});
+		}
+
+
 		// Initialize application
-		function init() {	// Load saved state from sessionStorage
+		async function init() { // Load saved state from sessionStorage
+			try {
+				await initDB();
+			} catch (error) {
+				showStatus('Failed to initialize database. Provider management will not work.', 'error');
+			}
 			loadStateFromStorage();
 
 			// Set up UI elements based on configuration
@@ -2122,131 +2380,217 @@ The user prompts should be regarded as directives for the next increments of the
 			// Initialize ChatManager with system prompt
 			initializeChatManager();
 
-			// Test function for prepareApiMessagesForCharacter.
-			// Add this after the chatManager initialization in the init() function
-			// This makes the test function globally accessible from the browser console
-			window.testPrepareApiMessagesForCharacter = function () {
-				console.log("=== Testing prepareApiMessagesForCharacter() ===");
+			window.testProviderDBInterface = async function () {
+				console.log("=== Testing Provider DB Interface ===");
 
-				// Create an array of test messages with various combinations
-				const testMessages = [
-					{
-						id: "1",
-						role: ROLES.SYSTEM,
-						content: "Global system message",
-						characterId: 0,
-						visibility: 1,
-						expected: { char1: "system", char2: "system", char3: "system" }
-					},
-					{
-						id: "2",
-						role: ROLES.USER,
-						content: "User message (human)",
-						characterId: 0,
-						visibility: 1,
-						expected: { char1: "user", char2: "user", char3: "user" }
-					},
-					{
-						id: "3",
-						role: ROLES.ASSISTANT,
-						content: "Character 1 public message",
-						characterId: 1,
-						visibility: 1,
-						expected: { char1: "assistant", char2: "user", char3: "user" }
-					},
-					{
-						id: "4",
-						role: ROLES.ASSISTANT,
-						content: "Character 2 public message",
-						characterId: 2,
-						visibility: 1,
-						expected: { char1: "user", char2: "assistant", char3: "user" }
-					},
-					{
-						id: "5",
-						role: ROLES.ASSISTANT,
-						content: "Character 1 private message",
-						characterId: 1,
-						visibility: 0,
-						expected: { char1: "system", char2: null, char3: null }
-					},
-					{
-						id: "6",
-						role: ROLES.ASSISTANT,
-						content: "Character 3 private message",
-						characterId: 3,
-						visibility: 0,
-						expected: { char1: null, char2: null, char3: "system" }
+				try {
+					// 0. Save a copy of the DB
+					console.log("Step 0: Saving DB backup...");
+					const dbBackup = await backupDB();
+					console.log("DB backup completed");
+
+					// 1. Delete and recreate the DB
+					console.log("Step 1: Recreating DB...");
+					await deleteDB();
+					await initDB();
+					console.log("DB recreated");
+
+					let testResults = [];
+
+					// 2. Loop over the Providers in RPChat.config.PROVIDERS
+					console.log("Step 2: Testing providers...");
+					for (const [providerId, originalProvider] of window.RPChat.config.PROVIDERS) {
+						console.log(`Testing provider: ${providerId}`);
+
+						// Copy the provider and empty the models field
+						const providerCopy = { ...originalProvider };
+						const originalModels = [...providerCopy.models];
+						providerCopy.models = []; // Empty models for provider creation
+
+						try {
+							// Create the provider in the DB using the copy
+							await window.createProvider(providerCopy);
+							console.log(`  Provider ${providerId} created`);
+
+							// Create the models in the DB using the original provider's models
+							for (const model of originalModels) {
+								await window.createModel(providerId, model);
+							}
+							console.log(`  ${originalModels.length} models created for provider ${providerId}`);
+
+							// 3. Read the provider from the DB
+							const readProvider = await window.readProvider(providerId);
+							if (!readProvider) {
+								throw new Error(`Failed to read provider ${providerId} from DB`);
+							}
+
+							// Compare the read provider with the original
+							const comparison = compareProviders(originalProvider, readProvider);
+							testResults.push({
+								providerId,
+								success: comparison.success,
+								differences: comparison.differences
+							});
+
+							if (comparison.success) {
+								console.log(`  ✅ Provider ${providerId} test PASSED`);
+							} else {
+								console.log(`  ❌ Provider ${providerId} test FAILED:`);
+								comparison.differences.forEach(diff => console.log(`    ${diff}`));
+							}
+
+						} catch (error) {
+							console.error(`  ❌ Error testing provider ${providerId}:`, error);
+							testResults.push({
+								providerId,
+								success: false,
+								error: error.message
+							});
+						}
 					}
-				];
 
-				// Convert the test messages into ChatMessage instances
-				const mockMessages = testMessages.map(msg => {
-					return {
-						id: msg.id,
-						role: msg.role,
-						content: msg.content,
-						characterId: msg.characterId,
-						visibility: msg.visibility,
-						element: document.createElement('div'), // Mock element
-						expected: msg.expected
-					};
-				});
+					// 4. Delete the DB
+					console.log("Step 4: Cleaning up test DB...");
+					await deleteDB();
 
-				// Test for different character IDs
-				const characterIds = [1, 2, 3];
+					// 5. Restore DB from saved copy
+					console.log("Step 5: Restoring DB from backup...");
+					await restoreDB(dbBackup);
+					console.log("DB restored");
 
-				// Results table for visual comparison
-				console.log("Test Message Summary:");
-				console.table(testMessages.map(m => ({
-					ID: m.id,
-					Content: m.content,
-					Role: m.role,
-					CharId: m.characterId,
-					Visible: m.visibility === 1 ? "Public" : "Private"
-				})));
+					// Report final results
+					const successCount = testResults.filter(r => r.success).length;
+					const totalCount = testResults.length;
 
-				// Run tests for each character
-				characterIds.forEach(charId => {
-					console.log(`\n=== Testing for Character ID: ${charId} ===`);
+					console.log("=== TEST RESULTS SUMMARY ===");
+					console.log(`Total providers tested: ${totalCount}`);
+					console.log(`Successful tests: ${successCount}`);
+					console.log(`Failed tests: ${totalCount - successCount}`);
 
-					// Call the method with the current character ID
-					const result = chatManager.prepareApiMessagesForCharacter(charId, mockMessages);
+					if (successCount === totalCount) {
+						console.log("🎉 ALL TESTS PASSED!");
+						return "✅ All provider DB interface tests passed!";
+					} else {
+						console.log("❌ Some tests failed. Check detailed results above.");
+						return `❌ ${totalCount - successCount} tests failed. Check console for details.`;
+					}
 
-					// Log the raw result
-					console.log("Raw result:", result);
-
-					// Check if each message was processed correctly
-					const expectedResults = mockMessages
-						.filter(msg => msg.expected[`char${charId}`] !== null)
-						.map(msg => ({
-							content: msg.content,
-							expectedRole: msg.expected[`char${charId}`]
-						}));
-
-					// Create comparison table
-					const comparisonTable = result.map((item, index) => {
-						const expected = expectedResults[index];
-						return {
-							"Message": item.content,
-							"Actual Role": item.role,
-							"Expected Role": expected?.expectedRole || "Should be omitted",
-							"Match": expected && item.role === expected.expectedRole ? "✅" : "❌"
-						};
-					});
-
-					console.log(`Results for Character ${charId}:`);
-					console.table(comparisonTable);
-
-					// Verify message count
-					const expectedCount = expectedResults.length;
-					console.log(`Expected ${expectedCount} messages, got ${result.length}: ${expectedCount === result.length ? "✅" : "❌"}`);
-				});
-
-				return "Test completed - check console for results";
+				} catch (error) {
+					console.error("❌ Test execution failed:", error);
+					return `❌ Test execution failed: ${error.message}`;
+				}
 			};
 
-			console.log("Test function added! Run window.testPrepareApiMessagesForCharacter() in console to test.");
+			// Helper function to backup the entire database
+			async function backupDB() {
+				const backup = {
+					providers: [],
+					models: []
+				};
+
+				return new Promise((resolve, reject) => {
+					const transaction = db.transaction(['providers', 'models'], 'readonly');
+					const providerStore = transaction.objectStore('providers');
+					const modelStore = transaction.objectStore('models');
+
+					// Backup providers
+					const providerRequest = providerStore.getAll();
+					providerRequest.onsuccess = () => {
+						backup.providers = providerRequest.result;
+
+						// Backup models
+						const modelRequest = modelStore.getAll();
+						modelRequest.onsuccess = () => {
+							backup.models = modelRequest.result;
+							resolve(backup);
+						};
+						modelRequest.onerror = () => reject(modelRequest.error);
+					};
+					providerRequest.onerror = () => reject(providerRequest.error);
+				});
+			}
+
+			// Helper function to delete the database
+			async function deleteDB() {
+				return new Promise((resolve, reject) => {
+					if (db) {
+						db.close();
+					}
+					const deleteRequest = indexedDB.deleteDatabase(DB_NAME);
+					deleteRequest.onsuccess = () => resolve();
+					deleteRequest.onerror = () => reject(deleteRequest.error);
+				});
+			}
+
+			// Helper function to restore database from backup
+			async function restoreDB(backup) {
+				// First ensure DB is initialized
+				await initDB();
+
+				return new Promise((resolve, reject) => {
+					const transaction = db.transaction(['providers', 'models'], 'readwrite');
+					const providerStore = transaction.objectStore('providers');
+					const modelStore = transaction.objectStore('models');
+
+					// Restore providers
+					for (const provider of backup.providers) {
+						providerStore.put(provider);
+					}
+
+					// Restore models
+					for (const model of backup.models) {
+						modelStore.put(model);
+					}
+
+					transaction.oncomplete = () => resolve();
+					transaction.onerror = () => reject(transaction.error);
+				});
+			}
+
+			// Helper function to compare providers
+			function compareProviders(original, fromDB) {
+				const differences = [];
+
+				// Check basic fields
+				const fieldsToCheck = ['id', 'displayName', 'apiFormat', 'endpoint'];
+				for (const field of fieldsToCheck) {
+					if (original[field] !== fromDB[field]) {
+						differences.push(`${field}: expected '${original[field]}', got '${fromDB[field]}'`);
+					}
+				}
+
+				// Check models array
+				if (!Array.isArray(fromDB.models)) {
+					differences.push(`models: expected array, got ${typeof fromDB.models}`);
+				} else {
+					if (original.models.length !== fromDB.models.length) {
+						differences.push(`models length: expected ${original.models.length}, got ${fromDB.models.length}`);
+					} else {
+						// Sort both arrays by ID to ensure consistent comparison
+						const origModelsSorted = [...original.models].sort((a, b) => a.id.localeCompare(b.id));
+						const dbModelsSorted = [...fromDB.models].sort((a, b) => a.id.localeCompare(b.id));
+
+						// Check each model
+						for (let i = 0; i < origModelsSorted.length; i++) {
+							const origModel = origModelsSorted[i];
+							const dbModel = dbModelsSorted[i];
+
+							const modelFields = ['id', 'displayName', 'defaultTemperature'];
+							for (const field of modelFields) {
+								if (origModel[field] !== dbModel[field]) {
+									differences.push(`model '${origModel.id}' ${field}: expected '${origModel[field]}', got '${dbModel[field]}'`);
+								}
+							}
+						}
+					}
+				}
+
+				return {
+					success: differences.length === 0,
+					differences
+				};
+			}
+			console.log("Test function added! Run window.testProviderDBInterface() in console to test.");
 
 			// Attach event listeners
 			attachEventListeners();
@@ -2466,6 +2810,22 @@ The user prompts should be regarded as directives for the next increments of the
 			// Clear chat
 			El.clearChatBtn.addEventListener('click', handleClearChat);
 
+			// Scroll buttons
+			if (El.scrollTopBtn) {
+				El.scrollTopBtn.addEventListener('click', () => {
+					if (El.chatContainer) {
+						El.chatContainer.scrollTo({ top: 0, behavior: 'smooth' });
+					}
+				});
+			}
+			if (El.scrollBottomBtn) {
+				El.scrollBottomBtn.addEventListener('click', () => {
+					if (El.chatContainer) {
+						El.chatContainer.scrollTo({ top: El.chatContainer.scrollHeight, behavior: 'smooth' });
+					}
+				});
+			}
+
 			// Add a mutation observer to detect changes to the chat container
 			// This helps update the send button state when edits start/end
 			if (El.chatContainer) {
@@ -2680,7 +3040,7 @@ The user prompts should be regarded as directives for the next increments of the
 				// Explicitly render the chat to update the UI
 				chatManager.render();
 
-				// Scroll to the top of the new message to bring it into view
+				// Scroll to the top of the last assistant message to bring it into view
 				scrollToTopOfLastAssistantMessage();
 
 				const tokenInfo = window.RPChat.api.getTokenUsageString(response);
@@ -2851,6 +3211,7 @@ The user prompts should be regarded as directives for the next increments of the
 				El.chatContainer.scrollTop = El.chatContainer.scrollHeight;
 			}
 		}
+
 
 	</script>
 </body>
