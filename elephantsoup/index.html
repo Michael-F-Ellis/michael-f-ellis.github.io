@@ -7,8 +7,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<title>Elephant Soup</title>
-  <script type="module" crossorigin src="/elephantsoup/assets/index-C4q1WfVA.js"></script>
-  <link rel="stylesheet" crossorigin href="/elephantsoup/assets/index-0-j669-V.css">
+  <script type="module" crossorigin src="/elephantsoup/assets/index-Cbw9WgKz.js"></script>
+  <link rel="stylesheet" crossorigin href="/elephantsoup/assets/index-DR_NzMUo.css">
 </head>
 
 <body>
@@ -35,6 +35,8 @@
 					<input type="text" id="new-piece-name" placeholder="Piece Name" class="input-field">
 					<input type="number" id="new-piece-measures" placeholder="Total Measures" class="input-field">
 					<input type="number" id="new-piece-start-measure" placeholder="Start Measure (e.g. 1)"
+						class="input-field">
+					<input type="text" id="new-piece-youtube" placeholder="YouTube Video ID (Optional)"
 						class="input-field">
 					<button id="save-piece-btn" class="button-small">Save</button>
 					<button id="cancel-piece-btn" class="button-small cancel">Cancel</button>
@@ -66,8 +68,16 @@
 				</div>
 
 				<button id="playButton" class="button play-button" disabled>
-					<i class="fas fa-play"></i><span>Play</span>
+					<i class="fas fa-play"></i><span>Play Recording</span>
 				</button>
+
+				<button id="play-sample-btn" class="button play-sample-button" style="display: none;">
+					<i class="fas fa-music"></i><span>Play Sample</span>
+				</button>
+
+				<div id="practice-youtube-container" style="display: none; width: 0; height: 0;">
+					<div id="practice-youtube-player"></div>
+				</div>
 
 				<div id="status" class="status">Ready to record</div>
 
@@ -84,6 +94,35 @@
 				<div id="error" class="error"></div>
 			</div>
 
+			<!-- Calibration View -->
+			<div id="calibration-view" style="display: none;">
+				<div class="calibration-header">
+					<div class="calibration-controls">
+						<button id="cal-back-btn" class="back-button"><i class="fas fa-arrow-left"></i> Back</button>
+						<h2 id="cal-piece-name">Calibration</h2>
+					</div>
+					<div class="video-container" id="youtube-player-container">
+						<div id="youtube-player"></div>
+					</div>
+					<div class="player-controls">
+						<button id="cal-seek-prev" class="btn-ctrl"><i class="fas fa-step-backward"></i></button>
+						<button id="cal-play" class="btn-ctrl"><i class="fas fa-play"></i></button>
+						<button id="cal-pause" class="btn-ctrl" style="display:none"><i
+								class="fas fa-pause"></i></button>
+						<button id="cal-stop" class="btn-ctrl"><i class="fas fa-stop"></i></button>
+						<button id="cal-seek-next" class="btn-ctrl"><i class="fas fa-step-forward"></i></button>
+						<button id="cal-entry-mode" class="btn-ctrl entry-btn" title="Entry Mode">
+							<i class="fas fa-keyboard"></i>
+							<span>Entry</span>
+						</button>
+						<button id="cal-save" class="btn-ctrl save-btn"><i class="fas fa-save"></i> Save</button>
+					</div>
+				</div>
+				<div id="dot-grid" class="dot-grid">
+					<!-- Measure lines will be injected here -->
+				</div>
+			</div>
+
 
 		</div>
 		<div id="resume-modal" class="modal" style="display: none;">
@@ -98,6 +137,29 @@
 			</div>
 		</div>
 
+		<!-- Nudge Popup -->
+		<div id="nudge-popup" class="modal" style="display: none;">
+			<div class="modal-content">
+				<h3>Edit Measure <span id="nudge-measure-num"></span></h3>
+				<div style="margin: 20px 0;">
+					<label for="nudge-slider">Nudge Timing:</label>
+					<input type="range" id="nudge-slider" min="-2" max="2" step="0.01" style="width: 100%;">
+					<div style="display: flex; justify-content: space-between; font-size: 0.8em; color: #aaa;">
+						<span>Earlier</span>
+						<span id="nudge-offset-val">0.00s</span>
+						<span>Later</span>
+					</div>
+				</div>
+				<div class="modal-actions">
+					<button id="nudge-save-btn" class="button-small">Apply</button>
+					<button id="nudge-delete-btn" class="button-small cancel"
+						style="background: #ff453a;">Delete</button>
+					<button id="nudge-cancel-btn" class="button-small cancel">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<script src="https://www.youtube.com/iframe_api"></script>
 </body>
 
 </html>
