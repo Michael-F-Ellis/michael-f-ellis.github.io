@@ -7,7 +7,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<title>Elephant Soup</title>
-  <script type="module" crossorigin src="/elephantsoup/assets/index-Cbw9WgKz.js"></script>
+  <script type="module" crossorigin src="/elephantsoup/assets/index-BjAdnuJR.js"></script>
   <link rel="stylesheet" crossorigin href="/elephantsoup/assets/index-DR_NzMUo.css">
 </head>
 
@@ -18,7 +18,7 @@
 				style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
 				<img src="/elephantsoup/logo.png" alt="Elephant Soup Logo" style="height: 200px;">
 				<div style="color: #8e8e93; font-size: 12px;">
-					Version 1.5.0
+					Version 1.5.1
 					<a href="https://github.com/michael-f-ellis/ElephantSoup" target="_blank"
 						style="color: #8e8e93; text-decoration: underline;">Source Code</a>
 				</div>
@@ -155,6 +155,28 @@
 					<button id="nudge-delete-btn" class="button-small cancel"
 						style="background: #ff453a;">Delete</button>
 					<button id="nudge-cancel-btn" class="button-small cancel">Close</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Export Modal -->
+		<div id="export-modal" class="modal" style="display: none;">
+			<div class="modal-content">
+				<h3>Export Repertoire</h3>
+				<div style="margin: 20px 0; text-align: left;">
+					<label for="export-filename">Filename:</label>
+					<input type="text" id="export-filename" class="input-field" placeholder="elephant_soup_backup">
+
+					<div style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+						<input type="checkbox" id="export-clean-checkbox" style="width: 20px; height: 20px;">
+						<label for="export-clean-checkbox">Clean Export (Remove all progress and merges)</label>
+					</div>
+					<p style="font-size: 0.8em; color: #aaa; margin-top: 5px;">Use this for sharing pieces with others.
+					</p>
+				</div>
+				<div class="modal-actions">
+					<button id="export-confirm-btn" class="button">Export</button>
+					<button id="export-cancel-btn" class="button-small cancel">Cancel</button>
 				</div>
 			</div>
 		</div>
