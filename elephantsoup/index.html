@@ -7,8 +7,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 	<title>Elephant Soup</title>
-  <script type="module" crossorigin src="/elephantsoup/assets/index-DmMHNo4h.js"></script>
-  <link rel="stylesheet" crossorigin href="/elephantsoup/assets/index-LAjCeIRh.css">
+  <script type="module" crossorigin src="/elephantsoup/assets/index-DEffJZxs.js"></script>
+  <link rel="stylesheet" crossorigin href="/elephantsoup/assets/index-B7GvnomA.css">
 </head>
 
 <body>
@@ -18,7 +18,7 @@
 				style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
 				<img src="/elephantsoup/logo.png" alt="Elephant Soup Logo" style="height: 200px;">
 				<div style="color: #8e8e93; font-size: 12px;">
-					Version 1.5.5
+					Version 1.6.0
 					<a href="https://github.com/michael-f-ellis/ElephantSoup" target="_blank"
 						style="color: #8e8e93; text-decoration: underline;">Source Code</a>
 				</div>
@@ -39,13 +39,18 @@
 					<input type="text" id="new-piece-youtube" placeholder="YouTube Video ID (Optional)"
 						class="input-field">
 					<div style="margin: 10px 0; text-align: left;">
-						<label for="new-piece-audio" style="font-size: 0.9em; color: #aaa;">Or upload Audio File (mp3, wav):</label>
-						<input type="file" id="new-piece-audio" accept="audio/*" class="input-field" style="padding: 10px 0;">
+						<label for="new-piece-audio" style="font-size: 0.9em; color: #aaa;">Or upload Audio File (mp3,
+							wav):</label>
+						<input type="file" id="new-piece-audio" accept="audio/*" class="input-field"
+							style="padding: 10px 0;">
 					</div>
 					<button id="save-piece-btn" class="button-small">Save</button>
 					<button id="cancel-piece-btn" class="button-small cancel">Cancel</button>
 				</div>
-				<div style="margin-bottom: 20px;">
+				<div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+					<button id="sync-btn" class="button-text"
+						title="Automatically sync with a file in iCloud/Dropbox"><i class="fas fa-sync"></i> Link Sync
+						File</button>
 					<button id="export-btn" class="button-text">Export Data</button>
 					<button id="import-btn" class="button-text">Import Data</button>
 					<input type="file" id="import-file" style="display:none">
