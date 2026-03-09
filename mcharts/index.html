@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>MCharts - Monkey Charts</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+	<div class="container">
+		<header>
+			<div class="header-title">
+				<input type="text" id="chart-title" placeholder="Chart Title" value="New Chart">
+				<h1>MCharts</h1>
+				<div class="header-info">
+					<span>Version 0.7.1</span>
+					<a href="https://github.com/michael-f-ellis/mcharts" target="_blank">Source code</a>
+				</div>
+			</div>
+			<div class="header-settings">
+				<div class="setting">
+					<label for="left-font-size">Chords Size:</label>
+					<input type="number" id="left-font-size" value="16" min="8" max="72">
+				</div>
+				<div class="setting">
+					<label for="right-font-size">Lyrics Size:</label>
+					<input type="number" id="right-font-size" value="16" min="8" max="72">
+				</div>
+				<div class="setting">
+					<label for="column-width">Chords Width (%):</label>
+					<input type="number" id="column-width" value="30" min="10" max="90">
+				</div>
+			</div>
+		</header>
+
+		<main id="editor">
+			<!-- Two column layout will go here -->
+		</main>
+
+		<footer>
+			<div class="footer-actions">
+				<button id="btn-new">New</button>
+				<button id="btn-export">Export</button>
+				<button id="btn-import">Import</button>
+				<input type="file" id="import-file" accept=".json" style="display:none">
+			</div>
+		</footer>
+	</div>
+	<script src="app.js"></script>
+</body>
+
+</html>
