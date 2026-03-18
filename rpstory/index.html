@@ -276,12 +276,8 @@ button:disabled {
 }
 
 .background-highlight {
-    background-color: rgba(49, 130, 206, 0.08);
-    border: 1px dashed #3182ce;
     font-style: italic;
     color: #2b6cb0;
-    border-radius: 2px;
-    padding: 0 2px;
 }
 
 .active-prompt {
@@ -458,7 +454,7 @@ footer {
 				<h1>RPStory</h1>
 				<div class="header-info">
 					<p>
-						v1.2.0&nbsp
+						v1.2.1&nbsp
 						<a href="https://github.com/michael-f-ellis/rpchat" class="header-link" target="_blank">Source
 							code</a>
 					</p>
@@ -1498,7 +1494,8 @@ window.RPChat.importExport = (function () {
 		const importInput = document.createElement('input');
 		importInput.type = 'file';
 		importInput.id = 'import-input';
-		importInput.accept = '.json';
+		// Accept .json files and the application/json MIME type
+		importInput.accept = '.json,application/json';
 		importInput.style.display = 'none';
 		document.body.appendChild(importInput);
 
