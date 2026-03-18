@@ -7,13 +7,36 @@
 	<title>RPChat - Editable AI Chat</title>
 	<style>
 		/* Combined CSS files */
+/* Theme Variables */
 :root {
+	/* Light Theme (Default) */
 	--primary-color: #4a5568;
 	--secondary-color: #2d3748;
 	--highlight-color: #805ad5;
 	--light-color: #f7fafc;
 	--dark-color: #1a202c;
 	--light-link-color: #e36ce9;
+	--editor-bg: #ffffff;
+	--editor-text: #1a202c;
+	--border-color: #dddddd;
+	--prompt-bg: rgba(128, 90, 213, 0.15);
+	--prompt-text: #553c9a;
+	--background-text: #2b6cb0;
+}
+
+body.dark-theme {
+	--primary-color: #1a202c;
+	--secondary-color: #2d3748;
+	--highlight-color: #9f7aea;
+	--light-color: #2d3748;
+	--dark-color: #f7fafc;
+	--light-link-color: #f6ad55;
+	--editor-bg: #1a202c;
+	--editor-text: #f7fafc;
+	--border-color: #4a5568;
+	--prompt-bg: rgba(159, 122, 234, 0.2);
+	--prompt-text: #b794f4;
+	--background-text: #63b3ed;
 }
 
 * {
@@ -254,30 +277,31 @@ button:disabled {
 	flex-direction: column;
 	padding: 1rem;
 	overflow-y: auto;
-	border: 1px solid #ddd;
+	border: 1px solid var(--border-color);
 	border-radius: 5px;
 	margin-bottom: 1rem;
 }
 
 .story-editor {
     display: block;
-    background-color: #fff;
+    background-color: var(--editor-bg);
+    color: var(--editor-text);
     font-family: 'Courier New', Courier, monospace;
     font-size: 1.1rem;
     line-height: 1.5;
 }
 
 .prompt-highlight {
-    background-color: rgba(128, 90, 213, 0.15);
+    background-color: var(--prompt-bg);
     border-bottom: 2px solid var(--highlight-color);
     font-weight: bold;
-    color: #553c9a;
+    color: var(--prompt-text);
     border-radius: 2px;
 }
 
 .background-highlight {
     font-style: italic;
-    color: #2b6cb0;
+    color: var(--background-text);
 }
 
 .active-prompt {
@@ -454,7 +478,7 @@ footer {
 				<h1>RPStory</h1>
 				<div class="header-info">
 					<p>
-						v1.2.1&nbsp
+						v1.3.0&nbsp
 						<a href="https://github.com/michael-f-ellis/rpchat" class="header-link" target="_blank">Source
 							code</a>
 					</p>
@@ -463,7 +487,8 @@ footer {
 					<button id="scroll-top" class="header-icon-btn" aria-label="Scroll to top" title="Scroll to top">▲</button>
 					<button id="toggle-system-prompt" class="header-icon-btn" aria-label="Toggle System Prompt" title="Toggle System Prompt">📝</button>
 					<button id="scroll-bottom" class="header-icon-btn" aria-label="Scroll to bottom" title="Scroll to bottom">▼</button>
-					<button id="header-toggle" class="header-toggle" aria-label="Toggle header">⚙️</button>
+					<button id="toggle-preferences" class="header-icon-btn" aria-label="Preferences" title="Preferences">⚙️</button>
+					<button id="header-toggle" class="header-toggle" aria-label="Toggle header">☰</button>
 				</div>
 			</div>
 			<div id="header-content" class="header-content">
@@ -531,6 +556,25 @@ footer {
 	</div>
 
 
+	<!-- Preferences Modal -->
+	<div id="preferences-modal" class="modal-overlay">
+		<div class="modal-content">
+			<h2>Preferences</h2>
+			<div class="modal-options">
+				<div class="option">
+					<label for="theme-select">Theme:</label>
+					<select id="theme-select">
+						<option value="light">Light</option>
+						<option value="dark">Dark</option>
+					</select>
+				</div>
+			</div>
+			<div class="modal-buttons">
+				<button id="close-preferences" class="save-btn">Close</button>
+			</div>
+		</div>
+	</div>
+
 	<script>
 		// DOM element references
 const El = {
@@ -554,7 +598,12 @@ const El = {
 	toggleSystemPromptBtn: document.getElementById('toggle-system-prompt'),
 	systemPromptModal: document.getElementById('system-prompt-modal'),
 	systemPromptText: document.getElementById('system-prompt-text'),
-	closeSystemPromptBtn: document.getElementById('close-system-prompt')
+	closeSystemPromptBtn: document.getElementById('close-system-prompt'),
+	// Preferences elements
+	togglePreferencesBtn: document.getElementById('toggle-preferences'),
+	preferencesModal: document.getElementById('preferences-modal'),
+	themeSelect: document.getElementById('theme-select'),
+	closePreferencesBtn: document.getElementById('close-preferences')
 };
 
 /* Chat Message Class and Constants
@@ -1917,6 +1966,7 @@ async function initializeApp() {
 		showStatus('Failed to initialize database. Provider management will not work.', 'error');
 	}
 	loadStateFromStorage();
+	applyTheme(localStorage.getItem('theme') || 'light');
 
 	// Set up UI elements based on configuration
 	initializeUIElements();
@@ -2118,6 +2168,17 @@ function attachEventListeners() {
 
 	// Initial button state (could be simplified)
     if (El.sendButton) El.sendButton.disabled = false;
+
+	// Preferences toggles
+	if (El.togglePreferencesBtn) {
+		El.togglePreferencesBtn.addEventListener('click', handleTogglePreferences);
+	}
+	if (El.closePreferencesBtn) {
+		El.closePreferencesBtn.addEventListener('click', handleClosePreferences);
+	}
+	if (El.themeSelect) {
+		El.themeSelect.addEventListener('change', handleThemeChange);
+	}
 }
 
 // Handle provider change
@@ -2286,6 +2347,39 @@ function handleCloseSystemPrompt() {
     }
     
     El.systemPromptModal.style.display = 'none';
+}
+
+// Handle Preferences (Modal)
+function handleTogglePreferences() {
+	if (!El.preferencesModal || !El.themeSelect) return;
+	
+	// Set current theme in select
+	El.themeSelect.value = localStorage.getItem('theme') || 'light';
+	El.preferencesModal.style.display = 'flex';
+}
+
+function handleClosePreferences() {
+	if (!El.preferencesModal) return;
+	El.preferencesModal.style.display = 'none';
+}
+
+function handleThemeChange(event) {
+	const theme = event.target.value;
+	applyTheme(theme);
+}
+
+function applyTheme(theme) {
+	if (theme === 'dark') {
+		document.body.classList.add('dark-theme');
+	} else {
+		document.body.classList.remove('dark-theme');
+	}
+	localStorage.setItem('theme', theme);
+	
+	// Update select if it exists (e.g. if called during init)
+	if (El.themeSelect) {
+		El.themeSelect.value = theme;
+	}
 }
 
 // Show status message and use as notification handler for ChatManager
